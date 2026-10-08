@@ -1,0 +1,16 @@
+FASE 2 — ARQUITECTURA Y DISEÑO DEL SISTEMA FUNDO.
+
+PRECONDICIÓN: el PROMPT 02 se completó y revisé el análisis. Si no, detente.
+
+1. Revisa AGENTS.md, el TXT original, los RF/RNF, matriz de permisos y decisiones aprobadas.
+2. Usa como punto de partida `docs/02-arquitectura/ADR-001-ARQUITECTURA_CANDIDATA.md` (estado PROPUESTO).
+3. Evalúa Laravel 13/PHP 8.4/MySQL 8.0 con Blade + Alpine.js + Tailwind para el entorno DonWeb/Ferozo capturado: Linux, Apache/PHP-FPM/MySQL. No supongas SSH, Docker, Composer, CPU, RAM, ni DocumentRoot configurables.
+4. Diseña un monolito modular mantenible: módulos, límites y servicios; NO microservicios por defecto.
+5. Diseña MER conceptual y lógico, llaves foráneas, normalización, integridad referencial entre fundos, lotes y cuarteles, índices, DECIMAL para importes, políticas de auditoría y migraciones reversibles.
+6. Define políticas de permisos por recurso y consulta: prohibido acceso cruzado entre fundos fuera de autorización (incluyendo exportación Excel).
+7. Propón wireframes móviles para login, registro de descarte, listado, catálogo y administración; navegación colapsable, tabla sin desborde.
+8. Diseña el manejo de PWA y conectividad según decisiones de usuario; no simules sincronización offline sin acordarla.
+9. Redacta arquitectura, diagrama ER, ADR, riesgos, plan de pruebas, plan de deployment compatible con Ferozo, requerimientos de hospedaje pendientes y hoja de ruta por iteraciones.
+10. No escribas código funcional todavía, no instales servicios, no modifiques VPS.
+
+Al terminar muestra decisiones técnicas para aprobar y próximos pasos; aplica commits-inteligentes, sin push.

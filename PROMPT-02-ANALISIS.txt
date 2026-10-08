@@ -1,0 +1,16 @@
+Estamos continuando el proyecto Sistema Fundo. Hasta ahora solo ejecuté el PROMPT 1 de preparación de Antigravity. NO reinicies el proyecto ni borres configuraciones.
+
+TU TAREA: FASE 1 — ANÁLISIS Y VALIDACIÓN DE REQUISITOS.
+
+1. Inspecciona el estado del proyecto, lee AGENTS.md y el informe real del PROMPT 1. Si la auditoría no terminó o hay errores, informa primero y resuélvelos solo dentro de las reglas existentes.
+2. Lee COMPLETO `docs/01-requisitos/Requerimientos para Sistema Descart.txt` como fuente primaria. Lee también `docs/01-requisitos/ANALISIS_REQUISITOS_V1.md`, `docs/02-arquitectura/ADR-001-ARQUITECTURA_CANDIDATA.md` y `docs/00-gestion/PLAN_MVP_V1.md` como PROPUESTAS para revisar, no como decisiones aprobadas.
+3. Coordina los agentes Analista Funcional, Arquitecto y QA si la instalación puede delegar tareas; si no, desempeña los roles secuencialmente, sin fingir ejecuciones automáticas.
+4. Confirma requisitos del archivo original, separa recomendaciones y lista TODAS las ambigüedades. No inventes flujos.
+5. Actualiza documentos del proyecto con requisitos funcionales identificados RF-xx, no funcionales RNF-xx, casos de uso, matriz de roles/permisos y criterios de aceptación verificables.
+6. Da prioridad a los puntos abiertos: registro sin Internet, alcance del rol General, edición/anulación, tipo de Cosecha Nacional, moneda/unidad/precisión del precio, relación lote-cuartel.
+7. Documenta riesgos de autorización por fundo, trazabilidad y validación de datos.
+8. No instales frameworks, NO programes, NO accedas a DonWeb ni toques bases empresariales.
+9. Si los archivos propuestos contradicen el TXT, prioriza el TXT y explica la diferencia.
+10. Al terminar, informa (a) qué quedó confirmado, (b) decisiones que debo responder, (c) documentos cambiados, (d) estado de pruebas y Git. Evalúa commit conforme a commits-inteligentes, sin push.
+
+DETENTE y espera mi aprobación antes de pasar a arquitectura o código.

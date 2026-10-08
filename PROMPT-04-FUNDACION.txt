@@ -1,0 +1,15 @@
+FASE 3 — INICIO DEL CÓDIGO DEL SISTEMA FUNDO.
+
+PRECONDICIÓN OBLIGATORIA: Solo ejecutar este prompt después de que el usuario apruebe el análisis de requisitos y la arquitectura. Si no existe aprobación, no generes código.
+
+1. Lee AGENTS.md, RF/RNF aprobados, arquitectura, ADR y plan de trabajo. Confirma el estado real del repositorio y la versión de herramientas de desarrollo locales.
+2. Implementa Laravel en la ubicación aprobada sin sobrescribir .agents, docs ni otras carpetas. Confirma disponibilidad local de PHP compatible, Composer y herramientas de build; si faltan, explica opciones y pide permiso antes de instalar.
+3. Crea .env.example sin secretos, usa base de datos LOCAL de desarrollo, nunca producción; no conectes DonWeb.
+4. Configura pruebas automatizadas, formateo, migraciones iniciales y la estructura modular mínima, evitando sobreingeniería.
+5. Implementa una primera entrega vertical MUY PEQUEÑA: login, sesión segura y estructura de roles/permisos/fundos con políticas de acceso; si alguna regla de permisos no fue aprobada, detente en ese punto.
+6. Agrega tests de login, autorización y bloqueo de acceso a registros de otro fundo; no declarar completado algo que no se haya probado.
+7. Usa datos ficticios en seeds y pruebas, documenta cómo correr localmente. Mantén compatibilidad de producción con PHP 8.4, Apache, MySQL 8.0 y assets compilados, sujeto a auditoría de despliegue.
+8. NO desarrollar aún todo el formulario, PWA offline ni dashboards; serán iteraciones siguientes.
+9. Al finalizar indica archivos creados, comandos usados, resultados de pruebas, limitaciones y commit(s) local(es) según commits-inteligentes. NO push, NO despliegue.
+
+Detente y espera mi revisión de esta primera entrega antes de avanzar.

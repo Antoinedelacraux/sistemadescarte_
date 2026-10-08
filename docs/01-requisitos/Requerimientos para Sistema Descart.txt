@@ -1,0 +1,62 @@
+Requerimientos para Sistema Descarte 
+
+Objetivo del sistema: El sistema tiene la misión de ser utilizada para el personal de fundo encargada de registrar el descarte de campo.
+
+Realizar desarrollo teniendo en cuenta que después se pueda modificar y hacer cambios dentro del código.
+
+VISTAS:
+(El nombre de los roles después se pueden cambiar)
+(Puedes también tomar decisiones en las vistas de cada rol si es que deben cambiar)
+(Tener en cuenta que todo se puede modificar en el código mas adelante)
+
+Administrador: (Es el que crea cuentas a los usuarios, asigna roles, asigna fundo a cada usuario o todos los fundos, ve los cambios que se hacen en el sistema) 
+Individual (Es el que registra en campo): (Registra información en los modulos del sistema, puede hacer registro, guardar registro, descargar la información, entre otros pero solo de su fundo que se les asigne)
+General (Jefe de los que registran): (Esta vista es para los jefes de cada fundo, pueden ver los registros de su fundo como el de los otros fundos)
+
+Requerimientos
+- Modulo Venta de descarte
+Usuario Individual y General pueden registrar
+(Tener en cuenta que campos pueden cambiar mas adelante)
+(Mantener normalización en base de datos, identificar que no haya cruces ni problemas)
+Campos: 
+Usuario Individual y General pueden registrar:
+//te dare los campos y te indicare si es obligatoria u opcional, como también si hay casos precisos en los campos
+Fecha de producción (Obligatorio, lo reconoce automáticamente el sistema pero también se puede editar)
+Lote - (obligatorio, cada fundo ya tendrá sus lotes configurados)
+Motivo (Obligatorio, se pueden elegir Campo, Packing o Cosecha Nacional)
+Tipo de descarte: Obligatorio, Debe aparecer para campo (grano, racimos, racimos con plaga), Para packing (Granos, Racimos), Para cosecha nacional (Racimos y granos)
+Cuartel - obligatorio (Solo en cosecha nacional), Opcional en los otros dos Motivos
+Precio - Obligatorio
+kilogramos totales - Obligatorio
+Cantidad de Jabas - Opcional
+Peso de jaba - Opcional
+Valor de la venta (Calculo automático: Precio * Kilogramos Totales)
+Brevete (Opcional)
+RUC - Opcional
+Placa - Opcional
+Nombre Conductor - Opcional
+Viaje - Opcional
+Observación - Opcional
+
+Usuario (Se registra el usuario que hizo el registro, fecha y hora)
+
+Cuando se elija cosecha nacional
+Cuartel - Es obligatorio
+
+CONSIDERACIONES IMPORTANTISIMAS:
+- Responsive: Que se adapte a celulares porque usuario Individual usara el app web en campo, todo debe de adaptarse y estar bien organizado)
+- Se puede descargar la informacion registrada en EXCEL de la tabla y tambien que se pueda elegir que columnas se quieren descargar
+- En la tabla donde se guarda los registros y que se descargara en un excel se pueden ver todos los campos mencionados menos HORA y USUARIO
+- Que se pueda ocultar el panel de navegacion para visualizar mejor la tabla 
+- No quiero una tabla en donde vea que los registros que se guarden se salgan de su celda
+
+PERMISOS: 
+Dame recomendaciones si es necesario crear otros modulos en los ROLES para guardar algun registro de los campos del Modulo Venta de Descarte
+Quiero que todo este bien estructurado para que se puedan realizar cambios y no halla fallas despues o que despues sea dificil cambiar algo.
+Todo enfocado en cambios a futuro y escalabilidad.
+
+Datos adicionales
+- Conexión: (1 registrador usara celular, conexión de internet en zonas determinadas del fundo)
+- Escritorio (Que se pueda descargar un Acceso directo a la web)
+- En celular se puede descargar PWA - Acceso Directo, para que los registradores abran directo a la app
+- Hacer que se pueda abrir en celulares Android, tener en cuenta iphone 
