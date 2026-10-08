@@ -46,12 +46,11 @@
 - PWA instalable; offline transaccional solo si se aprueba y diseña.
 - Hito: flujo completo listo para pruebas de usuario.
 
-## Fase 7 — QA, piloto y despliegue
+## Fase 7 — QA, piloto y empaquetado (Preparación para VPS)
 - Tests de integración, seguridad, carga básica y recuperación.
-- Aislamiento de subdominio/BD, DocumentRoot seguro y HTTPS.
-- Copias de seguridad probadas y plan de rollback.
-- Piloto con registros ficticios; validación de usuarios clave.
-- Despliegue solo tras aprobación explícita del responsable de TI.
+- Empaquetado del código precompilado (zip) sin .env ni node_modules.
+- Entrega del paquete al Administrador del VPS junto con el `PLAN_DESPLIEGUE.md`.
+- El despliegue final en producción (aislamiento, SSL, backups) será ejecutado **exclusivamente** por el Administrador del VPS ajeno al desarrollo.
 
 ## Política operativa
 - Orquestador define entregas pequeñas.
