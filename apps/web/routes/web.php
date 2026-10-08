@@ -23,4 +23,15 @@ Route::middleware('auth')->group(function () {
 
     // Endpoint dinámico para carga de catálogos
     Route::get('/api/catalogo/lotes', [VentaDescarteController::class, 'getLotesPorFundo'])->name('api.lotes');
+
+    // Módulo de Reportes y Exportación Excel
+    Route::get('/reportes', [\App\Http\Controllers\ReporteController::class, 'index'])->name('reportes.index');
+    Route::get('/reportes/exportar', [\App\Http\Controllers\ReporteController::class, 'exportar'])->name('reportes.exportar');
+
+    // Módulo de Administración (Solo Administrador)
+    Route::get('/administracion/fundos', [\App\Http\Controllers\AdminController::class, 'fundos'])->name('admin.fundos');
+    Route::post('/administracion/fundos', [\App\Http\Controllers\AdminController::class, 'storeFundo'])->name('admin.fundos.store');
+    Route::get('/administracion/usuarios', [\App\Http\Controllers\AdminController::class, 'usuarios'])->name('admin.usuarios');
+    Route::post('/administracion/usuarios', [\App\Http\Controllers\AdminController::class, 'storeUsuario'])->name('admin.usuarios.store');
+    Route::post('/administracion/usuarios/{user}/toggle', [\App\Http\Controllers\AdminController::class, 'toggleUsuario'])->name('admin.usuarios.toggle');
 });

@@ -130,13 +130,16 @@
             <p style="font-size: var(--text-sm); color: var(--txt-muted);">Consulta de pesajes y descarte registrado en campo y packing</p>
         </div>
 
-        @if(Auth::user()->isAdmin() || Auth::user()->isGeneral() || Auth::user()->isIndividual())
-        <div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <a href="{{ route('reportes.index') }}" class="btn btn-secondary" title="Exportar datos a Excel">
+                <span>📥</span> Exportar Excel
+            </a>
+            @if(Auth::user()->isAdmin() || Auth::user()->isGeneral() || Auth::user()->isIndividual())
             <a href="{{ route('ventas.create') }}" class="btn btn-primary" id="btn-nueva-venta">
                 <span>➕</span> Registrar Venta
             </a>
+            @endif
         </div>
-        @endif
     </div>
 
     {{-- Filtros de búsqueda --}}

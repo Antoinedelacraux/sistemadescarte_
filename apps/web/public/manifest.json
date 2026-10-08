@@ -1,0 +1,19 @@
+{
+  "name": "Sistema Fundo — Gestión Agrícola",
+  "short_name": "Sistema Fundo",
+  "description": "Sistema de gestión agrícola para fundos, registro de venta de descarte y reportes.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f1f14",
+  "theme_color": "#166534",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

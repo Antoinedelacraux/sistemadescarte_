@@ -7,6 +7,16 @@
     <meta name="description" content="Sistema Web de Gestión Agrícola para fundos. Módulo de venta de descarte y reportes.">
     <title>@yield('title', 'Sistema Fundo') — Gestión Agrícola</title>
 
+    <!-- PWA & Mobile Web App Settings (Android / iPhone) -->
+    <meta name="theme-color" content="#166534">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sistema Fundo">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+    <link rel="apple-touch-icon" href="/icons/icon.svg">
+
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1091,13 +1101,16 @@
                     <span class="nav-item-label">Historial de Ventas</span>
                 </a>
 
-                @if(Auth::user()->isAdmin() || Auth::user()->isAnalista())
+                @if(Auth::user()->isAdmin() || Auth::user()->isAnalista() || Auth::user()->isGeneral())
                 <div class="nav-section-label" aria-hidden="true">Análisis</div>
-                <a href="#" class="nav-item">
+                <a href="{{ route('reportes.index') }}"
+                   class="nav-item {{ request()->routeIs('reportes.*') ? 'active' : '' }}"
+                   aria-current="{{ request()->routeIs('reportes.*') ? 'page' : 'false' }}">
                     <span class="nav-item-icon" aria-hidden="true">📈</span>
                     <span class="nav-item-label">Reportes</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="{{ route('reportes.index') }}"
+                   class="nav-item">
                     <span class="nav-item-icon" aria-hidden="true">📥</span>
                     <span class="nav-item-label">Exportar Excel</span>
                 </a>
@@ -1105,17 +1118,17 @@
 
                 @if(Auth::user()->isAdmin())
                 <div class="nav-section-label" aria-hidden="true">Administración</div>
-                <a href="#" class="nav-item">
+                <a href="{{ route('admin.fundos') }}"
+                   class="nav-item {{ request()->routeIs('admin.fundos*') ? 'active' : '' }}"
+                   aria-current="{{ request()->routeIs('admin.fundos*') ? 'page' : 'false' }}">
                     <span class="nav-item-icon" aria-hidden="true">🏡</span>
                     <span class="nav-item-label">Fundos</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="{{ route('admin.usuarios') }}"
+                   class="nav-item {{ request()->routeIs('admin.usuarios*') ? 'active' : '' }}"
+                   aria-current="{{ request()->routeIs('admin.usuarios*') ? 'page' : 'false' }}">
                     <span class="nav-item-icon" aria-hidden="true">👥</span>
                     <span class="nav-item-label">Usuarios</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="nav-item-icon" aria-hidden="true">⚙️</span>
-                    <span class="nav-item-label">Configuración</span>
                 </a>
                 @endif
             </nav>
@@ -1368,6 +1381,15 @@
                 }
             }
         });
+
+        /* --- Registro de Service Worker (PWA) --- */
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').catch(function(err) {
+                    console.log('SW registration notice:', err);
+                });
+            });
+        }
 
     })();
     </script>
