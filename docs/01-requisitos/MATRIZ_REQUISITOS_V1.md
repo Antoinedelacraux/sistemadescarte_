@@ -7,12 +7,13 @@
 | ID | Nombre | Descripción | Criterios de Aceptación |
 |---|---|---|---|
 | RF-01 | Login y Autenticación | El sistema debe permitir el ingreso a usuarios registrados. | 1. Credenciales válidas permiten acceso.<br>2. Credenciales inválidas muestran error. |
-| RF-02 | Gestión de Catálogos | El administrador debe poder configurar fundos, lotes, cuarteles, usuarios y roles. | 1. Solo Administrador accede.<br>2. Se asocian lotes y cuarteles a fundos. |
-| RF-03 | Registro Venta Descarte | Registrar nueva venta con Fecha, Lote, Motivo, Tipo, Cuartel (condicional), Precio, KG, Jabas (opcional), Peso jaba (opcional) y datos de transporte (opcionales). | 1. Se calcula automáticamente: Precio * KG.<br>2. Cuartel es obligatorio si Motivo es "Cosecha Nacional".<br>3. Solo se muestran los tipos de descarte correspondientes al motivo seleccionado. |
-| RF-04 | Restricción por Fundo | Los registros (creación y consulta) se limitan al fundo asignado del usuario. | 1. Usuario Individual solo ve lotes y registros de su fundo.<br>2. Usuario General ve registros de todos los fundos (pendiente confirmar si puede registrar en todos). |
+| RF-02 | Gestión de Catálogos | El administrador debe poder configurar fundos, lotes, usuarios y roles. | 1. Solo Administrador accede.<br>2. Se asocian lotes a fundos (los cuarteles no están predefinidos, se ingresan manualmente). |
+| RF-03 | Registro Venta Descarte | Registrar nueva venta con Fecha, Lote, Motivo, Tipo, Cuartel (condicional), Precio, KG, Jabas (opcional), Peso jaba (opcional) y datos de transporte (opcionales). | 1. Precio y KG en Soles con 2 decimales.<br>2. Valor de Venta = Precio * KG.<br>3. Cuartel es obligatorio de ingreso manual si Motivo es "Cosecha Nacional".<br>4. Si Motivo es "Cosecha Nacional", los tipos son 3: Racimos, Racimos con plaga, Granos. |
+| RF-04 | Restricción por Fundo | Los registros y consultas se limitan según el rol del usuario. | 1. Individual y General solo ven datos de su fundo asignado.<br>2. Analista ve datos de los 3 fundos. |
 | RF-05 | Exportación a Excel | Permite descargar la tabla de registros en formato Excel, seleccionando las columnas a descargar. | 1. Las columnas de HORA y USUARIO (auditoría) no se incluyen en la exportación.<br>2. El archivo descarga correctamente en celular y PC. |
 | RF-06 | Registro Offline-First | Permitir el registro sin red y sincronización posterior. | Ver `ADR-001-OFFLINE_FIRST.md`. |
-| RF-07 | Auditoría Transparente | El sistema guardará el Usuario, Fecha y Hora del registro de forma oculta en la vista regular. | 1. Ningún usuario no administrador puede ver la hora y usuario en la tabla principal. |
+| RF-07 | Auditoría de Creación | El sistema guardará el Usuario, Fecha y Hora del registro de forma oculta en la vista regular. | 1. Ningún usuario no administrador puede ver la hora y usuario de creación en la tabla principal. |
+| RF-08 | Edición de Registros | Permite corregir una venta ya guardada, manteniendo un registro estricto de auditoría. | 1. Registra el usuario que hizo la última modificación, fecha y hora.<br>2. El registro modificado y sus datos de auditoría deben sincronizarse al backend. |
 
 ## Requisitos No Funcionales (RNF)
 | ID | Nombre | Descripción |
@@ -28,7 +29,8 @@
 |---|---|---|
 | Administrador | Cuentas, Roles, Fundos, Ver cambios | Todo el sistema. |
 | Individual | Registrar, Guardar, Descargar Excel | Limitado estrictamente al fundo asignado. |
-| General | Registrar, Ver registros | Ver registros de su fundo y otros fundos (Falta aclarar si puede registrar en otros fundos o editar). |
+| General (Jefes de fundo) | Ver registros | Ve todos los registros únicamente de **su fundo** asignado. |
+| Analista | Ver registros, Descargar data, Análisis | Entra al sistema y puede ver/descargar los registros de los **tres fundos**. |
 
 ## Casos de Uso Principales
 1. **CU-01 Registrar Descarte:** Usuario entra a la app (online/offline), llena el formulario (validando que Cuartel es requerido para Cosecha Nacional), el valor se calcula automático, guarda y sincroniza.
