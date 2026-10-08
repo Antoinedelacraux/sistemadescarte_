@@ -1,19 +1,20 @@
-# ADR-001 — Arquitectura candidata, DonWeb/Ferozo
+# ADR-001 — Stack Principal y Arquitectura
 
-**Estado:** PROPUESTO — sujeto a validación técnica y aprobación.
+**Estado:** APROBADA (Con instrucciones para despliegue externo).
 
 ## Contexto
-Servidor empresarial compartido con aplicaciones existentes. Capturas: Ferozo, Linux, Apache 2.4.68, PHP 8.4 FPM, MySQL 8.0.44. Sin comprobación de recursos, extensiones, Composer, SSH ni configuración de DocumentRoot del subdominio.
+El sistema requiere funcionamiento offline parcial, responsividad extrema y un alto nivel de mantenimiento a futuro. El despliegue no lo realizaremos nosotros directamente en el VPS (Ferozo, Apache, PHP 8.4, MySQL 8.0), sino que proveeremos un empaquetado para que el administrador del VPS lo suba y ejecute los comandos iniciales.
 
-## Decisión candidata
-- Monolito modular en Laravel 13 (PHP 8.4), MySQL 8.0.
-- Blade + Alpine.js + Tailwind CSS; assets compilados en desarrollo/build, no Node.js residente en producción.
-- Autenticación por sesión/cookies seguras; autorización por políticas, permisos y alcance de fundo aplicado en backend.
-- Módulos de dominio separados por responsabilidad, **sin microservicios**.
-- Base MySQL y usuario dedicados al sistema; no modificar bases existentes.
-- HTTPS obligatorio para sitio nuevo; PWA instalable con Service Worker seguro.
-- Registro offline queda pendiente de decisión; NO presentar cache como sincronización transaccional.
-- Proceso de despliegue reproducible y reversible; sin instalar nada en VPS sin autorización.
+## Decisión Técnica
+- **Framework Base:** Monolito en Laravel 13 (PHP 8.4) para Backend y renderizado.
+- **Frontend:** Blade + Alpine.js para interactividad liviana, y Tailwind CSS para diseño. No habrá Node.js corriendo en el VPS; los assets se entregarán pre-compilados mediante Vite (`npm run build`).
+- **Autenticación:** Sesión/cookies con PWA. 
+- **Base de Datos:** MySQL 8.0. Un motor de base de datos dedicada.
+- **Aislamiento Multi-tenant:** Uso de *Global Scopes* en Laravel por Fundo. Esto blinda a la aplicación contra inyecciones y alteraciones de URL.
+- **Sincronización:** Frontend PWA con IndexedDB; Backend expone API idempotente vía UUID v4.
+
+## Método de Entrega
+Se estructurará el repositorio dejando claro qué sube al servidor (todo Laravel compilado). Se ha redactado `PLAN_DESPLIEGUE.md` dirigido exclusivamente al administrador de TI del cliente con requerimientos y pasos exactos.
 
 ## Estructura candidata del repositorio
 ```
