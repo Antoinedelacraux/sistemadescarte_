@@ -1,0 +1,33 @@
+# Secretos y archivos de entorno
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Datos privados; importar únicamente datos ficticios al repositorio
+/data/
+/private/
+/backups/
+/dumps/
+
+# Dependencias y artefactos habituales
+node_modules/
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.next/
+dist/
+build/
+coverage/
+.cache/
+.tmp/
+*.log
+
+# Archivos del sistema/IDE
+.DS_Store
+Thumbs.db
+.vscode/*.log
