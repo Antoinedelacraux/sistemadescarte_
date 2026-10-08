@@ -249,9 +249,16 @@
                         Datos filtrados por la política de acceso (FundoScope)
                     </div>
                 </div>
-                <span style="font-size: var(--text-xs); font-weight: 600; background: var(--clr-info-bg); color: var(--clr-info); padding: 0.25rem 0.625rem; border-radius: var(--radius-full); border: 1px solid var(--clr-info-brd);">
-                    {{ $ventas->count() }} registros
-                </span>
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <a href="{{ route('ventas.index') }}" class="btn btn-secondary btn-sm">
+                        Ver Historial Completo →
+                    </a>
+                    @if(Auth::user()->isAdmin() || Auth::user()->isGeneral() || Auth::user()->isIndividual())
+                    <a href="{{ route('ventas.create') }}" class="btn btn-primary btn-sm">
+                        ➕ Registrar Venta
+                    </a>
+                    @endif
+                </div>
             </div>
 
             @if($ventas->isEmpty())

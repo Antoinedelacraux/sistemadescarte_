@@ -109,28 +109,68 @@ class DatabaseSeeder extends Seeder
         ]);
         $analista->fundos()->attach([$fundoSofia->id, $fundoElena->id, $fundoJose->id]);
 
-        // 4. Registros ficticios para validar aislamiento entre fundos
+        // 4. Catálogos: Lotes y Cuarteles ficticios por fundo
+        $loteSofia1 = \App\Models\Lote::withoutGlobalScopes()->create([
+            'fundo_id' => $fundoSofia->id,
+            'nombre' => 'Lote 01 - Norte',
+        ]);
+        \App\Models\Cuartel::create(['lote_id' => $loteSofia1->id, 'nombre' => 'Cuartel 1A']);
+        \App\Models\Cuartel::create(['lote_id' => $loteSofia1->id, 'nombre' => 'Cuartel 1B']);
+
+        $loteSofia2 = \App\Models\Lote::withoutGlobalScopes()->create([
+            'fundo_id' => $fundoSofia->id,
+            'nombre' => 'Lote 02 - Sur',
+        ]);
+        \App\Models\Cuartel::create(['lote_id' => $loteSofia2->id, 'nombre' => 'Cuartel 2A']);
+        \App\Models\Cuartel::create(['lote_id' => $loteSofia2->id, 'nombre' => 'Cuartel 2B']);
+
+        $loteElena1 = \App\Models\Lote::withoutGlobalScopes()->create([
+            'fundo_id' => $fundoElena->id,
+            'nombre' => 'Lote 01 - Valle',
+        ]);
+        \App\Models\Cuartel::create(['lote_id' => $loteElena1->id, 'nombre' => 'Cuartel V1']);
+        \App\Models\Cuartel::create(['lote_id' => $loteElena1->id, 'nombre' => 'Cuartel V2']);
+
+        $loteJose1 = \App\Models\Lote::withoutGlobalScopes()->create([
+            'fundo_id' => $fundoJose->id,
+            'nombre' => 'Lote 01 - Colina',
+        ]);
+        \App\Models\Cuartel::create(['lote_id' => $loteJose1->id, 'nombre' => 'Cuartel C1']);
+
+        // 5. Registros ficticios para validar aislamiento entre fundos
         VentaDescarte::withoutGlobalScopes()->create([
             'id' => (string) Str::uuid(),
             'fundo_id' => $fundoSofia->id,
+            'lote_id' => $loteSofia1->id,
+            'cuartel_manual' => 'Cuartel 1A',
             'fecha_produccion' => '2026-10-08',
             'motivo' => 'Campo',
             'tipo_descarte' => 'Racimos',
             'precio' => 1.50,
             'kilogramos' => 120.00,
             'valor_venta' => 180.00,
+            'jabas' => 6,
+            'peso_jaba' => 20.00,
+            'placa' => 'ABC-123',
+            'conductor' => 'Juan Pérez',
             'created_by' => $individualSofia->id,
         ]);
 
         VentaDescarte::withoutGlobalScopes()->create([
             'id' => (string) Str::uuid(),
             'fundo_id' => $fundoElena->id,
+            'lote_id' => $loteElena1->id,
+            'cuartel_manual' => 'Cuartel V1',
             'fecha_produccion' => '2026-10-08',
             'motivo' => 'Packing',
             'tipo_descarte' => 'Granos',
             'precio' => 2.00,
             'kilogramos' => 80.00,
             'valor_venta' => 160.00,
+            'jabas' => 4,
+            'peso_jaba' => 20.00,
+            'placa' => 'XYZ-789',
+            'conductor' => 'Carlos López',
             'created_by' => $generalElena->id,
         ]);
     }

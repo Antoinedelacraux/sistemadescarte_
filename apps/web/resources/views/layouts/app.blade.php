@@ -1076,18 +1076,20 @@
                 </a>
 
                 @if(Auth::user()->isAdmin() || Auth::user()->isGeneral() || Auth::user()->isIndividual())
-                <a href="#"
-                   class="nav-item {{ request()->routeIs('ventas.*') ? 'active' : '' }}">
+                <a href="{{ route('ventas.create') }}"
+                   class="nav-item {{ request()->routeIs('ventas.create') ? 'active' : '' }}"
+                   aria-current="{{ request()->routeIs('ventas.create') ? 'page' : 'false' }}">
                     <span class="nav-item-icon" aria-hidden="true">📝</span>
                     <span class="nav-item-label">Registrar Venta</span>
                 </a>
+                @endif
 
-                <a href="#"
-                   class="nav-item {{ request()->routeIs('historial.*') ? 'active' : '' }}">
+                <a href="{{ route('ventas.index') }}"
+                   class="nav-item {{ request()->routeIs('ventas.index') || request()->routeIs('ventas.edit') ? 'active' : '' }}"
+                   aria-current="{{ request()->routeIs('ventas.index') ? 'page' : 'false' }}">
                     <span class="nav-item-icon" aria-hidden="true">📋</span>
                     <span class="nav-item-label">Historial de Ventas</span>
                 </a>
-                @endif
 
                 @if(Auth::user()->isAdmin() || Auth::user()->isAnalista())
                 <div class="nav-section-label" aria-hidden="true">Análisis</div>

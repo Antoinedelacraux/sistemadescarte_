@@ -29,6 +29,11 @@ class Fundo extends Model
         return $this->belongsToMany(User::class, 'fundo_user')->withTimestamps();
     }
 
+    public function lotes(): HasMany
+    {
+        return $this->hasMany(Lote::class);
+    }
+
     public function ventas(): HasMany
     {
         return $this->hasMany(VentaDescarte::class);

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\VentaDescarteController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -12,4 +13,14 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+
+    // Módulo de Venta de Descarte
+    Route::get('/ventas', [VentaDescarteController::class, 'index'])->name('ventas.index');
+    Route::get('/ventas/registrar', [VentaDescarteController::class, 'create'])->name('ventas.create');
+    Route::post('/ventas', [VentaDescarteController::class, 'store'])->name('ventas.store');
+    Route::get('/ventas/{venta}/editar', [VentaDescarteController::class, 'edit'])->name('ventas.edit');
+    Route::put('/ventas/{venta}', [VentaDescarteController::class, 'update'])->name('ventas.update');
+
+    // Endpoint dinámico para carga de catálogos
+    Route::get('/api/catalogo/lotes', [VentaDescarteController::class, 'getLotesPorFundo'])->name('api.lotes');
 });
