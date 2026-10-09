@@ -19,6 +19,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        if ($this->app->environment('local')) {
+            if (\Illuminate\Support\Facades\Schema::hasTable('fundos') && !\Illuminate\Support\Facades\Schema::hasColumn('fundos', 'nombre_completo')) {
+                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            }
+        }
     }
 }

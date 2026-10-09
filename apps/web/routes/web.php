@@ -14,6 +14,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
+    // Exportación directa a Excel
+    Route::get('/dashboard/exportar', [DashboardController::class, 'exportar'])->name('dashboard.exportar');
+    Route::get('/ventas/exportar', [VentaDescarteController::class, 'exportar'])->name('ventas.exportar');
+
     // Módulo de Venta de Descarte
     Route::get('/ventas', [VentaDescarteController::class, 'index'])->name('ventas.index');
     Route::get('/ventas/registrar', [VentaDescarteController::class, 'create'])->name('ventas.create');

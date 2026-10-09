@@ -7,16 +7,30 @@ use ZipArchive;
 class ExcelExporter
 {
     /**
-     * Genera un archivo XLSX válido en binario con encabezados estilizados y tipos de datos correctos.
+     * Genera un archivo XLSX válido en binario con encabezados estilizados,
+     * anchos calculados automáticamente, tipos de datos correctos y fila de totales opcional.
      *
      * @param array $headers Etiquetas de cabecera
      * @param array $rows Matriz de filas de datos
-     * @param string $sheetTitle Nombre de la hoja
+     * @param string $sheetTitle Nombre de la pestaña (máx 31 caracteres)
+     * @param array $options Opciones adicionales:
+     *                       - 'columnTypes': array de tipos por columna ('string', 'decimal', 'integer', 'date', 'center')
+     *                       - 'totalRow': array de valores para la fila de totales finales
      * @return string Contenido binario del archivo .xlsx
      */
-    public static function generate(array $headers, array $rows, string $sheetTitle = 'Ventas de Descarte'): string
-    {
+    public static function generate(
+        array $headers,
+        array $rows,
+        string $sheetTitle = 'Ventas de Descarte',
+        array $options = []
+    ): string {
         $sheetTitle = preg_replace('/[\\\\\\/*?\\[\\]:]/', '', substr($sheetTitle, 0, 31));
+        if (trim($sheetTitle) === '') {
+            $sheetTitle = 'Datos';
+        }
+
+        $columnTypes = $options['columnTypes'] ?? [];
+        $totalRow = $options['totalRow'] ?? null;
 
         // 1. [Content_Types].xml
         $contentTypesXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n" .
@@ -56,47 +70,82 @@ class ExcelExporter
             '<numFmt numFmtId="164" formatCode="#,##0.00"/>' .
             '<numFmt numFmtId="165" formatCode="#,##0"/>' .
             '</numFmts>' .
-            '<fonts count="3">' .
-            '<font><sz val="10"/><name val="Segoe UI"/><color rgb="FF1F2937"/></font>' . // 0: Normal
+            '<fonts count="4">' .
+            '<font><sz val="10"/><name val="Segoe UI"/><color rgb="FF1F2937"/></font>' . // 0: Normal texto
             '<font><b/><sz val="10"/><name val="Segoe UI"/><color rgb="FFFFFFFF"/></font>' . // 1: Header blanco bold
-            '<font><b/><sz val="10"/><name val="Segoe UI"/><color rgb="FF0F2B1F"/></font>' . // 2: Bold oscuro
+            '<font><b/><sz val="10"/><name val="Segoe UI"/><color rgb="FF0F2B1F"/></font>' . // 2: Bold verde oscuro
+            '<font><b/><sz val="11"/><name val="Segoe UI"/><color rgb="FF0F2B1F"/></font>' . // 3: Bold total
             '</fonts>' .
-            '<fills count="4">' .
+            '<fills count="5">' .
             '<fill><patternFill patternType="none"/></fill>' . // 0
             '<fill><patternFill patternType="gray125"/></fill>' . // 1
-            '<fill><patternFill patternType="solid"><fgColor rgb="FF166534"/></patternFill></fill>' . // 2: Verde fundo
+            '<fill><patternFill patternType="solid"><fgColor rgb="FF166534"/></patternFill></fill>' . // 2: Verde fundo header
             '<fill><patternFill patternType="solid"><fgColor rgb="FFF8FAFC"/></patternFill></fill>' . // 3: Zebra light
+            '<fill><patternFill patternType="solid"><fgColor rgb="FFEBF5EE"/></patternFill></fill>' . // 4: Verde muy suave para totales
             '</fills>' .
-            '<borders count="2">' .
+            '<borders count="3">' .
             '<border><left/><right/><top/><bottom/></border>' . // 0: Sin bordes
-            '<border>' .
+            '<border>' . // 1: Borde fino estándar
             '<left style="thin"><color rgb="FFE2E8F0"/></left>' .
             '<right style="thin"><color rgb="FFE2E8F0"/></right>' .
             '<top style="thin"><color rgb="FFE2E8F0"/></top>' .
             '<bottom style="thin"><color rgb="FFE2E8F0"/></bottom>' .
-            '</border>' . // 1: Borde fino
+            '</border>' .
+            '<border>' . // 2: Borde contable total (superior simple verde, inferior doble verde)
+            '<left style="thin"><color rgb="FFCBD5E1"/></left>' .
+            '<right style="thin"><color rgb="FFCBD5E1"/></right>' .
+            '<top style="thin"><color rgb="FF166534"/></top>' .
+            '<bottom style="double"><color rgb="FF166534"/></bottom>' .
+            '</border>' .
             '</borders>' .
             '<cellStyleXfs count="1">' .
             '<xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>' .
             '</cellStyleXfs>' .
-            '<cellXfs count="5">' .
-            '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0"/>' . // 0: Normal texto
-            '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>' . // 1: Header
-            '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right"/></xf>' . // 2: Decimal (123.45)
-            '<xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right"/></xf>' . // 3: Entero
-            '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>' . // 4: Centrado
+            '<cellXfs count="8">' .
+            '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0"/>' . // 0: Normal texto izquierda
+            '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>' . // 1: Header verde
+            '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>' . // 2: Decimal (123.45)
+            '<xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>' . // 3: Entero (123)
+            '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>' . // 4: Centrado (fechas, códigos)
+            '<xf numFmtId="0" fontId="2" fillId="4" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>' . // 5: Total texto
+            '<xf numFmtId="164" fontId="2" fillId="4" borderId="2" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>' . // 6: Total decimal
+            '<xf numFmtId="165" fontId="2" fillId="4" borderId="2" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>' . // 7: Total entero
             '</cellXfs>' .
             '</styleSheet>';
 
         // 6. xl/worksheets/sheet1.xml
         $colCount = count($headers);
+
+        // Auto-cálculo de anchos inteligentes para que el texto nunca aparezca recortado ni con ###
+        $colWidths = [];
+        for ($c = 0; $c < $colCount; $c++) {
+            $headerText = isset($headers[$c]) ? (string) $headers[$c] : '';
+            $maxLen = mb_strlen($headerText, 'UTF-8');
+            foreach ($rows as $row) {
+                $val = isset($row[$c]) ? (string) $row[$c] : '';
+                $len = mb_strlen($val, 'UTF-8');
+                if ($len > $maxLen) {
+                    $maxLen = $len;
+                }
+            }
+            if ($totalRow && isset($totalRow[$c])) {
+                $tLen = mb_strlen((string) $totalRow[$c], 'UTF-8');
+                if ($tLen > $maxLen) {
+                    $maxLen = $tLen;
+                }
+            }
+            // Margen generoso entre 13 y 48 caracteres
+            $colWidths[$c] = max(13, min(48, $maxLen + 4));
+        }
+
         $sheetXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n" .
             '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' .
             '<sheetViews><sheetView tabSelected="1" workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>' .
             '<cols>';
 
         for ($c = 1; $c <= $colCount; $c++) {
-            $sheetXml .= '<col min="' . $c . '" max="' . $c . '" width="20" customWidth="1"/>';
+            $w = $colWidths[$c - 1] ?? 20;
+            $sheetXml .= '<col min="' . $c . '" max="' . $c . '" width="' . $w . '" customWidth="1"/>';
         }
         $sheetXml .= '</cols><sheetData>';
 
@@ -114,17 +163,35 @@ class ExcelExporter
         // Filas de Datos
         $rIndex = 2;
         foreach ($rows as $row) {
-            $sheetXml .= '<row r="' . $rIndex . '" ht="20" customHeight="1">';
+            $sheetXml .= '<row r="' . $rIndex . '" ht="21" customHeight="1">';
             $cIndex = 0;
             foreach ($row as $val) {
                 $colLetter = self::colToLetter($cIndex);
                 $cellRef = $colLetter . $rIndex;
+                $colType = $columnTypes[$cIndex] ?? null;
 
                 if (is_null($val) || $val === '') {
                     $sheetXml .= '<c r="' . $cellRef . '" s="0"/>';
-                } elseif (is_float($val) || (is_numeric($val) && str_contains((string) $val, '.'))) {
+                } elseif ($colType === 'string') {
+                    // Texto explícito forzado (RUC, Brevete, Placa, Teléfono - sin separación de miles ni notación exponencial)
+                    $sheetXml .= '<c r="' . $cellRef . '" s="0" t="inlineStr"><is><t>' . htmlspecialchars((string) $val, ENT_XML1, 'UTF-8') . '</t></is></c>';
+                } elseif ($colType === 'date' || $colType === 'center') {
+                    // Texto centrado (fechas, códigos, estados)
+                    $sheetXml .= '<c r="' . $cellRef . '" s="4" t="inlineStr"><is><t>' . htmlspecialchars((string) $val, ENT_XML1, 'UTF-8') . '</t></is></c>';
+                } elseif ($colType === 'decimal') {
                     $sheetXml .= '<c r="' . $cellRef . '" s="2"><v>' . (float) $val . '</v></c>';
-                } elseif (is_int($val) || (is_numeric($val) && !preg_match('/^0[0-9]/', (string) $val))) {
+                } elseif ($colType === 'integer') {
+                    $sheetXml .= '<c r="' . $cellRef . '" s="3"><v>' . (int) $val . '</v></c>';
+                } elseif (is_float($val)) {
+                    $sheetXml .= '<c r="' . $cellRef . '" s="2"><v>' . $val . '</v></c>';
+                } elseif (is_int($val)) {
+                    $sheetXml .= '<c r="' . $cellRef . '" s="3"><v>' . $val . '</v></c>';
+                } elseif (is_string($val) && preg_match('/^\\d{2}\\/\\d{2}\\/\\d{4}/', $val)) {
+                    // Detección automática de fechas d/m/Y
+                    $sheetXml .= '<c r="' . $cellRef . '" s="4" t="inlineStr"><is><t>' . htmlspecialchars($val, ENT_XML1, 'UTF-8') . '</t></is></c>';
+                } elseif (is_numeric($val) && str_contains((string) $val, '.')) {
+                    $sheetXml .= '<c r="' . $cellRef . '" s="2"><v>' . (float) $val . '</v></c>';
+                } elseif (is_numeric($val) && !preg_match('/^0[0-9]/', (string) $val) && strlen((string) $val) <= 7) {
                     $sheetXml .= '<c r="' . $cellRef . '" s="3"><v>' . (int) $val . '</v></c>';
                 } else {
                     $sheetXml .= '<c r="' . $cellRef . '" s="0" t="inlineStr"><is><t>' . htmlspecialchars((string) $val, ENT_XML1, 'UTF-8') . '</t></is></c>';
@@ -133,6 +200,28 @@ class ExcelExporter
             }
             $sheetXml .= '</row>';
             $rIndex++;
+        }
+
+        // Fila de Totales Finales (si fue proporcionada)
+        if ($totalRow && is_array($totalRow)) {
+            $sheetXml .= '<row r="' . $rIndex . '" ht="24" customHeight="1">';
+            $cIndex = 0;
+            foreach ($totalRow as $val) {
+                $colLetter = self::colToLetter($cIndex);
+                $cellRef = $colLetter . $rIndex;
+
+                if (is_null($val) || $val === '') {
+                    $sheetXml .= '<c r="' . $cellRef . '" s="5"/>';
+                } elseif (is_float($val) || (is_numeric($val) && str_contains((string) $val, '.'))) {
+                    $sheetXml .= '<c r="' . $cellRef . '" s="6"><v>' . (float) $val . '</v></c>';
+                } elseif (is_int($val) || (is_numeric($val) && !preg_match('/^0[0-9]/', (string) $val) && strlen((string) $val) <= 7)) {
+                    $sheetXml .= '<c r="' . $cellRef . '" s="7"><v>' . (int) $val . '</v></c>';
+                } else {
+                    $sheetXml .= '<c r="' . $cellRef . '" s="5" t="inlineStr"><is><t>' . htmlspecialchars((string) $val, ENT_XML1, 'UTF-8') . '</t></is></c>';
+                }
+                $cIndex++;
+            }
+            $sheetXml .= '</row>';
         }
 
         $sheetXml .= '</sheetData></worksheet>';

@@ -182,14 +182,18 @@
         </div>
         <form action="{{ route('admin.fundos.store') }}" method="POST">
             @csrf
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
                 <div class="form-group" style="margin-bottom: 0;">
-                    <label for="name" class="form-label text-xs">Nombre del Fundo <span class="required">*</span></label>
-                    <input type="text" name="name" id="name" class="form-control" placeholder="Ej. AGRICOLA PROCOM (PROCOM)" required value="{{ old('name') }}">
+                    <label for="name" class="form-label text-xs">Nombre del Fundo (Registro y Tablas) <span class="required">*</span></label>
+                    <input type="text" name="name" id="name" class="form-control" placeholder="Ej. AGRITAC, PROCOM, EL NEGRO" required value="{{ old('name') }}">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="nombre_completo" class="form-label text-xs">Razón Social / Nombre Completo</label>
+                    <input type="text" name="nombre_completo" id="nombre_completo" class="form-control" placeholder="Ej. AGRICOLA TAMBO COLORADO" value="{{ old('nombre_completo') }}">
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
                     <label for="code" class="form-label text-xs">Código Identificador <span class="required">*</span></label>
-                    <input type="text" name="code" id="code" class="form-control" placeholder="Ej. PROCOM" required value="{{ old('code') }}">
+                    <input type="text" name="code" id="code" class="form-control" placeholder="Ej. AGRITAC, PROCOM, ELNEGRO" required value="{{ old('code') }}">
                 </div>
             </div>
 
@@ -232,6 +236,11 @@
                     <tr style="{{ !$fundo->is_active ? 'opacity: 0.65; background: #fafafa;' : '' }}">
                         <td>
                             <strong>{{ $fundo->name }}</strong>
+                            @if($fundo->nombre_completo && $fundo->nombre_completo !== $fundo->name)
+                                <div style="font-size: var(--text-xs); color: var(--txt-muted); margin-top: 0.15rem;">
+                                    {{ $fundo->nombre_completo }}
+                                </div>
+                            @endif
                             @if($fundo->lotes->isNotEmpty())
                                 <div style="margin-top: 0.35rem; display: flex; flex-wrap: wrap; gap: 0.25rem;">
                                     @foreach($fundo->lotes->take(8) as $l)
@@ -281,7 +290,7 @@
                                         class="btn-action-icon btn-action-edit" 
                                         title="Editar Fundo" 
                                         aria-label="Editar {{ $fundo->name }}"
-                                        onclick="abrirModalEditarFundo({{ $fundo->id }}, '{{ addslashes($fundo->name) }}', '{{ addslashes($fundo->code) }}')">
+                                        onclick="abrirModalEditarFundo({{ $fundo->id }}, '{{ addslashes($fundo->name) }}', '{{ addslashes($fundo->nombre_completo ?? '') }}', '{{ addslashes($fundo->code) }}')">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
 
@@ -332,8 +341,12 @@
                 @method('PUT')
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="edit_fundo_name" class="form-label text-xs">Nombre del Fundo <span class="required">*</span></label>
+                        <label for="edit_fundo_name" class="form-label text-xs">Nombre del Fundo (Registro y Tablas) <span class="required">*</span></label>
                         <input type="text" name="name" id="edit_fundo_name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_fundo_nombre_completo" class="form-label text-xs">Razón Social / Nombre Completo</label>
+                        <input type="text" name="nombre_completo" id="edit_fundo_nombre_completo" class="form-control" placeholder="Ej. AGRICOLA TAMBO COLORADO">
                     </div>
                     <div class="form-group">
                         <label for="edit_fundo_code" class="form-label text-xs">Código Identificador <span class="required">*</span></label>
@@ -402,11 +415,13 @@
     var modalEditar = document.getElementById('modal-editar-fundo');
     var formEditar = document.getElementById('form-editar-fundo');
     var inputName = document.getElementById('edit_fundo_name');
+    var inputNombreCompleto = document.getElementById('edit_fundo_nombre_completo');
     var inputCode = document.getElementById('edit_fundo_code');
 
-    window.abrirModalEditarFundo = function(id, name, code) {
+    window.abrirModalEditarFundo = function(id, name, nombreCompleto, code) {
         formEditar.action = '{{ url("/administracion/fundos") }}/' + id;
         inputName.value = name;
+        if (inputNombreCompleto) inputNombreCompleto.value = nombreCompleto || '';
         inputCode.value = code;
         modalEditar.classList.add('is-open');
     };

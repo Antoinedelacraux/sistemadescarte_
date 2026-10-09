@@ -1325,11 +1325,11 @@
                             🌐 Todos los Fundos
                         </div>
                     @elseif($fundosHeader->count() === 1)
-                        <div class="fundo-chip" title="{{ $fundosHeader->first()->name }}">
-                            🏡 {{ $fundosHeader->first()->name }}
+                        <div class="fundo-chip" title="{{ $fundosHeader->first()->nombre_completo }}">
+                            🏡 {{ $fundosHeader->first()->nombre_corto }}
                         </div>
                     @elseif($fundosHeader->count() > 1)
-                        <div class="fundo-chip" title="Múltiples fundos asignados">
+                        <div class="fundo-chip" title="Fundos asignados: {{ $fundosHeader->pluck('name')->join(', ') }}">
                             🏡 {{ $fundosHeader->count() }} fundos
                         </div>
                     @endif

@@ -44,19 +44,22 @@ class DatabaseSeeder extends Seeder
 
         // 2. Fundos Reales del Sistema
         $fundoAgritac = Fundo::create([
-            'name' => 'AGRICOLA TAMBO COLORADO (AGRITAC)',
+            'name' => 'AGRITAC',
+            'nombre_completo' => 'AGRICOLA TAMBO COLORADO',
             'code' => 'AGRITAC',
             'is_active' => true,
         ]);
 
         $fundoProcom = Fundo::create([
-            'name' => 'AGRICOLA PROCOM (PROCOM)',
+            'name' => 'PROCOM',
+            'nombre_completo' => 'AGRICOLA PROCOM',
             'code' => 'PROCOM',
             'is_active' => true,
         ]);
 
         $fundoElNegro = Fundo::create([
-            'name' => 'TALSA GRAPE FARMS (EL NEGRO)',
+            'name' => 'EL NEGRO',
+            'nombre_completo' => 'TALSA GRAPE FARMS',
             'code' => 'ELNEGRO',
             'is_active' => true,
         ]);

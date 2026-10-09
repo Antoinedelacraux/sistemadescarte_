@@ -48,10 +48,11 @@ class AdminController extends Controller implements HasMiddleware
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100', 'unique:fundos,name'],
+            'nombre_completo' => ['nullable', 'string', 'max:150'],
             'code' => ['required', 'string', 'max:20', 'unique:fundos,code'],
             'lotes' => ['nullable', 'string'],
         ], [
-            'name.required' => 'El nombre del fundo es obligatorio.',
+            'name.required' => 'El nombre del fundo es obligatorio (ej. AGRITAC, PROCOM).',
             'name.unique' => 'Ya existe un fundo con este nombre.',
             'code.required' => 'El código de fundo es obligatorio.',
             'code.unique' => 'Ya existe un fundo con este código.',
@@ -59,6 +60,7 @@ class AdminController extends Controller implements HasMiddleware
 
         $fundo = Fundo::create([
             'name' => $validated['name'],
+            'nombre_completo' => $validated['nombre_completo'] ?? null,
             'code' => $validated['code'],
             'is_active' => true,
         ]);
@@ -90,6 +92,7 @@ class AdminController extends Controller implements HasMiddleware
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100', Rule::unique('fundos', 'name')->ignore($fundo->id)],
+            'nombre_completo' => ['nullable', 'string', 'max:150'],
             'code' => ['required', 'string', 'max:20', Rule::unique('fundos', 'code')->ignore($fundo->id)],
             'nuevos_lotes' => ['nullable', 'string'],
         ], [
@@ -101,6 +104,7 @@ class AdminController extends Controller implements HasMiddleware
 
         $fundo->update([
             'name' => $validated['name'],
+            'nombre_completo' => $validated['nombre_completo'] ?? $fundo->nombre_completo,
             'code' => $validated['code'],
         ]);
 

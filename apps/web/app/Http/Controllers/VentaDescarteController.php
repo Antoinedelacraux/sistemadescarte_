@@ -6,14 +6,188 @@ use App\Models\Cuartel;
 use App\Models\Fundo;
 use App\Models\Lote;
 use App\Models\VentaDescarte;
+use App\Services\ExcelExporter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class VentaDescarteController extends Controller
 {
+    /**
+     * Exporta el historial de ventas a Excel (.xlsx) nativo aplicando todos los filtros activos.
+     */
+    public function exportar(Request $request): Response
+    {
+        $user = Auth::user();
+
+        $query = VentaDescarte::with(['fundo', 'lote', 'cuartel', 'creator', 'updater', 'anulador'])
+            ->latest('fecha_produccion');
+
+        // Filtro por Estado (activo, anulado, o todos)
+        if ($request->filled('estado')) {
+            if ($request->input('estado') === 'activo') {
+                $query->activos();
+            } elseif ($request->input('estado') === 'anulado') {
+                $query->anulados();
+            }
+        }
+
+        // Filtro por Fundo
+        if ($request->filled('fundo_id')) {
+            $query->where('fundo_id', $request->input('fundo_id'));
+        }
+
+        // Filtro por Motivo
+        if ($request->filled('motivo')) {
+            $query->where('motivo', $request->input('motivo'));
+        }
+
+        // Filtro por Tipo de Descarte
+        if ($request->filled('tipo_descarte')) {
+            $query->where('tipo_descarte', $request->input('tipo_descarte'));
+        }
+
+        // Filtro por Rango de Fechas
+        if ($request->filled('fecha_desde')) {
+            $query->whereDate('fecha_produccion', '>=', $request->input('fecha_desde'));
+        }
+        if ($request->filled('fecha_hasta')) {
+            $query->whereDate('fecha_produccion', '<=', $request->input('fecha_hasta'));
+        }
+
+        // Filtro por Búsqueda (cliente o ruc)
+        if ($request->filled('buscar')) {
+            $term = '%' . $request->input('buscar') . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('cliente', 'like', $term)
+                  ->orWhere('ruc', 'like', $term);
+            });
+        }
+
+        $ventas = $query->get();
+
+        $headers = [
+            'FUNDO',
+            'FECHA PRODUCCIÓN',
+            'CLIENTE / RAZÓN SOCIAL',
+            'RUC',
+            'LOTE',
+            'CUARTEL',
+            'ORIGEN / MOTIVO',
+            'TIPO DE DESCARTE',
+            'KILOGRAMOS (KG)',
+            'PRECIO / KG (S/)',
+            'TOTAL VENTA (S/)',
+            'CANTIDAD JABAS',
+            'PESO / JABA (KG)',
+            'PLACA VEHÍCULO',
+            'CONDUCTOR',
+            'BREVETE',
+            'N° VIAJE',
+            'ESTADO',
+            'OBSERVACIONES',
+            'REGISTRADO POR',
+            'FECHA Y HORA REGISTRO',
+        ];
+
+        $columnTypes = [
+            0 => 'string',   // FUNDO: AGRITAC, PROCOM, EL NEGRO (sin paréntesis)
+            1 => 'date',     // FECHA
+            2 => 'string',   // CLIENTE
+            3 => 'string',   // RUC (tratado como texto explícito sin separador ni exponencial)
+            4 => 'string',   // LOTE
+            5 => 'string',   // CUARTEL
+            6 => 'string',   // MOTIVO
+            7 => 'string',   // TIPO DESCARTE
+            8 => 'decimal',  // KILOS
+            9 => 'decimal',  // PRECIO
+            10 => 'decimal', // TOTAL
+            11 => 'integer', // JABAS
+            12 => 'decimal', // PESO JABA
+            13 => 'string',  // PLACA
+            14 => 'string',  // CONDUCTOR
+            15 => 'string',  // BREVETE
+            16 => 'string',  // VIAJE
+            17 => 'string',  // ESTADO
+            18 => 'string',  // OBSERVACIONES
+            19 => 'string',  // REGISTRADO POR
+            20 => 'date',    // FECHA REGISTRO
+        ];
+
+        $dataRows = [];
+        foreach ($ventas as $v) {
+            $fundoNombre = $v->fundo?->nombre_corto ?? $v->fundo?->name ?? 'N/A';
+            $dataRows[] = [
+                $fundoNombre,
+                $v->fecha_produccion ? $v->fecha_produccion->format('d/m/Y') : '',
+                $v->cliente ?: 'Venta General',
+                (string) ($v->ruc ?: ''),
+                $v->lote?->nombre ?? '',
+                $v->cuartel_manual ?? ($v->cuartel?->nombre ?? ''),
+                $v->motivo,
+                $v->tipo_descarte,
+                (float) $v->kilogramos,
+                (float) $v->precio,
+                (float) $v->valor_venta,
+                $v->jabas !== null ? (int) $v->jabas : '',
+                $v->peso_jaba !== null ? (float) $v->peso_jaba : '',
+                (string) ($v->placa ?? ''),
+                (string) ($v->conductor ?? ''),
+                (string) ($v->brevete ?? ''),
+                (string) ($v->viaje ?? ''),
+                $v->isAnulado() ? 'ANULADO' : 'ACTIVO',
+                (string) ($v->observacion ?? ''),
+                $v->creator?->name ?? 'Sistema',
+                $v->created_at ? $v->created_at->format('d/m/Y H:i') : '',
+            ];
+        }
+
+        $totalKilos = (float) $ventas->sum('kilogramos');
+        $totalVentas = (float) $ventas->sum('valor_venta');
+        $precioPromedio = $totalKilos > 0 ? (float) round($totalVentas / $totalKilos, 2) : 0.00;
+        $totalJabas = (int) $ventas->sum('jabas');
+
+        $totalRow = [
+            'TOTAL GENERAL (' . $ventas->count() . ' registros)',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            $totalKilos,
+            $precioPromedio,
+            $totalVentas,
+            $totalJabas > 0 ? $totalJabas : '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+        ];
+
+        $filename = 'ventas_historial_' . date('Y-m-d_His') . '.xlsx';
+        $xlsxBinary = ExcelExporter::generate($headers, $dataRows, 'Historial Ventas', [
+            'columnTypes' => $columnTypes,
+            'totalRow' => $totalRow,
+        ]);
+
+        return response($xlsxBinary, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control' => 'max-age=0, must-revalidate',
+            'Pragma' => 'public',
+            'Content-Length' => strlen($xlsxBinary),
+        ]);
+    }
     /**
      * Listado con filtros y paginación.
      */

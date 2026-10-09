@@ -1,39 +1,64 @@
 # Reglas permanentes del sistema web del fundo
 
-## Estado y propósito
-Proyecto en fase de PREPARACIÓN. El documento definitivo de requisitos AÚN NO se ha recibido. No crear funcionalidades, elegir stack de manera definitiva ni instalar dependencias hasta que el propietario apruebe una propuesta documentada.
+## Principio permanente del proyecto
+> "El código del sistema puede cambiar y evolucionar, pero la información real del cliente debe mantenerse íntegra, protegida y disponible. Ningún agente podrá comprometer deliberadamente esos datos ni asumir que dispone de autorización para ejecutar operaciones destructivas."
 
-## Orden de autoridad
-1. Instrucciones explícitas y actuales del propietario, sin contradecir medidas de seguridad.
-2. Requisitos aprobados en `docs/01-requisitos/REQUISITOS_APROBADOS.md` (actualmente pendiente).
-3. Decisiones de arquitectura aceptadas en `docs/02-arquitectura/DECISIONES.md`.
-4. Estas reglas y las reglas especializadas de `.agents/rules/`.
-5. Sugerencias de los agentes, siempre marcadas como propuestas.
+---
 
-## Método obligatorio
-- Responder y documentar en español claro; código, identificadores y nombres técnicos consistentes con el stack que posteriormente se apruebe.
-- Para cualquier trabajo: entender objetivo, identificar riesgos y archivos afectados, preparar plan breve, implementar cambio limitado, ejecutar verificaciones y documentar resultados.
-- Nunca afirmar que una prueba pasó si no fue ejecutada. Informar comando, resultado y limitaciones.
-- No inventar requisitos, permisos, actores, fórmulas, tasas, reglas de redondeo ni flujos de aprobación.
-- Diseñar por módulos con responsabilidades definidas; evitar acoplamiento, duplicación, sobreingeniería, dependencias innecesarias y cambios masivos.
-- Escribir código mantenible, legible, comprobable, con validación de errores, tipado/contratos apropiados y convenciones documentadas.
-- Toda característica debe tener criterios de aceptación y pruebas adecuadas. Usar datos ficticios para ejemplos y pruebas.
-- Mantener actualizados `docs/00-gestion/ESTADO_PROYECTO.md`, `BACKLOG.md`, `REGISTRO_CAMBIOS.md` y las decisiones correspondientes.
-- Separar desarrollo, pruebas y producción. No desplegar ni conectar servicios reales sin aprobación explícita.
+## 1. Orden de autoridad
+1. Instrucciones explícitas y actuales del propietario del proyecto, sin contravenir las políticas de seguridad.
+2. Este documento maestro (`AGENTS.md`) y las reglas permanentes en `.agents/rules/`.
+3. Decisiones de arquitectura aprobadas en `docs/02-arquitectura/DECISIONES.md`.
+4. Requisitos y especificaciones registradas en `docs/01-requisitos/`.
+5. Sugerencias de los agentes, siempre identificadas claramente como propuestas pendientes de revisión.
 
-## Seguridad y datos
-- Nunca introducir contraseñas, tokens, llaves ni información sensible en el repositorio, prompts, documentación o logs.
-- No subir archivos reales del fundo, información personal, de clientes, productores o comercial a servicios externos sin autorización expresa y controles adecuados.
-- No ejecutar borrados, reseteos, migraciones destructivas, acciones de producción ni comandos de alto impacto sin revisión humana explícita.
-- No activar accesos amplios al equipo; trabajar únicamente en la carpeta del proyecto.
-- Permisos por mínimo privilegio, auditoría cuando corresponda, copias de seguridad y restauración comprobables.
-- Los cálculos de producción y balances requieren fórmulas y reglas de redondeo aprobadas, con pruebas de conciliación; no asumirlas.
+---
 
-## Coordinación multiagente
-- Orquestador asigna tareas según especialidad y dependencias. Subagentes devuelven hallazgos y cambios acotados.
-- No permitir cambios concurrentes en el mismo archivo. Trabajar por ramas o worktrees separados cuando la plataforma lo permita; revisar conflictos e integración manualmente.
-- Si este Antigravity no tiene `invoke_subagent` ni soporte de agentes personalizados, coordinar roles secuencialmente mediante conversaciones/skills; NO simular ni afirmar invocaciones inexistentes.
-- Ningún agente aprueba su propio trabajo de manera definitiva. La integración depende de revisión y, cuando aplique, QA y seguridad.
+## 2. Forma de trabajo obligatoria para todos los agentes
 
-## Antes de empezar la implementación
-Leer `START-HERE.md`, `docs/00-gestion/ESTADO_PROYECTO.md` y el material aportado por el propietario. Si no existe el TXT de requisitos, limitarse a auditar la estructura, proponer preguntas y esperar la especificación sin desarrollar la aplicación.
+### Antes de realizar cambios importantes, cada agente debe comunicar:
+- **Qué va a modificar:** Archivos, clases, tablas o configuraciones involucradas.
+- **Por qué es necesario:** Justificación técnica o funcional asociada a la solicitud.
+- **Qué módulos afecta:** Mapeo de dependencias internas o externas.
+- **Si modifica la base de datos:** Si requiere migración, alteración de columnas o datos de prueba.
+- **Qué riesgos existen:** Impacto potencial sobre datos existentes, rendimiento o regresiones.
+- **Cómo comprobará el resultado:** Plan de pruebas automatizadas o manuales verificables.
+
+### Al finalizar la intervención, cada agente debe informar:
+- **Archivos modificados:** Lista explícita de rutas afectadas.
+- **Migraciones creadas:** Si se alteró el esquema y su compatibilidad retrospectiva.
+- **Pruebas ejecutadas:** Comandos específicos, aserciones y evidencias de ejecución.
+- **Resultados obtenidos:** Comprobación del correcto funcionamiento.
+- **Riesgos pendientes:** Puntos que requieren atención o pruebas en entornos superiores.
+- **Acciones que requieren autorización humana:** Despliegues, migraciones en producción o cambios irreversibles.
+
+---
+
+## 3. Responsabilidades por rol de agente
+
+- **ARQUITECTO (`arquitecto-software`):**
+  Evalúa el impacto sistémico, garantiza la modularidad y escalabilidad, documenta ADRs y previene la introducción de complejidad tecnológica innecesaria.
+- **BACKEND (`backend`):**
+  Implementa lógica de negocio, validaciones del lado servidor, persistencia eficiente y llamadas ORM seguras mediante contratos explícitos.
+- **DATABASE SPECIALIST (`database-specialist`):**
+  Diseña y audita esquemas de base de datos, asegura integridad referencial, índices, optimización de consultas, migraciones seguras y planes de contingencia.
+- **QA (`qa`):**
+  Diseña y ejecuta pruebas unitarias, de integración, de regresión y de persistencia, garantizando que las modificaciones no rompan funciones previas ni comprometan datos históricos.
+- **DEVOPS (`seguridad-devops` / `devops`):**
+  Administra la configuración de entornos (Desarrollo, Staging, Producción), políticas de respaldo con restauración verificada, pipelines de despliegue seguro en 10 pasos y monitoreo.
+- **GIT SPECIALIST (`git-specialist`):**
+  Inspecciona diffs, previene fugas de archivos `.env`, dumps o secretos, y organiza commits locales atómicos, descriptivos y trazables.
+
+---
+
+## 4. Separación estricta de entornos
+- **DESARROLLO:** Base de datos local aislada. Datos ficticios permitidos. Reinicializaciones permitidas solo en bases de prueba locales.
+- **STAGING / PRUEBAS:** Condiciones similares a producción. Datos sintéticos o anonimizados. Ensayos de migraciones y pruebas de rendimiento. Prohibido compartir credenciales con producción.
+- **PRODUCCIÓN:** Datos reales del negocio exclusivamente. **Terminantemente prohibido:** ejecutar semillas ficticias, reiniciar bases de datos (`migrate:fresh`), eliminar registros históricos sin autorización o aplicar cambios sin respaldo verificado.
+
+---
+
+## 5. Coordinación y ejecución
+- Nunca asumir que un cambio funciona solo porque compila o arranca. Toda afirmación requiere evidencia de pruebas ejecutadas.
+- Toda operación destructiva o irreversible está bloqueada por defecto hasta contar con confirmación humana explícita.
+- Mantener permanentemente actualizados `docs/00-gestion/ESTADO_PROYECTO.md` y `docs/00-gestion/REGISTRO_CAMBIOS.md`.

@@ -354,26 +354,38 @@
     }
 
     .table-clean td {
-        padding: 0.625rem 0.875rem;
+        padding: 0.75rem 0.875rem;
         font-size: var(--text-sm);
         border-bottom: 1px solid var(--clr-surface-100);
         vertical-align: middle;
     }
 
-    /* Pastillas de motivos */
+    /* Pastillas de motivos / origen con respiro adecuado */
     .motivo-pill {
         display: inline-flex;
         align-items: center;
         gap: 0.35rem;
-        padding: 0.2rem 0.5625rem;
+        padding: 0.28rem 0.65rem;
         border-radius: var(--radius-full);
-        font-size: 0.6875rem;
+        font-size: 0.72rem;
         font-weight: 700;
+        line-height: 1.25;
         letter-spacing: 0.02em;
+        white-space: nowrap;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
     }
     .motivo-pill-amber { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
     .motivo-pill-green { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
     .motivo-pill-blue  { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+
+    /* Contenedor apilador con espacio generoso para columna Origen */
+    .origen-pills-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        align-items: flex-start;
+        padding: 0.25rem 0;
+    }
 
     /* Barra visual de porcentaje */
     .progress-bar-wrap {
@@ -554,8 +566,8 @@
         font-size: var(--text-xs);
     }
     .client-subrow td {
-        padding-top: 0.375rem;
-        padding-bottom: 0.375rem;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
         border-bottom: 1px dashed var(--brd-base);
     }
 
@@ -584,7 +596,7 @@
                 </div>
             @elseif($fundos->count())
                 <div class="welcome-meta-item" style="color: #bbf7d0;">
-                    <span>{{ $fundos->pluck('name')->join(', ') }}</span>
+                    <span>{{ $fundos->map(fn($f) => $f->nombre_completo ?: $f->name)->join(', ') }}</span>
                 </div>
             @endif
         </div>
@@ -599,6 +611,10 @@
         @endif
         <a href="{{ route('ventas.index') }}" class="btn-hero-secondary">
             <span>Ver Historial</span>
+        </a>
+        <a href="{{ route('dashboard.exportar', ['tabla' => 'completo']) }}" class="btn-hero-secondary" title="Descargar reporte consolidado del panel en Excel (.xlsx)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Exportar Excel</span>
         </a>
     </div>
 </div>
@@ -671,6 +687,12 @@
                     <div class="section-subtitle">
                         Totales acumulados en Venta Nacional (Racimos y Granos), Venta Campo y Venta Packing
                     </div>
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <a href="{{ route('dashboard.exportar', ['tabla' => 'motivos']) }}" class="btn btn-secondary btn-sm" title="Descargar este resumen por tipo y descarte a Excel (.xlsx)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Exportar Excel
+                    </a>
                 </div>
             </div>
         </div>
@@ -789,6 +811,10 @@
                     <button type="button" class="btn btn-secondary btn-sm" onclick="expandAllClients(false)" title="Ocultar detalles">
                         Cerrar
                     </button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="exportarClientesExcel()" title="Descargar resumen de clientes filtrado a Excel (.xlsx)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Exportar Excel
+                    </button>
                 </div>
             </div>
         </div>
@@ -828,7 +854,7 @@
                 <thead>
                     <tr>
                         <th scope="col" style="min-width: 220px;">Cliente</th>
-                        <th scope="col" style="width: 160px;">Origen</th>
+                        <th scope="col" style="min-width: 175px; width: 180px;">Origen</th>
                         <th scope="col" style="width: 170px;">Tipo de Descarte</th>
                         <th scope="col" class="text-right" style="width: 130px;">Kilos (kg)</th>
                         <th scope="col" class="text-right" style="width: 130px;">Precio Prom.</th>
@@ -852,13 +878,15 @@
                                     </span>
                                 @endif
                             </td>
-                            <td>
-                                @foreach($cData['motivos'] as $mName)
-                                    @php $bClass = $mName === 'Cosecha Nacional' ? 'amber' : ($mName === 'Packing' ? 'blue' : 'green'); @endphp
-                                    <span class="motivo-pill motivo-pill-{{ $bClass }}" style="font-size: 0.625rem; padding: 0.125rem 0.375rem;">
-                                        {{ $mName }}
-                                    </span>
-                                @endforeach
+                            <td style="vertical-align: middle;">
+                                <div class="origen-pills-stack">
+                                    @foreach($cData['motivos'] as $mName)
+                                        @php $bClass = $mName === 'Cosecha Nacional' ? 'amber' : ($mName === 'Packing' ? 'blue' : 'green'); @endphp
+                                        <span class="motivo-pill motivo-pill-{{ $bClass }}">
+                                            {{ $mName }}
+                                        </span>
+                                    @endforeach
+                                </div>
                             </td>
                             <td style="color: var(--txt-muted); font-size: var(--text-xs);">
                                 {{ count($cData['desglose']) }} variante(s)
@@ -972,6 +1000,10 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <a href="{{ route('dashboard.exportar', ['tabla' => 'recientes']) }}" class="btn btn-secondary btn-sm" title="Descargar envíos recientes a Excel (.xlsx)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Exportar Excel
+                    </a>
                     <a href="{{ route('ventas.index') }}" class="btn btn-secondary btn-sm">
                         Ver Historial Completo &rarr;
                     </a>
@@ -995,7 +1027,7 @@
                             <th scope="col">Fundo</th>
                             <th scope="col">Fecha</th>
                             <th scope="col">Cliente</th>
-                            <th scope="col">Origen</th>
+                            <th scope="col" style="min-width: 140px;">Origen</th>
                             <th scope="col">Tipo de Descarte</th>
                             <th scope="col" class="text-right">Precio/Kg</th>
                             <th scope="col" class="text-right">Kilos</th>
@@ -1007,7 +1039,7 @@
                         @foreach($ventas->take(8) as $v)
                         <tr>
                             <td>
-                                <strong style="color: var(--txt-primary);">{{ $v->fundo->name ?? '—' }}</strong>
+                                <strong style="color: var(--txt-primary);">{{ $v->fundo?->nombre_corto ?? $v->fundo?->name ?? '—' }}</strong>
                             </td>
                             <td style="white-space: nowrap; color: var(--txt-secondary); font-size: var(--text-xs);">
                                 {{ $v->fecha_produccion->format('d/m/Y') }}
@@ -1175,6 +1207,19 @@ function filtrarTablaClientes() {
             }
         });
     }
+}
+
+function exportarClientesExcel() {
+    var q = (document.getElementById('client-search-input')?.value || '').trim();
+    var motivo = typeof filtroMotivoActual !== 'undefined' ? filtroMotivoActual : 'todos';
+    var url = "{{ route('dashboard.exportar') }}?tabla=clientes";
+    if (motivo && motivo !== 'todos') {
+        url += '&motivo=' + encodeURIComponent(motivo);
+    }
+    if (q !== '') {
+        url += '&buscar=' + encodeURIComponent(q);
+    }
+    window.location.href = url;
 }
 
 function cambiarVistaTabla(vista, btn) {

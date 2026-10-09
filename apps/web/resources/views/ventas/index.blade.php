@@ -549,7 +549,8 @@
         </div>
 
         <div class="index-actions-group">
-            <a href="{{ route('reportes.index') }}" class="btn btn-secondary" title="Exportar datos a Excel">
+            <a href="{{ route('ventas.exportar', request()->query()) }}" class="btn btn-secondary" id="btn-exportar-ventas" title="Descargar directamente registros filtrados a Excel (.xlsx)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Exportar Excel
             </a>
             @if(Auth::user()->isAdmin() || Auth::user()->isGeneral() || Auth::user()->isIndividual())

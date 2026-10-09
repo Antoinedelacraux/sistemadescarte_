@@ -44,7 +44,8 @@ class FundoLoteCuartelTest extends TestCase
         ]);
 
         $this->fundoProcom = Fundo::create([
-            'name' => 'AGRICOLA PROCOM (PROCOM)',
+            'name' => 'PROCOM',
+            'nombre_completo' => 'AGRICOLA PROCOM',
             'code' => 'PROCOM',
             'is_active' => true,
         ]);
@@ -67,7 +68,8 @@ class FundoLoteCuartelTest extends TestCase
     public function test_admin_can_create_fundo_with_initial_lotes(): void
     {
         $response = $this->actingAs($this->admin)->post(route('admin.fundos.store'), [
-            'name' => 'AGRICOLA TAMBO COLORADO (AGRITAC)',
+            'name' => 'AGRITAC',
+            'nombre_completo' => 'AGRICOLA TAMBO COLORADO',
             'code' => 'AGRITAC',
             'lotes' => 'A01, A02, A03, M01',
         ]);

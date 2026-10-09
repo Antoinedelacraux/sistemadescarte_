@@ -147,8 +147,8 @@ class ReporteController extends Controller
             $row = [];
             foreach ($columnasSeleccionadas as $colKey) {
                 $row[] = match ($colKey) {
-                    'fundo' => $v->fundo?->name ?? 'N/A',
-                    'fecha_produccion' => $v->fecha_produccion->format('d/m/Y'),
+                    'fundo' => $v->fundo?->nombre_corto ?? $v->fundo?->name ?? 'N/A',
+                    'fecha_produccion' => $v->fecha_produccion ? $v->fecha_produccion->format('d/m/Y') : '',
                     'lote' => $v->lote?->nombre ?? '',
                     'cuartel' => $v->cuartel_manual ?? ($v->cuartel?->nombre ?? ''),
                     'motivo' => $v->motivo,
@@ -158,20 +158,49 @@ class ReporteController extends Controller
                     'valor_venta' => (float) $v->valor_venta,
                     'jabas' => $v->jabas !== null ? (int) $v->jabas : '',
                     'peso_jaba' => $v->peso_jaba !== null ? (float) $v->peso_jaba : '',
-                    'placa' => $v->placa ?? '',
-                    'conductor' => $v->conductor ?? '',
-                    'brevete' => $v->brevete ?? '',
-                    'ruc' => $v->ruc ?? '',
+                    'placa' => (string) ($v->placa ?? ''),
+                    'conductor' => (string) ($v->conductor ?? ''),
+                    'brevete' => (string) ($v->brevete ?? ''),
+                    'ruc' => (string) ($v->ruc ?? ''),
                     'cliente' => $v->cliente ?? '',
-                    'viaje' => $v->viaje ?? '',
-                    'observacion' => $v->observacion ?? '',
+                    'viaje' => (string) ($v->viaje ?? ''),
+                    'observacion' => (string) ($v->observacion ?? ''),
                     default => '',
                 };
             }
             $dataRows[] = $row;
         }
 
-        $xlsxBinary = ExcelExporter::generate($headers, $dataRows, 'Ventas Descarte');
+        $columnTypes = [];
+        foreach ($columnasSeleccionadas as $idx => $colKey) {
+            $columnTypes[$idx] = match ($colKey) {
+                'kilogramos', 'precio', 'valor_venta', 'peso_jaba' => 'decimal',
+                'jabas' => 'integer',
+                'fecha_produccion' => 'date',
+                default => 'string',
+            };
+        }
+
+        $totalRow = [];
+        $isFirst = true;
+        foreach ($columnasSeleccionadas as $colKey) {
+            if ($isFirst) {
+                $totalRow[] = 'TOTAL GENERAL (' . $ventas->count() . ' reg.)';
+                $isFirst = false;
+            } else {
+                $totalRow[] = match ($colKey) {
+                    'kilogramos' => (float) $ventas->sum('kilogramos'),
+                    'valor_venta' => (float) $ventas->sum('valor_venta'),
+                    'jabas' => (int) $ventas->sum('jabas'),
+                    default => '',
+                };
+            }
+        }
+
+        $xlsxBinary = ExcelExporter::generate($headers, $dataRows, 'Ventas Descarte', [
+            'columnTypes' => $columnTypes,
+            'totalRow' => $totalRow,
+        ]);
 
         return response($xlsxBinary, 200, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
