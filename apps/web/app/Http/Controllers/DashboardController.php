@@ -17,6 +17,7 @@ class DashboardController extends Controller
 
         // FundoScope aplica automáticamente el aislamiento de fundos para roles 'general' e 'individual'
         $ventas = VentaDescarte::with(['fundo', 'creator'])
+            ->activos()
             ->latest('fecha_produccion')
             ->get();
 

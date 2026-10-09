@@ -21,8 +21,17 @@ class VentaDescarteController extends Controller
     {
         $user = Auth::user();
 
-        $query = VentaDescarte::with(['fundo', 'lote', 'cuartel', 'creator', 'updater'])
+        $query = VentaDescarte::with(['fundo', 'lote', 'cuartel', 'creator', 'updater', 'anulador'])
             ->latest('fecha_produccion');
+
+        // Filtro por Estado (activo, anulado, o todos)
+        if ($request->filled('estado')) {
+            if ($request->input('estado') === 'activo') {
+                $query->activos();
+            } elseif ($request->input('estado') === 'anulado') {
+                $query->anulados();
+            }
+        }
 
         // Filtro por Fundo (si tiene permisos)
         if ($request->filled('fundo_id')) {
@@ -62,7 +71,7 @@ class VentaDescarteController extends Controller
      */
     public function show(VentaDescarte $venta): View
     {
-        $venta->load(['fundo', 'lote', 'cuartel', 'creator', 'updater']);
+        $venta->load(['fundo', 'lote', 'cuartel', 'creator', 'updater', 'anulador']);
         return view('ventas.show', compact('venta'));
     }
 
@@ -271,5 +280,72 @@ class VentaDescarteController extends Controller
             ->get();
 
         return response()->json($lotes);
+    }
+
+    /**
+     * Anular un registro de venta (paso 1 para posterior eliminación o archivo).
+     */
+    public function anular(Request $request, VentaDescarte $venta): RedirectResponse
+    {
+        $user = Auth::user();
+        if (!$user->isAdmin() && !$user->isGeneral() && !$user->isIndividual()) {
+            abort(403, 'No tienes permisos para anular registros de venta.');
+        }
+
+        $motivo = $request->input('motivo_anulacion', 'Anulación manual');
+
+        $venta->update([
+            'estado' => 'anulado',
+            'anulado_at' => now(),
+            'anulado_by' => $user->id,
+            'motivo_anulacion' => $motivo,
+            'updated_by' => $user->id,
+        ]);
+
+        return redirect()->route('ventas.index')
+            ->with('success', 'Registro anulado correctamente. Ahora puede ser eliminado definitivamente si lo requiere.');
+    }
+
+    /**
+     * Reactivar un registro previamente anulado.
+     */
+    public function reactivar(VentaDescarte $venta): RedirectResponse
+    {
+        $user = Auth::user();
+        if (!$user->isAdmin() && !$user->isGeneral() && !$user->isIndividual()) {
+            abort(403, 'No tienes permisos para reactivar registros.');
+        }
+
+        $venta->update([
+            'estado' => 'activo',
+            'anulado_at' => null,
+            'anulado_by' => null,
+            'motivo_anulacion' => null,
+            'updated_by' => $user->id,
+        ]);
+
+        return redirect()->route('ventas.index')
+            ->with('success', 'Registro de venta reactivado con éxito.');
+    }
+
+    /**
+     * Eliminar definitivamente de la base de datos (solo permitido si el registro ya está anulado).
+     */
+    public function destroy(VentaDescarte $venta): RedirectResponse
+    {
+        $user = Auth::user();
+        if (!$user->isAdmin() && !$user->isGeneral() && !$user->isIndividual()) {
+            abort(403, 'No tienes permisos para eliminar registros.');
+        }
+
+        if (!$venta->isAnulado()) {
+            return redirect()->route('ventas.index')
+                ->with('error', 'El registro debe ser anulado antes de poder ser eliminado de la base de datos.');
+        }
+
+        $venta->delete();
+
+        return redirect()->route('ventas.index')
+            ->with('success', 'Registro eliminado definitivamente de la base de datos.');
     }
 }

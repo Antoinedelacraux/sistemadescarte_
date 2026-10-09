@@ -42,8 +42,8 @@ class ReporteController extends Controller
     {
         $user = Auth::user();
 
-        // Obtener datos respetando FundoScope
-        $query = VentaDescarte::with(['fundo', 'lote', 'cuartel'])->latest('fecha_produccion');
+        // Obtener datos respetando FundoScope (ventas activas)
+        $query = VentaDescarte::with(['fundo', 'lote', 'cuartel'])->activos()->latest('fecha_produccion');
 
         if ($request->filled('fundo_id')) {
             $query->where('fundo_id', $request->input('fundo_id'));
@@ -114,7 +114,7 @@ class ReporteController extends Controller
         // Filtrar solo columnas válidas
         $columnasSeleccionadas = array_values(array_intersect($columnasSeleccionadas, array_keys(self::COLUMNAS_DISPONIBLES)));
 
-        $query = VentaDescarte::with(['fundo', 'lote', 'cuartel'])->latest('fecha_produccion');
+        $query = VentaDescarte::with(['fundo', 'lote', 'cuartel'])->activos()->latest('fecha_produccion');
 
         if ($request->filled('fundo_id')) {
             $query->where('fundo_id', $request->input('fundo_id'));

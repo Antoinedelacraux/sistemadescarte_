@@ -536,7 +536,7 @@
             <div class="section-header-box">
                 <div>
                     <h2 class="section-title" id="sec-title-motivos">
-                        <span aria-hidden="true">📊</span> Resumen por Tipo de Venta y Descarte
+                        Resumen por Tipo de Venta y Descarte
                     </h2>
                     <div class="section-subtitle">
                         Totales acumulados en Venta Nacional (Racimos y Granos), Venta Campo y Venta Packing
@@ -647,7 +647,7 @@
             <div class="section-header-box">
                 <div>
                     <h2 class="section-title" id="sec-title-clientes">
-                        <span aria-hidden="true">👥</span> Resumen de Ventas por Cliente
+                        Resumen de Ventas por Cliente
                     </h2>
                     <div class="section-subtitle">
                         Detalle de compras por cliente con desglose de Cosecha Nacional, Campo y Packing
@@ -837,7 +837,7 @@
             <div class="section-header-box">
                 <div>
                     <h2 class="section-title" id="sec-title-recientes">
-                        <span aria-hidden="true">📋</span> Últimos Envíos Registrados
+                        Últimos Envíos Registrados
                     </h2>
                     <div class="section-subtitle">
                         Movimientos recientes en el fundo

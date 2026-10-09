@@ -222,7 +222,7 @@
 
         {{-- 1. UBICACIÓN Y FECHA --}}
         <div class="form-section-title">
-            <span>📍</span> Ubicación y Fecha de Producción
+            Ubicación y Fecha de Producción
         </div>
 
         <div class="form-grid-2">
@@ -302,7 +302,7 @@
 
         {{-- 2. CLASIFICACIÓN DE DESCARTE --}}
         <div class="form-section-title" style="margin-top: 1.5rem;">
-            <span>🏷️</span> Clasificación del Descarte
+            Clasificación del Descarte
         </div>
 
         <div class="form-grid-2">
@@ -333,7 +333,7 @@
 
         {{-- 3. CÁLCULO DE VENTA --}}
         <div class="form-section-title" style="margin-top: 1.5rem;">
-            <span>⚖️</span> Pesaje y Precios
+            Pesaje y Precios
         </div>
 
         <div class="form-grid-2">
@@ -390,7 +390,7 @@
         {{-- 4. DATOS ADICIONALES (OPCIONALES) --}}
         <details class="optional-details">
             <summary>
-                <span>🚚</span> Datos adicionales de transporte y jabas (opcionales)
+                Datos adicionales de transporte y jabas (opcionales)
             </summary>
 
             <div class="form-grid-2" style="margin-top: 0.75rem;">
@@ -443,7 +443,7 @@
         {{-- BOTÓN SUBMIT --}}
         <div style="margin-top: 1.75rem;">
             <button type="submit" class="btn-submit-sale" id="btn-submit">
-                <span>💾</span> Guardar Venta de Descarte
+                Guardar Venta de Descarte
             </button>
         </div>
     </form>

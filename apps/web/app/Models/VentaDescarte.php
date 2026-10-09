@@ -40,6 +40,10 @@ class VentaDescarte extends Model
         'observacion',
         'created_by',
         'updated_by',
+        'estado',
+        'anulado_at',
+        'anulado_by',
+        'motivo_anulacion',
     ];
 
     protected function casts(): array
@@ -51,6 +55,7 @@ class VentaDescarte extends Model
             'valor_venta' => 'decimal:2',
             'jabas' => 'integer',
             'peso_jaba' => 'decimal:2',
+            'anulado_at' => 'datetime',
         ];
     }
 
@@ -61,6 +66,9 @@ class VentaDescarte extends Model
         static::creating(function ($model) {
             if (empty($model->id)) {
                 $model->id = (string) Str::uuid();
+            }
+            if (empty($model->estado)) {
+                $model->estado = 'activo';
             }
         });
     }
@@ -88,5 +96,32 @@ class VentaDescarte extends Model
     public function updater(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function anulador(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'anulado_by');
+    }
+
+    public function isActivo(): bool
+    {
+        return ($this->estado ?? 'activo') === 'activo';
+    }
+
+    public function isAnulado(): bool
+    {
+        return ($this->estado ?? 'activo') === 'anulado';
+    }
+
+    public function scopeActivos($query)
+    {
+        return $query->where(function($q) {
+            $q->where('estado', 'activo')->orWhereNull('estado');
+        });
+    }
+
+    public function scopeAnulados($query)
+    {
+        return $query->where('estado', 'anulado');
     }
 }

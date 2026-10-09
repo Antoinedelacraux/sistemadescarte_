@@ -212,53 +212,113 @@
         }
     }
 
-    /* Acciones en fila de tabla */
+    /* Acciones en fila de tabla - Iconos Minimalistas */
     .row-actions-btn-group {
         display: inline-flex;
         align-items: center;
-        gap: 0.375rem;
+        gap: 0.35rem;
     }
 
-    .btn-row-action {
+    .btn-action-icon {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 0.25rem;
-        padding: 0.3125rem 0.625rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        border-radius: var(--radius-sm);
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-md);
+        border: 1px solid transparent;
         cursor: pointer;
         text-decoration: none;
         transition: all var(--transition-fast);
-        border: 1px solid transparent;
-        line-height: 1.2;
-        white-space: nowrap;
-        font-family: inherit;
-    }
-
-    .btn-row-view {
-        background: #ecfdf5;
-        color: #065f46;
-        border-color: #a7f3d0;
-    }
-
-    .btn-row-view:hover {
-        background: #d1fae5;
-        color: #047857;
-        border-color: #6ee7b7;
-        box-shadow: 0 1px 3px rgba(6, 95, 70, 0.15);
-    }
-
-    .btn-row-edit {
-        background: var(--clr-surface-0);
+        padding: 0;
+        background: transparent;
         color: var(--txt-secondary);
-        border-color: var(--brd-strong);
+        flex-shrink: 0;
     }
 
-    .btn-row-edit:hover {
-        background: var(--clr-surface-100);
-        color: var(--txt-primary);
+    .btn-action-icon:hover {
+        transform: translateY(-1px);
+    }
+
+    .btn-action-icon svg {
+        width: 15px;
+        height: 15px;
+        stroke-width: 2.2;
+    }
+
+    .btn-action-view {
+        background: #f0fdf4;
+        color: #166534;
+        border-color: #bbf7d0;
+    }
+    .btn-action-view:hover {
+        background: #dcfce7;
+        color: #14532d;
+        border-color: #86efac;
+        box-shadow: 0 1px 3px rgba(22, 101, 52, 0.15);
+    }
+
+    .btn-action-edit {
+        background: #f8fafc;
+        color: #334155;
+        border-color: #cbd5e1;
+    }
+    .btn-action-edit:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+        border-color: #94a3b8;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+    }
+
+    .btn-action-anular {
+        background: #fff7ed;
+        color: #c2410c;
+        border-color: #fed7aa;
+    }
+    .btn-action-anular:hover {
+        background: #ffedd5;
+        color: #9a3412;
+        border-color: #fdba74;
+        box-shadow: 0 1px 3px rgba(194, 65, 12, 0.15);
+    }
+
+    .btn-action-reactivar {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border-color: #bfdbfe;
+    }
+    .btn-action-reactivar:hover {
+        background: #dbeafe;
+        color: #1e40af;
+        border-color: #93c5fd;
+        box-shadow: 0 1px 3px rgba(29, 78, 216, 0.15);
+    }
+
+    .btn-action-delete {
+        background: #fef2f2;
+        color: #dc2626;
+        border-color: #fecaca;
+    }
+    .btn-action-delete:hover {
+        background: #fee2e2;
+        color: #b91c1c;
+        border-color: #f87171;
+        box-shadow: 0 1px 3px rgba(220, 38, 38, 0.15);
+    }
+
+    .badge-anulado {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    .row-anulado {
+        opacity: 0.68;
+        background: #fcfcfc;
+    }
+    .row-anulado td.monto-total {
+        text-decoration: line-through;
+        color: var(--txt-muted);
     }
 
     /* Modal de Inspección Rápida de Venta */
@@ -490,11 +550,11 @@
 
         <div class="index-actions-group">
             <a href="{{ route('reportes.index') }}" class="btn btn-secondary" title="Exportar datos a Excel">
-                <span>📥</span> Exportar Excel
+                Exportar Excel
             </a>
             @if(Auth::user()->isAdmin() || Auth::user()->isGeneral() || Auth::user()->isIndividual())
             <a href="{{ route('ventas.create') }}" class="btn btn-primary" id="btn-nueva-venta">
-                <span>➕</span> Registrar Venta
+                Registrar Venta
             </a>
             @endif
         </div>
@@ -529,6 +589,16 @@
                 </select>
             </div>
 
+            {{-- Filtro por Estado --}}
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="estado" class="form-label text-xs">Estado</label>
+                <select name="estado" id="estado" class="form-control" style="height: 38px;">
+                    <option value="" {{ request('estado') === null || request('estado') === '' ? 'selected' : '' }}>Todos</option>
+                    <option value="activo" {{ request('estado') == 'activo' ? 'selected' : '' }}>Activos</option>
+                    <option value="anulado" {{ request('estado') == 'anulado' ? 'selected' : '' }}>Anulados</option>
+                </select>
+            </div>
+
             {{-- Filtro por Fecha Desde --}}
             <div class="form-group" style="margin-bottom: 0;">
                 <label for="fecha_desde" class="form-label text-xs">Desde</label>
@@ -544,9 +614,9 @@
             {{-- Botones de filtro --}}
             <div style="display: flex; gap: 0.5rem;">
                 <button type="submit" class="btn btn-secondary" style="height: 38px; flex: 1;">
-                    🔍 Filtrar
+                    Filtrar
                 </button>
-                @if(request()->hasAny(['fundo_id', 'motivo', 'fecha_desde', 'fecha_hasta']))
+                @if(request()->hasAny(['fundo_id', 'motivo', 'estado', 'fecha_desde', 'fecha_hasta']))
                     <a href="{{ route('ventas.index') }}" class="btn btn-ghost" style="height: 38px;" title="Limpiar filtros">
                         ✕
                     </a>
@@ -582,9 +652,12 @@
                 </thead>
                 <tbody>
                     @forelse($ventas as $venta)
-                        <tr>
+                        <tr class="{{ $venta->isAnulado() ? 'row-anulado' : '' }}">
                             <td>
                                 <strong>{{ $venta->fundo?->name ?? 'N/A' }}</strong>
+                                @if($venta->isAnulado())
+                                    <div style="margin-top: 0.15rem;"><span class="badge-motivo badge-anulado">Anulado</span></div>
+                                @endif
                             </td>
                             <td>
                                 {{ $venta->fecha_produccion->format('d/m/Y') }}
@@ -621,11 +694,13 @@
                             </td>
                             <td style="text-align: center;">
                                 <div class="row-actions-btn-group">
+                                    {{-- Ver (Modal de visualización) --}}
                                     <button type="button" 
-                                            class="btn-row-action btn-row-view" 
-                                            title="Visualizar contenido del registro" 
+                                            class="btn-action-icon btn-action-view" 
+                                            title="Visualizar registro" 
                                             aria-label="Ver detalle del registro del {{ $venta->fecha_produccion->format('d/m/Y') }}"
                                             data-id="{{ $venta->id }}"
+                                            data-estado="{{ $venta->estado ?? 'activo' }}"
                                             data-fundo="{{ $venta->fundo?->name ?? 'Fundo' }}"
                                             data-fecha="{{ $venta->fecha_produccion->format('d/m/Y') }}"
                                             data-cliente="{{ $venta->cliente ?: ($venta->ruc ? 'RUC: '.$venta->ruc : 'Sin cliente especificado') }}"
@@ -653,12 +728,41 @@
                                             data-url-edit="{{ route('ventas.edit', $venta) }}"
                                             @endif
                                             onclick="abrirModalDetalle(this)">
-                                        <span>👁️</span> <span>Ver</span>
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                     </button>
+
                                     @if(Auth::user()->isAdmin() || Auth::user()->isGeneral() || Auth::user()->isIndividual())
-                                    <a href="{{ route('ventas.edit', $venta) }}" class="btn-row-action btn-row-edit" title="Editar registro" aria-label="Editar venta del {{ $venta->fecha_produccion->format('d/m/Y') }}">
-                                        <span>✏️</span> <span>Editar</span>
-                                    </a>
+                                        @if($venta->isActivo())
+                                            {{-- Editar (Solo activo) --}}
+                                            <a href="{{ route('ventas.edit', $venta) }}" class="btn-action-icon btn-action-edit" title="Editar registro" aria-label="Editar venta del {{ $venta->fecha_produccion->format('d/m/Y') }}">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                            </a>
+
+                                            {{-- Anular (Paso 1 del ciclo de eliminación) --}}
+                                            <form method="POST" action="{{ route('ventas.anular', $venta) }}" style="display:inline;" onsubmit="return confirm('¿Deseas ANULAR este registro de venta? Pasará a estado anulado y se descontará de los totales.');">
+                                                @csrf
+                                                <button type="submit" class="btn-action-icon btn-action-anular" title="Anular registro (Paso 1 antes de eliminar)" aria-label="Anular venta">
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                                                </button>
+                                            </form>
+                                        @else
+                                            {{-- Si ya está anulado: Permitir Reactivar --}}
+                                            <form method="POST" action="{{ route('ventas.reactivar', $venta) }}" style="display:inline;" onsubmit="return confirm('¿Deseas REACTIVAR este registro de venta?');">
+                                                @csrf
+                                                <button type="submit" class="btn-action-icon btn-action-reactivar" title="Reactivar registro" aria-label="Reactivar venta">
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                                                </button>
+                                            </form>
+
+                                            {{-- Eliminar definitivamente (Paso 2: Solo si ya está anulado) --}}
+                                            <form method="POST" action="{{ route('ventas.destroy', $venta) }}" style="display:inline;" onsubmit="return confirm('¡ADVERTENCIA! Este registro ya está anulado.\n¿Deseas ELIMINARLO DEFINITIVAMENTE de la base de datos?\nEsta acción es irreversible.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn-action-icon btn-action-delete" title="Eliminar definitivamente de la base de datos" aria-label="Eliminar venta permanentemente">
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                                                </button>
+                                            </form>
+                                        @endif
                                     @endif
                                 </div>
                             </td>
@@ -731,7 +835,7 @@
                 </div>
 
                 {{-- Origen y Clasificación --}}
-                <div class="modal-section-title">📍 Origen y Clasificación</div>
+                <div class="modal-section-title">Origen y Clasificación</div>
                 <div class="modal-data-grid">
                     <div class="modal-data-item">
                         <span class="modal-data-label">Fundo</span>
@@ -760,7 +864,7 @@
                 </div>
 
                 {{-- Cliente y Jabas --}}
-                <div class="modal-section-title" style="margin-top: 1rem;">🏢 Cliente y Jabas</div>
+                <div class="modal-section-title" style="margin-top: 1rem;">Cliente y Jabas</div>
                 <div class="modal-data-grid">
                     <div class="modal-data-item">
                         <span class="modal-data-label">Cliente / Comprador</span>
@@ -781,7 +885,7 @@
                 </div>
 
                 {{-- Guía y Transporte --}}
-                <div class="modal-section-title" style="margin-top: 1rem;">🚚 Guía y Transporte</div>
+                <div class="modal-section-title" style="margin-top: 1rem;">Guía y Transporte</div>
                 <div class="modal-data-grid">
                     <div class="modal-data-item">
                         <span class="modal-data-label">Placa de Vehículo</span>
@@ -802,7 +906,7 @@
                 </div>
 
                 {{-- Observaciones --}}
-                <div class="modal-section-title" style="margin-top: 1rem;">📝 Observaciones</div>
+                <div class="modal-section-title" style="margin-top: 1rem;">Observaciones</div>
                 <div class="modal-obs-box" id="modal-observacion">Sin observaciones registradas.</div>
 
                 {{-- Auditoría --}}
@@ -815,10 +919,10 @@
             <div class="modal-footer">
                 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                     <a id="modal-btn-full" href="#" class="btn btn-secondary btn-sm" title="Abrir ficha técnica completa">
-                        <span>📄</span> Ver Ficha Completa
+                        Ver Ficha Completa
                     </a>
                     <a id="modal-btn-edit" href="#" class="btn btn-primary btn-sm" title="Editar este pesaje">
-                        <span>✏️</span> Editar Registro
+                        Editar Registro
                     </a>
                 </div>
                 <button type="button" class="btn btn-ghost btn-sm" onclick="cerrarModalDetalle()">
@@ -902,7 +1006,7 @@
         }
 
         var btnEdit = document.getElementById('modal-btn-edit');
-        if (d.urlEdit) {
+        if (d.urlEdit && d.estado !== 'anulado') {
             btnEdit.href = d.urlEdit;
             btnEdit.style.display = 'inline-flex';
         } else {

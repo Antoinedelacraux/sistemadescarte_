@@ -31,7 +31,7 @@ class AdminController extends Controller implements HasMiddleware
      */
     public function fundos(): View
     {
-        $fundos = Fundo::withCount(['lotes', 'ventas', 'users'])->get();
+        $fundos = Fundo::withCount(['lotes', 'ventas', 'users'])->latest('created_at')->get();
 
         return view('admin.fundos.index', compact('fundos'));
     }
@@ -55,6 +55,59 @@ class AdminController extends Controller implements HasMiddleware
         Fundo::create($validated);
 
         return redirect()->route('admin.fundos')->with('success', 'Fundo creado exitosamente.');
+    }
+
+    /**
+     * Actualizar datos de un fundo existente.
+     */
+    public function updateFundo(Request $request, Fundo $fundo): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:100', Rule::unique('fundos', 'name')->ignore($fundo->id)],
+            'code' => ['required', 'string', 'max:20', Rule::unique('fundos', 'code')->ignore($fundo->id)],
+        ], [
+            'name.required' => 'El nombre del fundo es obligatorio.',
+            'name.unique' => 'Ya existe otro fundo con este nombre.',
+            'code.required' => 'El código de fundo es obligatorio.',
+            'code.unique' => 'Ya existe otro fundo con este código.',
+        ]);
+
+        $fundo->update($validated);
+
+        return redirect()->route('admin.fundos')->with('success', 'Fundo actualizado correctamente.');
+    }
+
+    /**
+     * Cambiar estado activo/inactivo (anular o reactivar) de un fundo.
+     */
+    public function toggleFundo(Fundo $fundo): RedirectResponse
+    {
+        $fundo->update(['is_active' => !$fundo->is_active]);
+
+        $estado = $fundo->is_active ? 'reactivado' : 'anulado/inactivado';
+        return redirect()->route('admin.fundos')->with('success', "Fundo {$estado} correctamente.");
+    }
+
+    /**
+     * Eliminar definitivamente un fundo (solo permitido si está previamente anulado/inactivo).
+     */
+    public function destroyFundo(Fundo $fundo): RedirectResponse
+    {
+        if ($fundo->is_active) {
+            return redirect()->route('admin.fundos')
+                ->with('error', 'El fundo debe ser anulado/inactivado antes de poder ser eliminado definitivamente.');
+        }
+
+        if ($fundo->ventas()->count() > 0) {
+            return redirect()->route('admin.fundos')
+                ->with('error', 'No se puede eliminar un fundo que tiene ventas de descarte registradas por trazabilidad histórica.');
+        }
+
+        $fundo->lotes()->delete();
+        $fundo->users()->detach();
+        $fundo->delete();
+
+        return redirect()->route('admin.fundos')->with('success', 'Fundo eliminado definitivamente de la base de datos.');
     }
 
     /**
@@ -112,7 +165,62 @@ class AdminController extends Controller implements HasMiddleware
     {
         $user->update(['is_active' => !$user->is_active]);
 
-        $estado = $user->is_active ? 'activado' : 'desactivado';
+        $estado = $user->is_active ? 'activado' : 'anulado/desactivado';
         return redirect()->route('admin.usuarios')->with('success', "Usuario {$estado} correctamente.");
+    }
+
+    /**
+     * Actualizar datos de un usuario.
+     */
+    public function updateUsuario(Request $request, User $user): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:150'],
+            'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($user->id)],
+            'role_id' => ['required', 'exists:roles,id'],
+            'password' => ['nullable', 'string', 'min:6'],
+            'fundos' => ['nullable', 'array'],
+            'fundos.*' => ['exists:fundos,id'],
+        ], [
+            'name.required' => 'El nombre completo es obligatorio.',
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.unique' => 'Este correo ya pertenece a otro usuario.',
+            'role_id.required' => 'Debes asignar un rol.',
+            'password.min' => 'La nueva contraseña debe tener al menos 6 caracteres.',
+        ]);
+
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->role_id = $validated['role_id'];
+
+        if (!empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+
+        $user->save();
+        $user->fundos()->sync($validated['fundos'] ?? []);
+
+        return redirect()->route('admin.usuarios')->with('success', 'Usuario actualizado correctamente.');
+    }
+
+    /**
+     * Eliminar definitivamente un usuario (solo permitido si está previamente anulado/desactivado).
+     */
+    public function destroyUsuario(User $user): RedirectResponse
+    {
+        if ($user->is_active) {
+            return redirect()->route('admin.usuarios')
+                ->with('error', 'El usuario debe ser anulado/desactivado antes de poder ser eliminado definitivamente.');
+        }
+
+        if ($user->id === Auth::id()) {
+            return redirect()->route('admin.usuarios')
+                ->with('error', 'No puedes eliminar tu propia cuenta.');
+        }
+
+        $user->fundos()->detach();
+        $user->delete();
+
+        return redirect()->route('admin.usuarios')->with('success', 'Usuario eliminado definitivamente de la base de datos.');
     }
 }
