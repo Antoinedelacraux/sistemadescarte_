@@ -26,12 +26,12 @@
             : (file_exists(public_path('images/logo.svg')) ? asset('images/logo.svg') : asset('icons/icon-192.webp')));
 
     // 3. TEXTOS DE MARCA E IDENTIDAD
-    $brandName    = 'Sistema Web del Fundo';
+    $brandName    = 'Sistema para registro de venta de descarte';
     $brandTagline = 'Gestión Agrícola';
 
     // 4. TEXTOS DEL HERO (Panel Izquierdo en Desktop)
-    $heroTitle       = 'Control total<br>de tu <em>producción</em><br>agrícola.';
-    $heroDescription = 'Registra, sincroniza y analiza las ventas de descarte de tus fundos con precisión y en tiempo real, incluso sin conexión a internet.';
+    $heroTitle       = 'Sistema para registro<br>de venta de <em>descarte</em>.';
+    $heroDescription = 'Registra, sincroniza y analiza las ventas de descarte de tu fundo con precisión y en tiempo real, incluso sin conexión a internet.';
 
     // Indicadores / Métricas destacadas del Hero
     $heroStat1Value = '3';
@@ -99,34 +99,45 @@
     .hero-logo {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 0.875rem;
         position: relative;
         z-index: 1;
     }
 
-    .hero-logo-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #22c55e, #15803d);
+    .hero-logo-badge {
+        height: 52px;
+        padding: 4px 12px;
+        border-radius: var(--radius-md);
+        background: #ffffff;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.375rem;
-        box-shadow: 0 4px 16px rgba(34,197,94,0.35);
+        flex-shrink: 0;
+    }
+
+    .hero-logo-badge img {
+        height: 100%;
+        width: auto;
+        max-width: 140px;
+        object-fit: contain;
+        display: block;
     }
 
     .hero-logo-text strong {
         display: block;
-        font-size: 1.125rem;
+        font-size: clamp(0.95rem, 2.2vw, 1.05rem);
         font-weight: 700;
         color: white;
         letter-spacing: -0.01em;
+        line-height: 1.25;
     }
 
     .hero-logo-text span {
         font-size: 0.8125rem;
-        color: rgba(255,255,255,0.45);
+        color: rgba(255,255,255,0.65);
+        display: block;
+        margin-top: 0.15rem;
     }
 
     .hero-content {
@@ -219,32 +230,44 @@
     .login-mobile-brand {
         display: flex;
         align-items: center;
-        gap: 0.625rem;
+        gap: 0.75rem;
         margin-bottom: 2rem;
     }
 
-    .login-mobile-brand-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #22c55e, #15803d);
+    .login-mobile-brand-badge {
+        height: 44px;
+        padding: 4px 8px;
+        border-radius: var(--radius-md);
+        background: #ffffff;
+        border: 1px solid var(--brd-base);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.125rem;
-        box-shadow: 0 2px 8px rgba(34,197,94,0.25);
+        flex-shrink: 0;
+    }
+
+    .login-mobile-brand-badge img {
+        height: 100%;
+        width: auto;
+        max-width: 115px;
+        object-fit: contain;
+        display: block;
     }
 
     .login-mobile-brand-text strong {
         display: block;
-        font-size: 1rem;
+        font-size: clamp(0.9rem, 3.2vw, 1rem);
         font-weight: 700;
         color: var(--txt-primary);
+        line-height: 1.25;
     }
 
     .login-mobile-brand-text span {
         font-size: var(--text-xs);
         color: var(--txt-muted);
+        display: block;
+        margin-top: 0.15rem;
     }
 
     .login-heading {
@@ -459,10 +482,10 @@
         <div class="hero-orb hero-orb-1"></div>
         <div class="hero-orb hero-orb-2"></div>
 
-        {{-- Logo --}}
+        {{-- Logo Desktop Hero --}}
         <div class="hero-logo">
-            <div class="hero-logo-icon" style="overflow:hidden;padding:0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);backdrop-filter:blur(8px);">
-                <img src="{{ $loginLogo }}" alt="{{ $brandName }}" width="44" height="44" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block;">
+            <div class="hero-logo-badge">
+                <img src="{{ $loginLogo }}" alt="TALSA Grape Farms" class="hero-logo-img">
             </div>
             <div class="hero-logo-text">
                 <strong>{{ $brandName }}</strong>
@@ -505,8 +528,8 @@
 
         {{-- Logo móvil --}}
         <div class="login-mobile-brand" aria-hidden="true">
-            <div class="login-mobile-brand-icon" style="overflow:hidden;padding:0;background:rgba(22,101,52,0.1);border:1px solid rgba(22,101,52,0.2);">
-                <img src="{{ $loginLogo }}" alt="{{ $brandName }}" width="36" height="36" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block;">
+            <div class="login-mobile-brand-badge">
+                <img src="{{ $loginLogo }}" alt="TALSA Grape Farms" class="login-mobile-brand-img">
             </div>
             <div class="login-mobile-brand-text">
                 <strong>{{ $brandName }}</strong>

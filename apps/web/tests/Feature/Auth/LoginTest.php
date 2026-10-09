@@ -37,7 +37,8 @@ class LoginTest extends TestCase
         $response = $this->get('/login');
 
         $response->assertStatus(200);
-        $response->assertSee('Sistema Web del Fundo');
+        $response->assertSee('Sistema para registro de venta de descarte');
+        $response->assertSee('Gestión Agrícola');
         $response->assertSee('Iniciar Sesión');
     }
 
