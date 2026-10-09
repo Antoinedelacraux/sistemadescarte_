@@ -25,44 +25,52 @@ class FundoNombresTest extends TestCase
     {
         parent::setUp();
 
-        $roleAdmin = Role::create([
-            'name' => Role::ADMIN,
-            'display_name' => 'Administrador',
-        ]);
+        $roleAdmin = Role::firstOrCreate(
+            ['name' => Role::ADMIN],
+            ['display_name' => 'Administrador']
+        );
 
-        $roleIndividual = Role::create([
-            'name' => Role::INDIVIDUAL,
-            'display_name' => 'Individual (Pesador / Registrador)',
-        ]);
+        $roleIndividual = Role::firstOrCreate(
+            ['name' => Role::INDIVIDUAL],
+            ['display_name' => 'Individual (Pesador / Registrador)']
+        );
 
-        $this->admin = User::create([
-            'name' => 'Admin General',
-            'email' => 'admin@test.com',
-            'password' => Hash::make('password123'),
-            'role_id' => $roleAdmin->id,
-            'is_active' => true,
-        ]);
+        $this->admin = User::firstOrCreate(
+            ['email' => 'admin@test.com'],
+            [
+                'name' => 'Admin General',
+                'password' => Hash::make('password123'),
+                'role_id' => $roleAdmin->id,
+                'is_active' => true,
+            ]
+        );
 
-        $this->fundoAgritac = Fundo::create([
-            'name' => 'AGRITAC',
-            'nombre_completo' => 'AGRICOLA TAMBO COLORADO',
-            'code' => 'AGRITAC',
-            'is_active' => true,
-        ]);
+        $this->fundoAgritac = Fundo::firstOrCreate(
+            ['code' => 'AGRITAC'],
+            [
+                'name' => 'AGRITAC',
+                'nombre_completo' => 'AGRICOLA TAMBO COLORADO',
+                'is_active' => true,
+            ]
+        );
 
-        $this->fundoProcom = Fundo::create([
-            'name' => 'PROCOM',
-            'nombre_completo' => 'AGRICOLA PROCOM',
-            'code' => 'PROCOM',
-            'is_active' => true,
-        ]);
+        $this->fundoProcom = Fundo::firstOrCreate(
+            ['code' => 'PROCOM'],
+            [
+                'name' => 'PROCOM',
+                'nombre_completo' => 'AGRICOLA PROCOM',
+                'is_active' => true,
+            ]
+        );
 
-        $this->fundoElNegro = Fundo::create([
-            'name' => 'EL NEGRO',
-            'nombre_completo' => 'TALSA GRAPE FARMS',
-            'code' => 'ELNEGRO',
-            'is_active' => true,
-        ]);
+        $this->fundoElNegro = Fundo::firstOrCreate(
+            ['code' => 'ELNEGRO'],
+            [
+                'name' => 'EL NEGRO',
+                'nombre_completo' => 'TALSA GRAPE FARMS',
+                'is_active' => true,
+            ]
+        );
 
         $this->registrador = User::create([
             'name' => 'Registrador Santa Sofía',

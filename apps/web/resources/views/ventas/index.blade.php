@@ -697,7 +697,7 @@
                                 <div class="row-actions-btn-group">
                                     {{-- Ver (Modal de visualización) --}}
                                     <button type="button" 
-                                            class="btn-action-icon btn-action-view" 
+                                            class="btn-action-icon btn-action-view btn-row-view" 
                                             title="Visualizar registro" 
                                             aria-label="Ver detalle del registro del {{ $venta->fecha_produccion->format('d/m/Y') }}"
                                             data-id="{{ $venta->id }}"

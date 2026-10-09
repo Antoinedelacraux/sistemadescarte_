@@ -230,7 +230,7 @@
         <div class="form-grid-2">
             <div class="form-group">
                 <label for="fundo_id" class="form-label">Fundo <span class="required">*</span></label>
-                <select name="fundo_id" id="fundo_id" class="form-control" required onchange="cargarLotesPorFundo(this.value)">
+                <select name="fundo_id" id="fundo_id" class="form-control" required data-custom-select="true" onchange="cargarLotesPorFundo(this.value)">
                     @foreach($fundos as $fundo)
                         <option value="{{ $fundo->id }}" {{ old('fundo_id', $venta->fundo_id) == $fundo->id ? 'selected' : '' }}>
                             {{ $fundo->name }}
@@ -255,7 +255,7 @@
         <div class="form-grid-2">
             <div class="form-group">
                 <label for="lote_id" class="form-label">Lote <span class="required">*</span></label>
-                <select name="lote_id" id="lote_id" class="form-control" required onchange="actualizarCuarteles(this.value)">
+                <select name="lote_id" id="lote_id" class="form-control" required data-custom-select="true" onchange="actualizarCuarteles(this.value)">
                     <option value="">-- Seleccionar Lote --</option>
                     @foreach($lotes as $lote)
                         <option value="{{ $lote->id }}" {{ old('lote_id', $venta->lote_id) == $lote->id ? 'selected' : '' }}>
@@ -270,7 +270,7 @@
                     Cuartel <span id="cuartel-required-star" class="required" style="display: none;">*</span>
                 </label>
                 <div class="cuartel-input-group">
-                    <select id="cuartel_select" class="form-control" onchange="seleccionarCuartel(this.value)">
+                    <select id="cuartel_select" class="form-control" data-custom-select="true" onchange="seleccionarCuartel(this.value)">
                         <option value="">-- Cuartel de catálogo --</option>
                     </select>
                     <input
@@ -294,7 +294,7 @@
         <div class="form-grid-2">
             <div class="form-group">
                 <label for="motivo" class="form-label">Motivo <span class="required">*</span></label>
-                <select name="motivo" id="motivo" class="form-control" required onchange="actualizarOpcionesTipoDescarte()">
+                <select name="motivo" id="motivo" class="form-control" required data-custom-select="true" onchange="actualizarOpcionesTipoDescarte()">
                     <option value="Campo" {{ old('motivo', $venta->motivo) == 'Campo' ? 'selected' : '' }}>Campo</option>
                     <option value="Packing" {{ old('motivo', $venta->motivo) == 'Packing' ? 'selected' : '' }}>Packing</option>
                     <option value="Cosecha Nacional" {{ old('motivo', $venta->motivo) == 'Cosecha Nacional' ? 'selected' : '' }}>Cosecha Nacional</option>
@@ -303,7 +303,7 @@
 
             <div class="form-group">
                 <label for="tipo_descarte" class="form-label">Tipo de Descarte <span class="required">*</span></label>
-                <select name="tipo_descarte" id="tipo_descarte" class="form-control" required>
+                <select name="tipo_descarte" id="tipo_descarte" class="form-control" required data-custom-select="true">
                     <option value="Racimos" {{ old('tipo_descarte', $venta->tipo_descarte) == 'Racimos' ? 'selected' : '' }}>Racimos</option>
                     <option value="Racimos con plaga" {{ old('tipo_descarte', $venta->tipo_descarte) == 'Racimos con plaga' ? 'selected' : '' }}>Racimos con plaga</option>
                     <option value="Granos" {{ old('tipo_descarte', $venta->tipo_descarte) == 'Granos' ? 'selected' : '' }}>Granos</option>
@@ -462,13 +462,20 @@ function actualizarOpcionesTipoDescarte() {
         if (opc === valorActual) opt.selected = true;
         selectTipo.appendChild(opt);
     });
+
+    if (selectTipo.refreshCustomSelect) {
+        selectTipo.refreshCustomSelect();
+    }
 }
 
 function actualizarCuarteles(loteId) {
     var selectCuartel = document.getElementById('cuartel_select');
     selectCuartel.innerHTML = '<option value="">-- Cuartel de catálogo --</option>';
 
-    if (!loteId) return;
+    if (!loteId) {
+        if (selectCuartel.refreshCustomSelect) selectCuartel.refreshCustomSelect();
+        return;
+    }
 
     var lote = lotesCache.find(function(l) { return l.id == loteId; });
     if (lote && lote.cuarteles) {
@@ -478,6 +485,10 @@ function actualizarCuarteles(loteId) {
             opt.textContent = c.nombre;
             selectCuartel.appendChild(opt);
         });
+    }
+
+    if (selectCuartel.refreshCustomSelect) {
+        selectCuartel.refreshCustomSelect();
     }
 }
 
@@ -511,6 +522,10 @@ function cargarLotesPorFundo(fundoId) {
             opt.textContent = l.nombre;
             selectLote.appendChild(opt);
         });
+
+        if (selectLote.refreshCustomSelect) {
+            selectLote.refreshCustomSelect();
+        }
         actualizarCuarteles('');
     })
     .catch(function(err) {
@@ -524,6 +539,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (loteInicial) {
         actualizarCuarteles(loteInicial);
     }
+
+    // Inicializar listas desplegables controladas
+    ['fundo_id', 'lote_id', 'cuartel_select', 'motivo', 'tipo_descarte'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el && window.initCustomSelect) {
+            window.initCustomSelect(el);
+        }
+    });
 });
 </script>
 @endsection

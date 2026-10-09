@@ -1031,8 +1031,224 @@
             pointer-events: auto;
         }
 
+        /* ==========================================        /* ============================================================
+         * COMPONENTE: LISTAS DESPLEGABLES CONTROLADAS (CUSTOM SELECT)
+         * Evita desbordamiento de pantalla y permite scroll fluido ("ir bajando")
+         * Conforme a inspeccion-ui-bordes-tipografia y 05-ux-accesibilidad
+         * ============================================================ */
+        .custom-select-wrap {
+            position: relative;
+            width: 100%;
+        }
+
+        .custom-select-native {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        .custom-select-trigger {
+            width: 100%;
+            min-height: 40px;
+            padding: 0.5rem 0.75rem;
+            font-size: var(--text-sm);
+            font-family: var(--font-sans);
+            color: var(--txt-primary);
+            background: var(--clr-surface-0);
+            border: 1px solid var(--brd-strong);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            cursor: pointer;
+            text-align: left;
+            user-select: none;
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+        }
+
+        .custom-select-trigger:hover {
+            border-color: var(--clr-primary-500);
+            background: var(--clr-surface-50);
+        }
+
+        .custom-select-trigger:focus-visible,
+        .custom-select-wrap.is-open .custom-select-trigger {
+            border-color: var(--clr-primary-600);
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+            background: var(--clr-surface-0);
+            outline: none;
+        }
+
+        .custom-select-label {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: var(--text-sm);
+        }
+
+        .custom-select-arrow {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--txt-muted);
+            transition: transform var(--transition-fast);
+            flex-shrink: 0;
+        }
+
+        .custom-select-wrap.is-open .custom-select-arrow {
+            transform: rotate(180deg);
+            color: var(--clr-primary-700);
+        }
+
+        .custom-select-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: var(--clr-surface-0);
+            border: 1px solid var(--brd-strong);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            z-index: 1050;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            animation: customSelectFadeIn 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes customSelectFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .custom-select-wrap.is-open .custom-select-dropdown {
+            display: flex;
+        }
+
+        /* Si se abre hacia arriba porque está al borde inferior de la pantalla */
+        .custom-select-wrap.open-up .custom-select-dropdown {
+            top: auto;
+            bottom: calc(100% + 4px);
+            animation: customSelectFadeInUp 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes customSelectFadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Buscador interno para listas con muchas opciones (>6 opciones, ej. 18 lotes) */
+        .custom-select-search-wrap {
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--brd-base);
+            background: var(--clr-surface-50);
+        }
+
+        .custom-select-search-input {
+            width: 100%;
+            padding: 0.4rem 0.625rem;
+            font-size: var(--text-xs);
+            font-family: var(--font-sans);
+            border: 1px solid var(--brd-strong);
+            border-radius: var(--radius-sm);
+            background: var(--clr-surface-0);
+            outline: none;
+            color: var(--txt-primary);
+        }
+
+        .custom-select-search-input:focus {
+            border-color: var(--clr-primary-600);
+            box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.15);
+        }
+
+        /* Lista deslizable con scroll contenido donde el usuario puede ir bajando sin tapar la pantalla */
+        .custom-select-options-list {
+            max-height: 200px;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            padding: 0.25rem 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--brd-strong) transparent;
+        }
+
+        .custom-select-options-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-select-options-list::-webkit-scrollbar-thumb {
+            background-color: var(--brd-strong);
+            border-radius: 4px;
+        }
+
+        .custom-select-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5625rem 0.875rem;
+            font-size: var(--text-sm);
+            color: var(--txt-secondary);
+            cursor: pointer;
+            user-select: none;
+            transition: background var(--transition-fast), color var(--transition-fast);
+        }
+
+        .custom-select-option:hover,
+        .custom-select-option.is-focused {
+            background: var(--clr-primary-50);
+            color: var(--clr-primary-800);
+        }
+
+        .custom-select-option.is-selected {
+            background: var(--clr-primary-100);
+            color: var(--clr-primary-900);
+            font-weight: 600;
+        }
+
+        .custom-select-option-check {
+            width: 16px;
+            height: 16px;
+            color: var(--clr-primary-700);
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .custom-select-option.is-selected .custom-select-option-check {
+            display: inline-block;
+        }
+
+        .custom-select-empty {
+            padding: 0.875rem;
+            font-size: var(--text-xs);
+            color: var(--txt-muted);
+            text-align: center;
+            font-style: italic;
+        }
+
         /* ============================================================
-         * RESPONSIVE & ADAPTACIÓN MÓVIL PROFESIONAL
+         * RESPONSIVE & ADAPTACIÓN MÓVIL PROFESIONAL (PROGRESIVO)
+         * Adaptación dinámica de elementos del headbar y layout
          * ============================================================ */
         @media (max-width: 1024px) {
             .sidebar {
@@ -1053,41 +1269,71 @@
             }
 
             .grid-3 { grid-template-columns: repeat(2, 1fr); }
+
+            /* En tablet ocultar el badge de rol del headbar (se muestra dentro del menú de usuario) */
+            .header-user .role-badge {
+                display: none;
+            }
+
+            .fundo-chip {
+                max-width: 135px;
+            }
         }
 
         @media (max-width: 768px) {
-            .page-content { padding: 1.25rem 1rem; }
-            .grid-2, .grid-3 { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 640px) {
-            .page-content { padding: 1rem 0.75rem; }
             .app-header {
-                padding: 0 0.75rem;
+                height: 56px;
+                padding: 0 0.875rem;
                 gap: 0.5rem;
             }
 
-            .header-breadcrumb {
-                min-width: 0;
-                overflow: hidden;
+            .header-actions {
+                gap: 0.5rem;
+            }
+
+            /* Ocultar texto largo del usuario; mantener avatar táctil */
+            .header-user-name {
+                display: none;
+            }
+
+            /* Ocultar etiqueta 'En línea' y dejar punto de pulso compacto */
+            #net-label {
+                display: none;
+            }
+
+            .net-indicator {
+                padding: 0.35rem;
+                width: 30px;
+                height: 30px;
+                justify-content: center;
+                border-radius: var(--radius-full);
+            }
+
+            /* Chip de fundo adaptativo */
+            .fundo-chip {
+                max-width: 115px;
+                font-size: 0.72rem;
+                padding: 0.25rem 0.5rem;
+            }
+
+            .page-content {
+                padding: 1.125rem 0.875rem;
+            }
+
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
             }
 
             .header-breadcrumb .page-title {
-                font-size: clamp(0.8125rem, 3.2vw, 0.9375rem);
+                font-size: clamp(0.85rem, 3.4vw, 1rem);
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 max-width: 100%;
             }
+        }
 
-            .header-actions {
-                gap: 0.375rem;
-                flex-shrink: 0;
-            }
-
-            .header-user-name { display: none; }
-            .fundo-chip { display: none; }
-
+        @media (max-width: 640px) {
             .card {
                 padding: 1rem 0.875rem;
                 border-radius: var(--radius-md);
@@ -1122,7 +1368,7 @@
             }
 
             .data-table {
-                min-width: 520px; /* Evita que las columnas se aplasten o se monten en móviles */
+                min-width: 520px;
             }
 
             .data-table th, .data-table td {
@@ -1131,45 +1377,54 @@
                 white-space: nowrap;
             }
 
-            .form-control {
-                font-size: 16px; /* Evita auto-zoom molesto en iOS */
+            .form-control, .custom-select-trigger {
+                font-size: 16px; /* Evita auto-zoom en navegadores móviles */
             }
         }
 
-        /* Pantallas muy pequeñas (smartphones angostos < 440px) */
-        @media (max-width: 440px) {
+        /* Pantallas móviles estrechas (< 480px) */
+        @media (max-width: 480px) {
             .app-header {
+                height: 52px;
                 padding: 0 0.5rem;
                 gap: 0.375rem;
             }
 
             .header-toggle {
-                width: 32px;
-                height: 32px;
+                width: 34px;
+                height: 34px;
+            }
+
+            .header-actions {
+                gap: 0.35rem;
             }
 
             .net-indicator {
-                padding: 0.3rem 0.45rem;
-            }
-
-            #net-label {
-                display: none;
-            }
-
-            .role-badge {
-                font-size: 0.5625rem;
-                padding: 0.125rem 0.375rem;
+                width: 26px;
+                height: 26px;
+                padding: 0;
             }
 
             .user-avatar {
-                width: 28px !important;
-                height: 28px !important;
-                font-size: 0.6875rem !important;
+                width: 30px !important;
+                height: 30px !important;
+                font-size: 0.72rem !important;
+            }
+
+            .fundo-chip {
+                max-width: 90px;
+                font-size: 0.68rem;
+                padding: 0.2rem 0.4rem;
+            }
+
+            .header-breadcrumb .page-title {
+                font-size: clamp(0.78rem, 3.6vw, 0.875rem);
             }
 
             .btn {
-                font-size: clamp(0.72rem, 2.6vw, 0.8125rem);
+                font-size: clamp(0.75rem, 2.6vw, 0.8125rem);
                 padding: 0.45rem 0.65rem;
+                min-height: 40px;
             }
 
             .card-title {
@@ -1179,6 +1434,29 @@
             .card-subtitle {
                 font-size: clamp(0.6875rem, 2.7vw, 0.75rem);
             }
+        }
+
+        /* Pantallas ultra-estrechas (< 360px, ej. iPhone SE / Galaxy Mini) */
+        @media (max-width: 360px) {
+            .app-header {
+                padding: 0 0.375rem;
+                gap: 0.25rem;
+            }
+
+            /* Ocultar el chip de fundo para no asfixiar el título ni el avatar */
+            .fundo-chip {
+                display: none;
+            }
+
+            .header-toggle {
+                width: 30px;
+                height: 30px;
+            }
+
+            .user-avatar {
+                width: 28px !important;
+                height: 28px !important;
+                font-size: 0.68rem !important;
         }
     </style>
     @yield('styles')
@@ -1348,7 +1626,10 @@
                         <div class="user-dropdown" role="menu" aria-label="Opciones de usuario">
                             <div style="padding: 0.625rem 0.875rem; border-bottom: 1px solid var(--brd-base); margin-bottom: 0.25rem;">
                                 <div style="font-size: var(--text-xs); font-weight: 600; color: var(--txt-primary);">{{ Auth::user()->name }}</div>
-                                <div style="font-size: var(--text-xs); color: var(--txt-muted);">{{ Auth::user()->email }}</div>
+                                <div style="font-size: var(--text-xs); color: var(--txt-muted); margin-bottom: 0.375rem;">{{ Auth::user()->email }}</div>
+                                <span class="role-badge role-badge-{{ Auth::user()->role?->name ?? 'default' }}">
+                                    {{ Auth::user()->role?->display_name ?? 'Sin Rol' }}
+                                </span>
                             </div>
                             <a href="{{ route('dashboard') }}" class="dropdown-item" role="menuitem">
                                 <span aria-hidden="true">👤</span> Mi Perfil
@@ -1526,6 +1807,233 @@
                 });
             });
         }
+
+        /* ============================================================
+         * MOTOR DE LISTAS DESPLEGABLES CONTROLADAS (CUSTOM SELECT)
+         * Control estricto de altura (max-height: 200px) y scroll fluido
+         * ============================================================ */
+        window.initCustomSelect = function(nativeSelect) {
+            if (!nativeSelect || nativeSelect._customSelectInitialized) return;
+
+            // Contenedor principal
+            var wrap = document.createElement('div');
+            wrap.className = 'custom-select-wrap';
+            nativeSelect.parentNode.insertBefore(wrap, nativeSelect);
+            wrap.appendChild(nativeSelect);
+            nativeSelect.classList.add('custom-select-native');
+
+            // Botón disparador (Trigger)
+            var trigger = document.createElement('button');
+            trigger.type = 'button';
+            trigger.className = 'custom-select-trigger';
+            trigger.setAttribute('aria-haspopup', 'listbox');
+            trigger.setAttribute('aria-expanded', 'false');
+
+            var label = document.createElement('span');
+            label.className = 'custom-select-label';
+
+            var arrow = document.createElement('span');
+            arrow.className = 'custom-select-arrow';
+            arrow.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>';
+
+            trigger.appendChild(label);
+            trigger.appendChild(arrow);
+            wrap.appendChild(trigger);
+
+            // Panel desplegable
+            var dropdown = document.createElement('div');
+            dropdown.className = 'custom-select-dropdown';
+            dropdown.setAttribute('role', 'listbox');
+
+            // Buscador interno para listas con más de 6 opciones (ej. lotes)
+            var searchWrap = document.createElement('div');
+            searchWrap.className = 'custom-select-search-wrap';
+            var searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.className = 'custom-select-search-input';
+            searchInput.placeholder = 'Buscar opción...';
+            searchInput.autocomplete = 'off';
+            searchInput.setAttribute('aria-label', 'Filtrar opciones');
+            searchWrap.appendChild(searchInput);
+            dropdown.appendChild(searchWrap);
+
+            // Contenedor deslizable de opciones
+            var optionsList = document.createElement('div');
+            optionsList.className = 'custom-select-options-list';
+            dropdown.appendChild(optionsList);
+            wrap.appendChild(dropdown);
+
+            function syncLabel() {
+                var selectedOpt = nativeSelect.options[nativeSelect.selectedIndex];
+                if (selectedOpt) {
+                    label.textContent = selectedOpt.textContent.trim();
+                    if (nativeSelect.value === '' && selectedOpt.textContent.trim().startsWith('--')) {
+                        label.style.color = 'var(--txt-muted)';
+                    } else {
+                        label.style.color = 'var(--txt-primary)';
+                    }
+                } else {
+                    label.textContent = '-- Seleccionar --';
+                    label.style.color = 'var(--txt-muted)';
+                }
+            }
+
+            function renderOptions() {
+                optionsList.innerHTML = '';
+                var count = nativeSelect.options.length;
+
+                // Mostrar buscador si hay más de 6 opciones
+                if (count > 6) {
+                    searchWrap.style.display = 'block';
+                    searchInput.value = '';
+                } else {
+                    searchWrap.style.display = 'none';
+                }
+
+                Array.from(nativeSelect.options).forEach(function(opt, index) {
+                    var item = document.createElement('div');
+                    item.className = 'custom-select-option';
+                    item.setAttribute('role', 'option');
+                    item.setAttribute('data-value', opt.value);
+                    item.setAttribute('data-index', String(index));
+
+                    if (opt.selected) {
+                        item.classList.add('is-selected');
+                        item.setAttribute('aria-selected', 'true');
+                    } else {
+                        item.setAttribute('aria-selected', 'false');
+                    }
+
+                    var textSpan = document.createElement('span');
+                    textSpan.textContent = opt.textContent.trim();
+
+                    var checkIcon = document.createElement('span');
+                    checkIcon.className = 'custom-select-option-check';
+                    checkIcon.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+
+                    item.appendChild(textSpan);
+                    item.appendChild(checkIcon);
+
+                    item.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        nativeSelect.selectedIndex = index;
+                        nativeSelect.value = opt.value;
+                        nativeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                        syncLabel();
+                        closeDropdown();
+                        trigger.focus();
+                    });
+
+                    optionsList.appendChild(item);
+                });
+
+                syncLabel();
+            }
+
+            function openDropdown() {
+                // Cerrar cualquier otro dropdown abierto en la página
+                document.querySelectorAll('.custom-select-wrap.is-open').forEach(function(other) {
+                    if (other !== wrap) other.classList.remove('is-open');
+                });
+
+                var rect = wrap.getBoundingClientRect();
+                var spaceBelow = window.innerHeight - rect.bottom;
+                var spaceAbove = rect.top;
+
+                // Solo si no hay espacio abajo (menos de 220px) y arriba hay más espacio, abrir hacia arriba con max-height controlado
+                if (spaceBelow < 220 && spaceAbove > spaceBelow) {
+                    wrap.classList.add('open-up');
+                } else {
+                    wrap.classList.remove('open-up');
+                }
+
+                wrap.classList.add('is-open');
+                trigger.setAttribute('aria-expanded', 'true');
+
+                if (nativeSelect.options.length > 6) {
+                    setTimeout(function() { searchInput.focus(); }, 60);
+                }
+
+                // Desplazarse al elemento seleccionado para fácil localización
+                var selectedItem = optionsList.querySelector('.is-selected');
+                if (selectedItem) {
+                    optionsList.scrollTop = selectedItem.offsetTop - optionsList.offsetTop - 30;
+                }
+            }
+
+            function closeDropdown() {
+                wrap.classList.remove('is-open');
+                trigger.setAttribute('aria-expanded', 'false');
+            }
+
+            trigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (wrap.classList.contains('is-open')) {
+                    closeDropdown();
+                } else {
+                    openDropdown();
+                }
+            });
+
+            // Filtrado dinámico en tiempo real
+            searchInput.addEventListener('input', function() {
+                var query = searchInput.value.toLowerCase().trim();
+                var items = optionsList.querySelectorAll('.custom-select-option');
+                var anyVisible = false;
+
+                items.forEach(function(item) {
+                    var match = item.textContent.toLowerCase().includes(query);
+                    item.style.display = match ? 'flex' : 'none';
+                    if (match) anyVisible = true;
+                });
+
+                var existingEmpty = optionsList.querySelector('.custom-select-empty');
+                if (!anyVisible) {
+                    if (!existingEmpty) {
+                        var empty = document.createElement('div');
+                        empty.className = 'custom-select-empty';
+                        empty.textContent = 'No se encontraron resultados';
+                        optionsList.appendChild(empty);
+                    }
+                } else if (existingEmpty) {
+                    existingEmpty.remove();
+                }
+            });
+
+            // Teclas de accesibilidad
+            wrap.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeDropdown();
+                    trigger.focus();
+                } else if (e.key === 'ArrowDown' && !wrap.classList.contains('is-open')) {
+                    e.preventDefault();
+                    openDropdown();
+                }
+            });
+
+            // Cerrar al hacer clic fuera del componente
+            document.addEventListener('click', function(e) {
+                if (!wrap.contains(e.target)) {
+                    closeDropdown();
+                }
+            });
+
+            // Método expuesto para refrescar opciones dinámicas (AJAX / DOM)
+            nativeSelect.refreshCustomSelect = function() {
+                renderOptions();
+            };
+
+            renderOptions();
+            nativeSelect._customSelectInitialized = true;
+        };
+
+        // Auto-inicializar selects declarados con atributo data-custom-select
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('select[data-custom-select]').forEach(function(sel) {
+                window.initCustomSelect(sel);
+            });
+        });
 
     })();
     </script>

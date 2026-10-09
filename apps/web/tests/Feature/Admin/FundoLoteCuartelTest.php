@@ -25,30 +25,34 @@ class FundoLoteCuartelTest extends TestCase
     {
         parent::setUp();
 
-        $roleAdmin = Role::create([
-            'name' => Role::ADMIN,
-            'display_name' => 'Administrador',
-        ]);
+        $roleAdmin = Role::firstOrCreate(
+            ['name' => Role::ADMIN],
+            ['display_name' => 'Administrador']
+        );
 
-        $roleIndividual = Role::create([
-            'name' => Role::INDIVIDUAL,
-            'display_name' => 'Individual',
-        ]);
+        $roleIndividual = Role::firstOrCreate(
+            ['name' => Role::INDIVIDUAL],
+            ['display_name' => 'Individual']
+        );
 
-        $this->admin = User::create([
-            'name' => 'Admin Principal',
-            'email' => 'admin@test.com',
-            'password' => Hash::make('password123'),
-            'role_id' => $roleAdmin->id,
-            'is_active' => true,
-        ]);
+        $this->admin = User::firstOrCreate(
+            ['email' => 'admin@test.com'],
+            [
+                'name' => 'Admin Principal',
+                'password' => Hash::make('password123'),
+                'role_id' => $roleAdmin->id,
+                'is_active' => true,
+            ]
+        );
 
-        $this->fundoProcom = Fundo::create([
-            'name' => 'PROCOM',
-            'nombre_completo' => 'AGRICOLA PROCOM',
-            'code' => 'PROCOM',
-            'is_active' => true,
-        ]);
+        $this->fundoProcom = Fundo::firstOrCreate(
+            ['code' => 'PROCOM'],
+            [
+                'name' => 'PROCOM',
+                'nombre_completo' => 'AGRICOLA PROCOM',
+                'is_active' => true,
+            ]
+        );
 
         $this->loteH01 = Lote::withoutGlobalScopes()->create([
             'fundo_id' => $this->fundoProcom->id,
@@ -68,30 +72,33 @@ class FundoLoteCuartelTest extends TestCase
     public function test_admin_can_create_fundo_with_initial_lotes(): void
     {
         $response = $this->actingAs($this->admin)->post(route('admin.fundos.store'), [
-            'name' => 'AGRITAC',
-            'nombre_completo' => 'AGRICOLA TAMBO COLORADO',
-            'code' => 'AGRITAC',
-            'lotes' => 'A01, A02, A03, M01',
+            'name' => 'FUNDO TEST',
+            'nombre_completo' => 'AGRICOLA DE PRUEBA SAC',
+            'code' => 'FDOTEST',
+            'lotes' => 'T01, T02, T03, T04',
         ]);
 
         $response->assertRedirect(route('admin.fundos'));
         $response->assertSessionHas('success');
 
-        $fundo = Fundo::where('code', 'AGRITAC')->first();
+        $fundo = Fundo::where('code', 'FDOTEST')->first();
         $this->assertNotNull($fundo);
         $this->assertEquals(4, $fundo->lotes()->count());
-        $this->assertTrue($fundo->lotes()->where('nombre', 'A01')->exists());
-        $this->assertTrue($fundo->lotes()->where('nombre', 'M01')->exists());
+        $this->assertTrue($fundo->lotes()->where('nombre', 'T01')->exists());
+        $this->assertTrue($fundo->lotes()->where('nombre', 'T04')->exists());
     }
 
     public function test_admin_can_add_lotes_to_existing_fundo(): void
     {
+        $lotesPrevios = $this->fundoProcom->lotes()->count();
         $response = $this->actingAs($this->admin)->post(route('admin.fundos.lotes.store', $this->fundoProcom), [
-            'nombre' => 'H02, H03',
+            'nombre' => 'H98, H99',
         ]);
 
         $response->assertRedirect(route('admin.fundos'));
-        $this->assertEquals(3, $this->fundoProcom->lotes()->count());
+        $this->assertEquals($lotesPrevios + 2, $this->fundoProcom->lotes()->count());
+        $this->assertTrue($this->fundoProcom->lotes()->where('nombre', 'H98')->exists());
+        $this->assertTrue($this->fundoProcom->lotes()->where('nombre', 'H99')->exists());
     }
 
     public function test_admin_can_add_cuarteles_to_lote(): void

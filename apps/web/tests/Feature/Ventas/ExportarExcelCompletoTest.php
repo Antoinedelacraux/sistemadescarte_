@@ -24,31 +24,37 @@ class ExportarExcelCompletoTest extends TestCase
     {
         parent::setUp();
 
-        $adminRole = Role::create([
-            'name' => Role::ADMIN,
-            'display_name' => 'Administrador',
-        ]);
+        $adminRole = Role::firstOrCreate(
+            ['name' => Role::ADMIN],
+            ['display_name' => 'Administrador']
+        );
 
-        $this->fundoAgritac = Fundo::create([
-            'name' => 'AGRITAC',
-            'nombre_completo' => 'AGRICOLA TAMBO COLORADO',
-            'code' => 'AGRITAC',
-            'is_active' => true,
-        ]);
+        $this->fundoAgritac = Fundo::firstOrCreate(
+            ['code' => 'AGRITAC'],
+            [
+                'name' => 'AGRITAC',
+                'nombre_completo' => 'AGRICOLA TAMBO COLORADO',
+                'is_active' => true,
+            ]
+        );
 
-        $this->fundoProcom = Fundo::create([
-            'name' => 'PROCOM',
-            'nombre_completo' => 'AGRICOLA PROCOM',
-            'code' => 'PROCOM',
-            'is_active' => true,
-        ]);
+        $this->fundoProcom = Fundo::firstOrCreate(
+            ['code' => 'PROCOM'],
+            [
+                'name' => 'PROCOM',
+                'nombre_completo' => 'AGRICOLA PROCOM',
+                'is_active' => true,
+            ]
+        );
 
-        $this->fundoElNegro = Fundo::create([
-            'name' => 'EL NEGRO',
-            'nombre_completo' => 'TALSA GRAPE FARMS',
-            'code' => 'ELNEGRO',
-            'is_active' => true,
-        ]);
+        $this->fundoElNegro = Fundo::firstOrCreate(
+            ['code' => 'ELNEGRO'],
+            [
+                'name' => 'EL NEGRO',
+                'nombre_completo' => 'TALSA GRAPE FARMS',
+                'is_active' => true,
+            ]
+        );
 
         $this->adminUser = User::create([
             'name' => 'Admin Test',
