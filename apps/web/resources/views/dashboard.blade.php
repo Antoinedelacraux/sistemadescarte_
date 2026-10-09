@@ -199,9 +199,112 @@
         }
     }
 
-    /* Secciones del panel */
+    /* Secciones del panel y tarjetas de tabla pulidas */
     .dash-section {
         margin-bottom: 1.75rem;
+        animation: fadeInTab 0.18s ease-in-out;
+    }
+
+    @keyframes fadeInTab {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dash-table-card {
+        background: #ffffff;
+        border: 1px solid var(--brd-base);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        margin-bottom: 1.5rem;
+    }
+
+    .dash-table-header {
+        padding: clamp(1.125rem, 3.5vw, 1.375rem) clamp(1.25rem, 4vw, 1.625rem);
+        border-bottom: 1px solid var(--brd-base);
+        background: #ffffff;
+    }
+
+    /* Selector de Vista de Tablas (Tabs / Switcher) */
+    .table-view-control-bar {
+        background: #ffffff;
+        border: 1px solid var(--brd-base);
+        border-radius: var(--radius-lg);
+        padding: 0.625rem 0.875rem;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.875rem;
+        box-shadow: var(--shadow-xs);
+        flex-wrap: wrap;
+    }
+
+    .table-view-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: var(--text-xs);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--txt-muted);
+        white-space: nowrap;
+    }
+
+    .table-view-pills {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 2px;
+        flex: 1;
+    }
+    .table-view-pills::-webkit-scrollbar { display: none; }
+
+    .view-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4375rem 0.875rem;
+        font-size: var(--text-xs);
+        font-weight: 600;
+        border-radius: var(--radius-full);
+        border: 1px solid var(--brd-base);
+        background: var(--clr-surface-50);
+        color: var(--txt-secondary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        white-space: nowrap;
+        font-family: inherit;
+        line-height: 1.2;
+    }
+    .view-pill:hover {
+        background: var(--clr-surface-100);
+        color: var(--txt-primary);
+        border-color: var(--brd-strong);
+    }
+    .view-pill.active {
+        background: #14532d;
+        color: #ffffff;
+        border-color: #14532d;
+        box-shadow: 0 2px 6px rgba(20, 83, 45, 0.25);
+    }
+    .view-pill.active svg {
+        stroke: #ffffff;
+    }
+    .view-pill-count {
+        font-size: 0.625rem;
+        font-weight: 700;
+        padding: 0.1rem 0.35rem;
+        border-radius: var(--radius-full);
+        background: rgba(255, 255, 255, 0.25);
+        color: white;
+    }
+    .view-pill:not(.active) .view-pill-count {
+        background: var(--clr-surface-200);
+        color: var(--txt-secondary);
     }
 
     .section-header-box {
@@ -213,19 +316,22 @@
     }
 
     .section-title {
-        font-size: clamp(1.05rem, 3.2vw, 1.2rem);
+        font-size: clamp(1rem, 3.2vw, 1.22rem);
         font-weight: 700;
         color: var(--txt-primary);
         display: flex;
         align-items: center;
         gap: 0.5rem;
         margin: 0;
+        line-height: 1.3;
+        letter-spacing: -0.01em;
     }
 
     .section-subtitle {
-        font-size: var(--text-xs);
+        font-size: clamp(0.72rem, 2.4vw, 0.8125rem);
         color: var(--txt-muted);
-        margin-top: 0.2rem;
+        margin-top: 0.25rem;
+        line-height: 1.4;
     }
 
     /* Tablas operativas */
@@ -529,10 +635,33 @@
     </div>
 </div>
 
+{{-- SELECTOR DE VISTA DE TABLAS (CONTROL INTERACTIVO) --}}
+<div class="table-view-control-bar" id="table-view-controller">
+    <div class="table-view-label">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        <span>Mostrar tabla:</span>
+    </div>
+    <div class="table-view-pills" role="tablist" aria-label="Seleccionar tablas a visualizar">
+        <button type="button" class="view-pill active" data-view="all" onclick="cambiarVistaTabla('all', this)" role="tab" aria-selected="true">
+            <span>Todas las Tablas</span>
+        </button>
+        <button type="button" class="view-pill" data-view="motivos" onclick="cambiarVistaTabla('motivos', this)" role="tab" aria-selected="false">
+            <span>Por Tipo y Descarte</span>
+        </button>
+        <button type="button" class="view-pill" data-view="clientes" onclick="cambiarVistaTabla('clientes', this)" role="tab" aria-selected="false">
+            <span>Por Cliente</span>
+        </button>
+        <button type="button" class="view-pill" data-view="recientes" onclick="cambiarVistaTabla('recientes', this)" role="tab" aria-selected="false">
+            <span>Últimos Envíos</span>
+            <span class="view-pill-count">{{ $ventas->take(8)->count() }}</span>
+        </button>
+    </div>
+</div>
+
 {{-- 3. TABLA 1: RESUMEN POR ORIGEN Y TIPO DE DESCARTE --}}
-<section class="dash-section" aria-labelledby="sec-title-motivos">
-    <div class="card" style="padding: 0; overflow: hidden;">
-        <div class="card-header" style="border-bottom: 1px solid var(--brd-base);">
+<section class="dash-section" id="sec-motivos-container" aria-labelledby="sec-title-motivos">
+    <div class="dash-table-card">
+        <div class="dash-table-header">
             <div class="section-header-box">
                 <div>
                     <h2 class="section-title" id="sec-title-motivos">
@@ -641,9 +770,9 @@
 </section>
 
 {{-- 4. TABLA 2: RESUMEN POR CLIENTE --}}
-<section class="dash-section" aria-labelledby="sec-title-clientes">
-    <div class="card" style="padding: 0; overflow: hidden;">
-        <div class="card-header" style="border-bottom: 1px solid var(--brd-base);">
+<section class="dash-section" id="sec-clientes-container" aria-labelledby="sec-title-clientes">
+    <div class="dash-table-card">
+        <div class="dash-table-header">
             <div class="section-header-box">
                 <div>
                     <h2 class="section-title" id="sec-title-clientes">
@@ -655,10 +784,10 @@
                 </div>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
                     <button type="button" class="btn btn-secondary btn-sm" onclick="expandAllClients(true)" title="Ver detalle de todos los clientes">
-                        ➕ Abrir Todos
+                        Abrir Todos
                     </button>
                     <button type="button" class="btn btn-secondary btn-sm" onclick="expandAllClients(false)" title="Ocultar detalles">
-                        ➖ Cerrar
+                        Cerrar
                     </button>
                 </div>
             </div>
@@ -830,10 +959,10 @@
     </div>
 </section>
 
-{{-- 5. ÚLTIMOS REGISTROS REALIZADOS (AHORA A ANCHO COMPLETO, SIN COLUMNAS REDUNDANTES) --}}
-<section class="dash-section" aria-labelledby="sec-title-recientes">
-    <div class="card" style="padding: 0; overflow: hidden;">
-        <div class="card-header" style="border-bottom: 1px solid var(--brd-base);">
+{{-- 5. ÚLTIMOS REGISTROS REALIZADOS --}}
+<section class="dash-section" id="sec-recientes-container" aria-labelledby="sec-title-recientes">
+    <div class="dash-table-card">
+        <div class="dash-table-header">
             <div class="section-header-box">
                 <div>
                     <h2 class="section-title" id="sec-title-recientes">
@@ -1046,5 +1175,53 @@ function filtrarTablaClientes() {
         });
     }
 }
+
+function cambiarVistaTabla(vista, btn) {
+    document.querySelectorAll('.view-pill').forEach(function(b) {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+    });
+    if (btn) {
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+    }
+
+    var secMotivos = document.getElementById('sec-motivos-container');
+    var secClientes = document.getElementById('sec-clientes-container');
+    var secRecientes = document.getElementById('sec-recientes-container');
+
+    if (vista === 'all') {
+        if (secMotivos) secMotivos.style.display = '';
+        if (secClientes) secClientes.style.display = '';
+        if (secRecientes) secRecientes.style.display = '';
+    } else if (vista === 'motivos') {
+        if (secMotivos) secMotivos.style.display = '';
+        if (secClientes) secClientes.style.display = 'none';
+        if (secRecientes) secRecientes.style.display = 'none';
+    } else if (vista === 'clientes') {
+        if (secMotivos) secMotivos.style.display = 'none';
+        if (secClientes) secClientes.style.display = '';
+        if (secRecientes) secRecientes.style.display = 'none';
+    } else if (vista === 'recientes') {
+        if (secMotivos) secMotivos.style.display = 'none';
+        if (secClientes) secClientes.style.display = 'none';
+        if (secRecientes) secRecientes.style.display = '';
+    }
+
+    try {
+        localStorage.setItem('fundo_dashboard_tab_view', vista);
+    } catch(e) {}
+}
+
+// Restaurar preferencia previa de visualización
+(function() {
+    try {
+        var guardada = localStorage.getItem('fundo_dashboard_tab_view') || 'all';
+        var targetBtn = document.querySelector('.view-pill[data-view="' + guardada + '"]');
+        if (targetBtn) {
+            cambiarVistaTabla(guardada, targetBtn);
+        }
+    } catch(e) {}
+})();
 </script>
 @endsection

@@ -168,7 +168,7 @@
             background: var(--sidebar-bg);
             display: flex;
             flex-direction: column;
-            transition: width var(--transition-slow), transform var(--transition-slow);
+            transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 50;
             overflow: hidden;
         }
@@ -1014,30 +1014,38 @@
         .text-warning { color: var(--clr-warning); }
 
         /* ============================================================
-         * OVERLAY SIDEBAR (MOBILE)
+         * OVERLAY SIDEBAR (MOBILE - OPTIMIZADO FLUIDEZ 60 FPS)
          * ============================================================ */
         .sidebar-overlay {
-            display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.45);
+            background: rgba(15, 23, 42, 0.55);
             z-index: 45;
-            backdrop-filter: blur(2px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
         }
 
-        .sidebar-overlay.active { display: block; }
+        .sidebar-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
 
         /* ============================================================
          * RESPONSIVE & ADAPTACIÓN MÓVIL PROFESIONAL
          * ============================================================ */
         @media (max-width: 1024px) {
             .sidebar {
-                transform: translateX(-100%);
+                transform: translate3d(-100%, 0, 0);
                 width: var(--sidebar-width) !important;
+                will-change: transform;
+                backface-visibility: hidden;
+                -webkit-backface-visibility: hidden;
+                transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
             }
 
             .sidebar.mobile-open {
-                transform: translateX(0);
+                transform: translate3d(0, 0, 0) !important;
             }
 
             .main-wrapper {
