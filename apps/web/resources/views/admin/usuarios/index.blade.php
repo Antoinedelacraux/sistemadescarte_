@@ -332,7 +332,7 @@
         </div>
 
         @if($usuarios->hasPages())
-            <div style="padding: 0.75rem 1rem; border-top: 1px solid var(--brd-base);">
+            <div class="pagination-wrapper">
                 {{ $usuarios->links() }}
             </div>
         @endif

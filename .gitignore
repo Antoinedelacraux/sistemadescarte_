@@ -15,7 +15,7 @@
 
 # Dependencias y artefactos habituales
 node_modules/
-vendor/
+/vendor/
 apps/web/vendor/
 .venv/
 venv/

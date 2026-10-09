@@ -955,6 +955,140 @@
         }
 
         /* ============================================================
+         * PAGINACIÓN PROFESIONAL Y RESPONSIVE (FUNDO AGRÍCOLA)
+         * Soluciona desbordamientos de SVG y adapta a pantallas móviles
+         * ============================================================ */
+        .pagination-wrapper {
+            margin-top: 0;
+            width: 100%;
+        }
+
+        .fundo-pagination-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: clamp(0.75rem, 2vw, 0.95rem) clamp(1rem, 3vw, 1.5rem);
+            background: var(--clr-surface-0);
+            border-top: 1px solid var(--brd-base);
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .fundo-pagination-summary {
+            font-size: clamp(0.75rem, 2.5vw, 0.8125rem);
+            color: var(--txt-muted);
+            white-space: nowrap;
+        }
+
+        .fundo-pagination-summary strong {
+            color: var(--txt-primary);
+            font-weight: 600;
+        }
+
+        .fundo-pagination-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            flex-wrap: wrap;
+        }
+
+        .pagination-pages-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .pagination-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            min-height: 34px;
+            padding: 0.35rem 0.65rem;
+            font-size: var(--text-xs);
+            font-weight: 600;
+            color: var(--txt-secondary);
+            background: var(--clr-surface-0);
+            border: 1px solid var(--brd-strong);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            cursor: pointer;
+            user-select: none;
+            transition: all var(--transition-fast);
+        }
+
+        .pagination-btn:hover:not(.pagination-btn-disabled):not(.pagination-btn-active) {
+            background: var(--clr-primary-50);
+            border-color: var(--clr-primary-400);
+            color: var(--clr-primary-800);
+            transform: translateY(-1px);
+        }
+
+        .pagination-btn-active {
+            background: var(--clr-primary-700);
+            border-color: var(--clr-primary-700);
+            color: #ffffff;
+            cursor: default;
+            box-shadow: 0 1px 3px rgba(22, 101, 52, 0.3);
+        }
+
+        .pagination-btn-disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            background: var(--clr-surface-50);
+            border-color: var(--brd-base);
+            color: var(--txt-disabled);
+            pointer-events: none;
+        }
+
+        .pagination-dots {
+            padding: 0 0.25rem;
+            font-size: var(--text-xs);
+            color: var(--txt-muted);
+            font-weight: 700;
+        }
+
+        /* Regla de salvaguarda global para SVGs en cualquier paginación */
+        .fundo-pagination-container svg,
+        .pagination-wrapper svg,
+        nav[role="navigation"] svg {
+            width: 14px !important;
+            height: 14px !important;
+            max-width: 14px !important;
+            max-height: 14px !important;
+            display: inline-block !important;
+            vertical-align: middle !important;
+            flex-shrink: 0 !important;
+        }
+
+        /* Adaptación en móviles para paginación */
+        @media (max-width: 640px) {
+            .fundo-pagination-container {
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 0.75rem;
+                padding: 0.875rem 0.5rem;
+                text-align: center;
+            }
+
+            .fundo-pagination-nav {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .pagination-btn {
+                min-height: 36px;
+                padding: 0.4rem 0.55rem;
+            }
+
+            .pagination-btn-text {
+                display: none;
+            }
+        }
+
+        /* ============================================================
          * ESTADO VACÍO
          * ============================================================ */
         .empty-state {

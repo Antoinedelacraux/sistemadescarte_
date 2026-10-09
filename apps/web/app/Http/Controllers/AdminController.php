@@ -240,7 +240,7 @@ class AdminController extends Controller implements HasMiddleware
      */
     public function usuarios(): View
     {
-        $usuarios = User::with(['role', 'fundos'])->orderBy('name')->paginate(15);
+        $usuarios = User::with(['role', 'fundos'])->orderBy('name')->paginate(15)->withQueryString();
         $roles = Role::all();
         $fundos = Fundo::where('is_active', true)->get();
 
