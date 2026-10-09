@@ -18,6 +18,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/ventas', [VentaDescarteController::class, 'index'])->name('ventas.index');
     Route::get('/ventas/registrar', [VentaDescarteController::class, 'create'])->name('ventas.create');
     Route::post('/ventas', [VentaDescarteController::class, 'store'])->name('ventas.store');
+    Route::get('/ventas/{venta}', [VentaDescarteController::class, 'show'])->name('ventas.show');
     Route::get('/ventas/{venta}/editar', [VentaDescarteController::class, 'edit'])->name('ventas.edit');
     Route::put('/ventas/{venta}', [VentaDescarteController::class, 'update'])->name('ventas.update');
 

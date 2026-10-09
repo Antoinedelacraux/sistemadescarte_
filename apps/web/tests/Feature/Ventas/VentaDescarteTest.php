@@ -299,4 +299,55 @@ class VentaDescarteTest extends TestCase
             'cliente' => 'Agro Frutas SAC',
         ]);
     }
+
+    public function test_ventas_index_renders_view_button_and_modal(): void
+    {
+        $venta = VentaDescarte::create([
+            'id' => (string) Str::uuid(),
+            'fundo_id' => $this->fundoSofia->id,
+            'lote_id' => $this->loteSofia->id,
+            'cuartel_id' => $this->cuartelSofia->id,
+            'fecha_produccion' => '2026-10-08',
+            'motivo' => 'Campo',
+            'tipo_descarte' => 'Descarte Campo',
+            'precio' => 1.50,
+            'kilogramos' => 100.00,
+            'valor_venta' => 150.00,
+            'cliente' => 'Comercializadora Frutas',
+            'created_by' => $this->individualUser->id,
+        ]);
+
+        $response = $this->actingAs($this->individualUser)->get(route('ventas.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('btn-row-view');
+        $response->assertSee('abrirModalDetalle');
+        $response->assertSee('modal-detalle-venta');
+        $response->assertSee('Comercializadora Frutas');
+    }
+
+    public function test_user_can_view_single_venta_show_page(): void
+    {
+        $venta = VentaDescarte::create([
+            'id' => (string) Str::uuid(),
+            'fundo_id' => $this->fundoSofia->id,
+            'lote_id' => $this->loteSofia->id,
+            'cuartel_id' => $this->cuartelSofia->id,
+            'fecha_produccion' => '2026-10-08',
+            'motivo' => 'Packing',
+            'tipo_descarte' => 'Descarte Packing',
+            'precio' => 1.80,
+            'kilogramos' => 200.00,
+            'valor_venta' => 360.00,
+            'cliente' => 'Distribuidora del Sur',
+            'created_by' => $this->individualUser->id,
+        ]);
+
+        $response = $this->actingAs($this->individualUser)->get(route('ventas.show', $venta));
+
+        $response->assertStatus(200);
+        $response->assertSee('Ficha de Pesaje de Descarte');
+        $response->assertSee('Distribuidora del Sur');
+        $response->assertSee('360.00');
+    }
 }

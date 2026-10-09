@@ -58,6 +58,15 @@ class VentaDescarteController extends Controller
     }
 
     /**
+     * Visualiza el contenido detallado de un registro de venta.
+     */
+    public function show(VentaDescarte $venta): View
+    {
+        $venta->load(['fundo', 'lote', 'cuartel', 'creator', 'updater']);
+        return view('ventas.show', compact('venta'));
+    }
+
+    /**
      * Formulario para registrar nueva venta de descarte.
      */
     public function create(): View
