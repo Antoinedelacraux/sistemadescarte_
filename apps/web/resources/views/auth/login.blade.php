@@ -475,7 +475,7 @@
         @endif
 
         {{-- Formulario --}}
-        <form action="{{ route('login') }}" method="POST" class="login-form" novalidate>
+        <form action="/login" method="POST" class="login-form" novalidate>
             @csrf
 
             <div class="form-group">
