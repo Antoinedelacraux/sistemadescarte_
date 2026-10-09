@@ -33,6 +33,7 @@ class VentaDescarte extends Model
         'peso_jaba',
         'brevete',
         'ruc',
+        'cliente',
         'placa',
         'conductor',
         'viaje',

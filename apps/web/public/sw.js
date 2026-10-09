@@ -1,8 +1,11 @@
 // Service Worker — Sistema Fundo PWA
-const CACHE_NAME = 'fundo-pwa-v1';
+const CACHE_NAME = 'fundo-pwa-v2';
 const STATIC_ASSETS = [
     '/',
     '/manifest.json',
+    '/icons/icon.webp',
+    '/icons/icon-192.webp',
+    '/icons/icon-512.webp',
     '/icons/icon.svg',
     'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap'
 ];

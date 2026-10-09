@@ -137,7 +137,7 @@ class DatabaseSeeder extends Seeder
         ]);
         \App\Models\Cuartel::create(['lote_id' => $loteJose1->id, 'nombre' => 'Cuartel C1']);
 
-        // 5. Registros ficticios para validar aislamiento entre fundos
+        // 5. Registros ficticios para validar aislamiento entre fundos y tablas de análisis
         VentaDescarte::withoutGlobalScopes()->create([
             'id' => (string) Str::uuid(),
             'fundo_id' => $fundoSofia->id,
@@ -151,9 +151,111 @@ class DatabaseSeeder extends Seeder
             'valor_venta' => 180.00,
             'jabas' => 6,
             'peso_jaba' => 20.00,
+            'ruc' => '20554433221',
+            'cliente' => 'Agroexport del Sur SAC',
             'placa' => 'ABC-123',
             'conductor' => 'Juan Pérez',
             'created_by' => $individualSofia->id,
+        ]);
+
+        VentaDescarte::withoutGlobalScopes()->create([
+            'id' => (string) Str::uuid(),
+            'fundo_id' => $fundoSofia->id,
+            'lote_id' => $loteSofia1->id,
+            'cuartel_manual' => 'Cuartel 1A',
+            'fecha_produccion' => '2026-10-08',
+            'motivo' => 'Cosecha Nacional',
+            'tipo_descarte' => 'Racimos',
+            'precio' => 1.80,
+            'kilogramos' => 250.00,
+            'valor_venta' => 450.00,
+            'jabas' => 12,
+            'peso_jaba' => 20.83,
+            'ruc' => '20554433221',
+            'cliente' => 'Agroexport del Sur SAC',
+            'placa' => 'ABC-123',
+            'conductor' => 'Juan Pérez',
+            'created_by' => $individualSofia->id,
+        ]);
+
+        VentaDescarte::withoutGlobalScopes()->create([
+            'id' => (string) Str::uuid(),
+            'fundo_id' => $fundoSofia->id,
+            'lote_id' => $loteSofia2->id,
+            'cuartel_manual' => 'Cuartel 2A',
+            'fecha_produccion' => '2026-10-09',
+            'motivo' => 'Cosecha Nacional',
+            'tipo_descarte' => 'Granos',
+            'precio' => 1.20,
+            'kilogramos' => 180.00,
+            'valor_venta' => 216.00,
+            'jabas' => 9,
+            'peso_jaba' => 20.00,
+            'ruc' => '20601234567',
+            'cliente' => 'Distribuidora Frutas del Norte',
+            'placa' => 'T1B-456',
+            'conductor' => 'Mario Vargas',
+            'created_by' => $generalSofia->id,
+        ]);
+
+        VentaDescarte::withoutGlobalScopes()->create([
+            'id' => (string) Str::uuid(),
+            'fundo_id' => $fundoSofia->id,
+            'lote_id' => $loteSofia2->id,
+            'cuartel_manual' => 'Cuartel 2B',
+            'fecha_produccion' => '2026-10-09',
+            'motivo' => 'Campo',
+            'tipo_descarte' => 'Racimos con plaga',
+            'precio' => 0.85,
+            'kilogramos' => 310.00,
+            'valor_venta' => 263.50,
+            'jabas' => 15,
+            'peso_jaba' => 20.67,
+            'ruc' => '20601234567',
+            'cliente' => 'Distribuidora Frutas del Norte',
+            'placa' => 'T1B-456',
+            'conductor' => 'Mario Vargas',
+            'created_by' => $individualSofia->id,
+        ]);
+
+        VentaDescarte::withoutGlobalScopes()->create([
+            'id' => (string) Str::uuid(),
+            'fundo_id' => $fundoSofia->id,
+            'lote_id' => $loteSofia1->id,
+            'cuartel_manual' => 'Cuartel 1B',
+            'fecha_produccion' => '2026-10-09',
+            'motivo' => 'Packing',
+            'tipo_descarte' => 'Racimos',
+            'precio' => 2.10,
+            'kilogramos' => 150.00,
+            'valor_venta' => 315.00,
+            'jabas' => 7,
+            'peso_jaba' => 21.43,
+            'ruc' => '20459876543',
+            'cliente' => 'Frutas del Valle EIRL',
+            'placa' => 'M9K-321',
+            'conductor' => 'Luis Mendoza',
+            'created_by' => $generalSofia->id,
+        ]);
+
+        VentaDescarte::withoutGlobalScopes()->create([
+            'id' => (string) Str::uuid(),
+            'fundo_id' => $fundoSofia->id,
+            'lote_id' => $loteSofia2->id,
+            'cuartel_manual' => 'Cuartel 2B',
+            'fecha_produccion' => '2026-10-09',
+            'motivo' => 'Packing',
+            'tipo_descarte' => 'Granos',
+            'precio' => 1.40,
+            'kilogramos' => 200.00,
+            'valor_venta' => 280.00,
+            'jabas' => 10,
+            'peso_jaba' => 20.00,
+            'ruc' => '20459876543',
+            'cliente' => 'Frutas del Valle EIRL',
+            'placa' => 'M9K-321',
+            'conductor' => 'Luis Mendoza',
+            'created_by' => $generalSofia->id,
         ]);
 
         VentaDescarte::withoutGlobalScopes()->create([
@@ -169,6 +271,8 @@ class DatabaseSeeder extends Seeder
             'valor_venta' => 160.00,
             'jabas' => 4,
             'peso_jaba' => 20.00,
+            'ruc' => '20554433221',
+            'cliente' => 'Agroexport del Sur SAC',
             'placa' => 'XYZ-789',
             'conductor' => 'Carlos López',
             'created_by' => $generalElena->id,

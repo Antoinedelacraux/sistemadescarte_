@@ -93,7 +93,17 @@ class VentaDescarteController extends Controller
             'fundo_id' => ['required', 'integer', Rule::in($fundosAccesibles)],
             'fecha_produccion' => ['required', 'date'],
             'motivo' => ['required', 'string', Rule::in(['Campo', 'Packing', 'Cosecha Nacional'])],
-            'tipo_descarte' => ['required', 'string', Rule::in(['Racimos', 'Racimos con plaga', 'Granos'])],
+            'tipo_descarte' => [
+                'required',
+                'string',
+                Rule::in(['Racimos', 'Racimos con plaga', 'Granos']),
+                function ($attribute, $value, $fail) use ($request) {
+                    $motivo = $request->input('motivo');
+                    if (in_array($motivo, ['Cosecha Nacional', 'Packing']) && !in_array($value, ['Racimos', 'Granos'])) {
+                        $fail("Para {$motivo} únicamente se permiten dos tipos de descarte: Racimos y Granos.");
+                    }
+                },
+            ],
             'lote_id' => [
                 'required',
                 'integer',
@@ -114,6 +124,7 @@ class VentaDescarteController extends Controller
             'peso_jaba' => ['nullable', 'numeric', 'min:0'],
             'brevete' => ['nullable', 'string', 'max:50'],
             'ruc' => ['nullable', 'string', 'max:20'],
+            'cliente' => ['nullable', 'string', 'max:150'],
             'placa' => ['nullable', 'string', 'max:20'],
             'conductor' => ['nullable', 'string', 'max:150'],
             'viaje' => ['nullable', 'string', 'max:50'],
@@ -176,7 +187,17 @@ class VentaDescarteController extends Controller
             'fundo_id' => ['required', 'integer', Rule::in($fundosAccesibles)],
             'fecha_produccion' => ['required', 'date'],
             'motivo' => ['required', 'string', Rule::in(['Campo', 'Packing', 'Cosecha Nacional'])],
-            'tipo_descarte' => ['required', 'string', Rule::in(['Racimos', 'Racimos con plaga', 'Granos'])],
+            'tipo_descarte' => [
+                'required',
+                'string',
+                Rule::in(['Racimos', 'Racimos con plaga', 'Granos']),
+                function ($attribute, $value, $fail) use ($request) {
+                    $motivo = $request->input('motivo');
+                    if (in_array($motivo, ['Cosecha Nacional', 'Packing']) && !in_array($value, ['Racimos', 'Granos'])) {
+                        $fail("Para {$motivo} únicamente se permiten dos tipos de descarte: Racimos y Granos.");
+                    }
+                },
+            ],
             'lote_id' => [
                 'required',
                 'integer',
@@ -197,6 +218,7 @@ class VentaDescarteController extends Controller
             'peso_jaba' => ['nullable', 'numeric', 'min:0'],
             'brevete' => ['nullable', 'string', 'max:50'],
             'ruc' => ['nullable', 'string', 'max:20'],
+            'cliente' => ['nullable', 'string', 'max:150'],
             'placa' => ['nullable', 'string', 'max:20'],
             'conductor' => ['nullable', 'string', 'max:150'],
             'viaje' => ['nullable', 'string', 'max:50'],

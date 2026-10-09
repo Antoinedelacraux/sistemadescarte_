@@ -255,4 +255,48 @@ class VentaDescarteTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonFragment(['nombre' => 'Lote 01 Norte']);
     }
+
+    public function test_cosecha_nacional_rejects_invalid_tipo_descarte(): void
+    {
+        $payload = [
+            'fundo_id' => $this->fundoSofia->id,
+            'fecha_produccion' => '2026-10-08',
+            'motivo' => 'Cosecha Nacional',
+            'tipo_descarte' => 'Racimos con plaga', // No permitido en Cosecha Nacional
+            'lote_id' => $this->loteSofia->id,
+            'cuartel_id' => $this->cuartelSofia->id,
+            'precio' => 2.00,
+            'kilogramos' => 50.00,
+        ];
+
+        $response = $this->actingAs($this->individualUser)
+            ->post(route('ventas.store'), $payload);
+
+        $response->assertSessionHasErrors('tipo_descarte');
+    }
+
+    public function test_cosecha_nacional_accepts_racimos_and_granos(): void
+    {
+        $payload = [
+            'fundo_id' => $this->fundoSofia->id,
+            'fecha_produccion' => '2026-10-08',
+            'motivo' => 'Cosecha Nacional',
+            'tipo_descarte' => 'Racimos',
+            'lote_id' => $this->loteSofia->id,
+            'cuartel_id' => $this->cuartelSofia->id,
+            'precio' => 2.00,
+            'kilogramos' => 50.00,
+            'cliente' => 'Agro Frutas SAC',
+        ];
+
+        $response = $this->actingAs($this->individualUser)
+            ->post(route('ventas.store'), $payload);
+
+        $response->assertRedirect(route('ventas.index'));
+        $this->assertDatabaseHas('ventas_descarte', [
+            'motivo' => 'Cosecha Nacional',
+            'tipo_descarte' => 'Racimos',
+            'cliente' => 'Agro Frutas SAC',
+        ]);
+    }
 }

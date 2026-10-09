@@ -20,7 +20,7 @@ Sistema web para la gestión agrícola integral enfocada en el registro de pesaj
    - Cuarteles asociados dinámicamente al lote seleccionado.
 3. **Venta de Descarte:**
    - Motivos aprobados: `Campo`, `Packing` y `Cosecha Nacional`.
-   - Cosecha Nacional exige obligatoriamente Cuartel y Tipo de Descarte (`Racimos`, `Racimos con plaga`, `Granos`).
+   - Cosecha Nacional exige obligatoriamente Cuartel y solo admite dos Tipos de Descarte: `Racimos` y `Granos`. Campo admite `Racimos`, `Racimos con plaga` y `Granos`. Packing admite `Racimos` y `Granos`.
    - Cálculo del valor: `Precio en Soles × Kilogramos`, con 2 decimales exactos.
    - Auditoría estricta: `created_by`, `updated_by` y marcas de tiempo registradas en cada transacción.
 4. **Historial y Filtros:**

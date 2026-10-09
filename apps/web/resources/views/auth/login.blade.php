@@ -403,7 +403,9 @@
 
         {{-- Logo --}}
         <div class="hero-logo">
-            <div class="hero-logo-icon">🌾</div>
+            <div class="hero-logo-icon" style="overflow:hidden;padding:0;">
+                <img src="/icons/icon-192.webp" alt="Sistema Fundo" width="44" height="44" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block;">
+            </div>
             <div class="hero-logo-text">
                 <strong>Sistema Web del Fundo</strong>
                 <span>Gestión Agrícola</span>
@@ -447,7 +449,9 @@
 
         {{-- Logo móvil --}}
         <div class="login-mobile-brand" aria-hidden="true">
-            <div class="login-mobile-brand-icon">🌾</div>
+            <div class="login-mobile-brand-icon" style="overflow:hidden;padding:0;">
+                <img src="/icons/icon-192.webp" alt="Sistema Fundo" width="36" height="36" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block;">
+            </div>
             <div class="login-mobile-brand-text">
                 <strong>Sistema Web del Fundo</strong>
                 <span>Gestión Agrícola</span>

@@ -8,8 +8,8 @@ $ok = $true
 foreach ($name in @('Agents','Skills','Rules')) {
   switch ($name) {
     'Agents' { $expected = 9; $actual = $agents.Count }
-    'Skills' { $expected = 12; $actual = $skills.Count }
-    'Rules' { $expected = 6; $actual = $rules.Count }
+    'Skills' { $expected = 13; $actual = $skills.Count }
+    'Rules' { $expected = 7; $actual = $rules.Count }
   }
   $passed = $actual -eq $expected
   if (-not $passed) { $ok = $false }

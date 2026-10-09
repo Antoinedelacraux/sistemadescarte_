@@ -391,7 +391,11 @@
                 </div>
             </div>
 
-            <div class="form-grid-2">
+            <div class="form-grid-3">
+                <div class="form-group">
+                    <label for="cliente" class="form-label">Cliente / Razón Social</label>
+                    <input type="text" name="cliente" id="cliente" class="form-control" placeholder="Ej. Frutas del Norte SAC" value="{{ old('cliente', $venta->cliente) }}">
+                </div>
                 <div class="form-group">
                     <label for="ruc" class="form-label">RUC Comprador</label>
                     <input type="text" name="ruc" id="ruc" class="form-control" value="{{ old('ruc', $venta->ruc) }}">
@@ -418,6 +422,7 @@
 
 <script>
 var lotesCache = @json($lotes);
+var tipoActual = @json(old('tipo_descarte', $venta->tipo_descarte));
 
 function calcularTotal() {
     var kg = parseFloat(document.getElementById('kilogramos').value) || 0;
@@ -429,11 +434,34 @@ function calcularTotal() {
 function actualizarOpcionesTipoDescarte() {
     var motivo = document.getElementById('motivo').value;
     var cuartelStar = document.getElementById('cuartel-required-star');
+    var selectTipo = document.getElementById('tipo_descarte');
+    var valorActual = selectTipo.value || tipoActual;
+
     if (motivo === 'Cosecha Nacional') {
         cuartelStar.style.display = 'inline';
     } else {
         cuartelStar.style.display = 'none';
     }
+
+    // Regla de negocio:
+    // Cosecha Nacional: Racimos, Granos (solo dos tipos)
+    // Packing: Racimos, Granos
+    // Campo: Racimos, Racimos con plaga, Granos
+    selectTipo.innerHTML = '';
+    var opciones = [];
+    if (motivo === 'Packing' || motivo === 'Cosecha Nacional') {
+        opciones = ['Racimos', 'Granos'];
+    } else {
+        opciones = ['Racimos', 'Racimos con plaga', 'Granos'];
+    }
+
+    opciones.forEach(function(opc) {
+        var opt = document.createElement('option');
+        opt.value = opc;
+        opt.textContent = opc;
+        if (opc === valorActual) opt.selected = true;
+        selectTipo.appendChild(opt);
+    });
 }
 
 function actualizarCuarteles(loteId) {

@@ -268,9 +268,6 @@
             <div style="font-size: var(--text-sm); font-weight: 600; color: var(--txt-primary);">
                 Registros encontrados: <span style="color: var(--clr-primary-700);">{{ $ventas->total() }}</span>
             </div>
-            <div class="text-xs text-muted">
-                Tip: Desliza el sidebar con el botón superior si deseas ver la tabla a pantalla completa.
-            </div>
         </div>
 
         <div style="overflow-x: auto;">
@@ -279,6 +276,7 @@
                     <tr>
                         <th scope="col">Fundo</th>
                         <th scope="col">Fecha Prod.</th>
+                        <th scope="col">Cliente</th>
                         <th scope="col">Lote</th>
                         <th scope="col">Cuartel</th>
                         <th scope="col">Motivo</th>
@@ -297,6 +295,9 @@
                             </td>
                             <td>
                                 {{ $venta->fecha_produccion->format('d/m/Y') }}
+                            </td>
+                            <td>
+                                <strong style="color: var(--txt-primary);">{{ $venta->cliente ?: ($venta->ruc ? 'RUC: '.$venta->ruc : '—') }}</strong>
                             </td>
                             <td>
                                 {{ $venta->lote?->nombre ?? 'Sin Lote' }}

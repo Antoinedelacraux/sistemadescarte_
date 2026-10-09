@@ -5,421 +5,1046 @@
 
 @section('styles')
 <style>
-    /* Tarjetas de bienvenida por rol */
+    /* ============================================================
+     * PANEL DE CONTROL — SISTEMA FUNDO (DECLUTTERED & OPTIMIZADO)
+     * Diseñado para máxima claridad y facilidad de uso operativo
+     * ============================================================ */
+
+    /* Banner principal de bienvenida y acceso rápido */
     .welcome-banner {
-        background: linear-gradient(135deg, var(--clr-primary-800) 0%, var(--clr-primary-900) 100%);
+        background: linear-gradient(135deg, #14532d 0%, #052e16 100%);
         border-radius: var(--radius-xl);
-        padding: clamp(1.2rem, 4vw, 1.75rem) clamp(1rem, 4vw, 2rem);
+        padding: clamp(1.25rem, 4vw, 1.75rem);
         color: white;
         position: relative;
         overflow: hidden;
-        margin-bottom: 1.75rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 16px rgba(5,46,22,0.18);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.25rem;
+        flex-wrap: wrap;
     }
 
     .welcome-banner::before {
         content: '';
         position: absolute;
         top: -40px;
-        right: -40px;
-        width: 200px;
-        height: 200px;
+        right: 180px;
+        width: 180px;
+        height: 180px;
         border-radius: 50%;
-        background: rgba(34,197,94,0.10);
+        background: rgba(74,222,128,0.10);
         pointer-events: none;
     }
 
-    .welcome-banner::after {
-        content: '';
-        position: absolute;
-        bottom: -60px;
-        right: 60px;
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-        background: rgba(34,197,94,0.06);
-        pointer-events: none;
+    .welcome-banner-info {
+        flex: 1;
+        min-width: 240px;
+        position: relative;
+        z-index: 1;
     }
 
     .welcome-greeting {
         font-size: var(--text-xs);
         text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: var(--clr-primary-300);
-        font-weight: 600;
-        margin-bottom: 0.375rem;
+        letter-spacing: 0.08em;
+        color: #86efac;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
     }
 
     .welcome-name {
-        font-size: clamp(1.2rem, 5vw, 1.625rem);
+        font-size: clamp(1.25rem, 5vw, 1.75rem);
         font-weight: 800;
         letter-spacing: -0.02em;
         line-height: 1.2;
-        position: relative;
-        z-index: 1;
+        margin-bottom: 0.5rem;
         word-break: break-word;
     }
 
     .welcome-meta {
         display: flex;
         align-items: center;
-        gap: 1rem;
-        margin-top: 1rem;
+        gap: 0.875rem;
         flex-wrap: wrap;
-        position: relative;
-        z-index: 1;
+        font-size: var(--text-xs);
+        color: rgba(255,255,255,0.75);
     }
 
     .welcome-meta-item {
         display: flex;
         align-items: center;
-        gap: 0.375rem;
-        font-size: var(--text-xs);
-        color: rgba(255,255,255,0.6);
+        gap: 0.35rem;
     }
 
-    .welcome-meta-item strong {
-        color: rgba(255,255,255,0.9);
+    .welcome-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 2;
     }
 
-    /* Grid principal del dashboard */
+    .btn-hero-primary {
+        background: #22c55e;
+        color: #052e16;
+        font-weight: 700;
+        padding: 0.625rem 1.125rem;
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        font-size: var(--text-sm);
+        transition: all var(--transition-fast);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .btn-hero-primary:hover {
+        background: #4ade80;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+
+    .btn-hero-secondary {
+        background: rgba(255,255,255,0.12);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.25);
+        font-weight: 600;
+        padding: 0.625rem 1rem;
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        font-size: var(--text-sm);
+        transition: all var(--transition-fast);
+    }
+    .btn-hero-secondary:hover {
+        background: rgba(255,255,255,0.22);
+    }
+
+    @media (max-width: 640px) {
+        .welcome-actions {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .btn-hero-primary, .btn-hero-secondary {
+            justify-content: center;
+            padding: 0.5625rem 0.5rem;
+            font-size: clamp(0.75rem, 2.8vw, 0.8125rem);
+            text-align: center;
+        }
+    }
+
+    /* Grid de métricas clave (KPIs) */
     .dashboard-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: repeat(3, 1fr);
         gap: 1rem;
         margin-bottom: 1.75rem;
     }
 
-    .stat-value {
-        font-size: clamp(1.2rem, 5vw, 1.625rem);
-        font-weight: 800;
-        line-height: 1.1;
-    }
-
-    @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 560px) { .dashboard-grid { grid-template-columns: 1fr; } }
-
-    /* Grid de contenido */
-    .content-grid {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 1.25rem;
-    }
-
-    @media (max-width: 900px) { .content-grid { grid-template-columns: 1fr; } }
-
-    /* Grupo de acciones del header en dashboard */
-    .dash-actions-group {
+    .stat-card {
+        background: white;
+        border: 1px solid var(--brd-base);
+        border-radius: var(--radius-lg);
+        padding: 1.125rem 1.25rem;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        flex-wrap: wrap;
+        gap: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     }
 
-    @media (max-width: 640px) {
-        .dash-actions-group {
-            display: grid !important;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
-            width: 100% !important;
-            gap: 0.5rem !important;
-        }
-        .dash-actions-group .btn {
-            justify-content: center !important;
-            text-align: center !important;
-            padding: 0.5rem 0.35rem !important;
-            font-size: clamp(0.72rem, 2.7vw, 0.8125rem) !important;
-            white-space: nowrap !important;
-        }
-        .welcome-meta {
-            gap: 0.5rem 0.75rem;
-        }
-    }
-
-    /* Tabla del dashboard */
-    .dash-table {
-        min-width: 580px;
-    }
-
-    .dash-table th {
-        padding: 0.5rem 0.875rem;
-        background: var(--clr-surface-50);
-    }
-
-    .dash-table td {
-        padding: 0.6875rem 0.875rem;
-    }
-
-    /* Estado de sync */
-    .sync-badge {
-        display: inline-flex;
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-md);
+        display: flex;
         align-items: center;
-        gap: 0.25rem;
-        padding: 0.125rem 0.4375rem;
-        font-size: 0.625rem;
-        font-weight: 700;
-        border-radius: var(--radius-full);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
+        justify-content: center;
+        font-size: 1.375rem;
+        flex-shrink: 0;
+    }
+    .stat-icon.green  { background: #dcfce7; color: #166534; }
+    .stat-icon.yellow { background: #fef3c7; color: #92400e; }
+    .stat-icon.blue   { background: #dbeafe; color: #1e40af; }
+
+    .stat-value {
+        font-size: clamp(1.2rem, 4.5vw, 1.5rem);
+        font-weight: 800;
+        line-height: 1.1;
+        color: var(--txt-primary);
+        font-family: monospace;
     }
 
-    .sync-synced  { background: var(--clr-success-bg);  color: var(--clr-success); }
-    .sync-pending { background: var(--clr-warning-bg);  color: var(--clr-warning); }
-    .sync-error   { background: var(--clr-danger-bg);   color: var(--clr-danger); }
+    .stat-label {
+        font-size: var(--text-xs);
+        color: var(--txt-muted);
+        margin-top: 0.2rem;
+        font-weight: 500;
+    }
 
-    /* Panel de fundos asignados */
-    .fundo-item {
+    @media (max-width: 768px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+        .stat-card {
+            padding: 0.875rem 1rem;
+        }
+    }
+
+    /* Secciones del panel */
+    .dash-section {
+        margin-bottom: 1.75rem;
+    }
+
+    .section-header-box {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0.75rem 0;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .section-title {
+        font-size: clamp(1.05rem, 3.2vw, 1.2rem);
+        font-weight: 700;
+        color: var(--txt-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+    }
+
+    .section-subtitle {
+        font-size: var(--text-xs);
+        color: var(--txt-muted);
+        margin-top: 0.2rem;
+    }
+
+    /* Tablas operativas */
+    .table-clean {
+        min-width: 660px;
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table-clean th {
+        background: #f8fafc;
+        padding: 0.625rem 0.875rem;
+        font-size: 0.6875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--txt-secondary);
+        border-bottom: 2px solid var(--brd-base);
+        font-weight: 700;
+    }
+
+    .table-clean td {
+        padding: 0.625rem 0.875rem;
+        font-size: var(--text-sm);
         border-bottom: 1px solid var(--clr-surface-100);
+        vertical-align: middle;
     }
 
-    .fundo-item:last-child { border-bottom: none; }
-
-    .fundo-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: var(--clr-primary-500);
-        flex-shrink: 0;
-    }
-
-    /* Tag de rol destacado */
-    .role-card {
-        border-radius: var(--radius-lg);
-        padding: 1rem 1.25rem;
-        border: 1px solid;
-        margin-bottom: 1.25rem;
-    }
-
-    .role-card-admin      { background: #fff5f5; border-color: #fecaca; }
-    .role-card-general    { background: #eff6ff; border-color: #bfdbfe; }
-    .role-card-individual { background: #f0fdf4; border-color: #bbf7d0; }
-    .role-card-analista   { background: #fffbeb; border-color: #fde68a; }
-
-    /* Acceso global badge */
-    .global-access {
+    /* Pastillas de motivos */
+    .motivo-pill {
         display: inline-flex;
         align-items: center;
-        gap: 0.375rem;
-        font-size: var(--text-xs);
-        font-weight: 600;
-        padding: 0.25rem 0.625rem;
+        gap: 0.35rem;
+        padding: 0.2rem 0.5625rem;
         border-radius: var(--radius-full);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+    .motivo-pill-amber { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .motivo-pill-green { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .motivo-pill-blue  { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+
+    /* Barra visual de porcentaje */
+    .progress-bar-wrap {
+        width: 75px;
+        height: 6px;
+        background: #e2e8f0;
+        border-radius: 999px;
+        overflow: hidden;
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 0.375rem;
+    }
+    .progress-bar-fill {
+        height: 100%;
+        border-radius: 999px;
+    }
+    .progress-fill-amber { background: #f59e0b; }
+    .progress-fill-green { background: #16a34a; }
+    .progress-fill-blue  { background: #2563eb; }
+
+    /* Subtotales y Totales */
+    .row-subtotal {
+        background: #f8fafc;
+        font-weight: 600;
+        font-size: var(--text-xs);
+    }
+    .row-subtotal td {
+        border-bottom: 2px solid var(--brd-base);
+    }
+
+    .row-grand-total {
+        background: #0f2b1f;
+        color: white !important;
+        font-weight: 800;
+    }
+    .row-grand-total td {
+        color: white !important;
+        padding: 0.75rem 0.875rem;
+        border: none;
+        font-size: var(--text-sm);
+    }
+    .row-grand-total .text-highlight {
+        color: #4ade80 !important;
+    }
+
+    /* Barra de filtros de clientes */
+    .client-controls-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        padding: 0.75rem 1rem;
+        background: #f8fafc;
+        border-bottom: 1px solid var(--brd-base);
+    }
+
+    .search-box-client {
+        position: relative;
+        flex: 1;
+        min-width: 200px;
+        max-width: 340px;
+    }
+
+    .search-box-client input {
+        width: 100%;
+        padding: 0.4375rem 0.75rem 0.4375rem 2.1rem;
+        font-size: var(--text-xs);
+        border: 1px solid var(--brd-base);
+        border-radius: var(--radius-md);
+        background: white;
+        color: var(--txt-primary);
+        font-family: inherit;
+    }
+    .search-box-client input:focus {
+        outline: none;
+        border-color: var(--clr-primary-500);
+        box-shadow: 0 0 0 3px rgba(34,197,94,0.15);
+    }
+
+    .search-box-client .search-icon {
+        position: absolute;
+        left: 0.625rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.875rem;
+        color: var(--txt-muted);
+        pointer-events: none;
+    }
+
+    .filter-chips-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+    }
+
+    .chip-btn {
+        padding: 0.28rem 0.625rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        border-radius: var(--radius-full);
+        border: 1px solid var(--brd-base);
+        background: white;
+        color: var(--txt-secondary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    .chip-btn:hover {
+        background: var(--clr-primary-50);
+        border-color: var(--clr-primary-300);
+        color: var(--clr-primary-800);
+    }
+    .chip-btn.active {
+        background: var(--clr-primary-700);
+        border-color: var(--clr-primary-700);
+        color: white;
+    }
+
+    .view-toggle-btns {
+        display: inline-flex;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        border: 1px solid var(--brd-base);
+        background: white;
+    }
+    .view-toggle-btn {
+        padding: 0.28rem 0.625rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: var(--txt-secondary);
+        transition: background var(--transition-fast);
+    }
+    .view-toggle-btn.active {
         background: var(--clr-primary-100);
-        color: var(--clr-primary-700);
+        color: var(--clr-primary-800);
+    }
+
+    /* Filas de cliente */
+    .client-parent-row {
+        cursor: pointer;
+        transition: background var(--transition-fast);
+    }
+    .client-parent-row:hover {
+        background: #f8fafc;
+    }
+    .client-parent-row.expanded {
+        background: #f8fafc;
+    }
+
+    .client-toggle-caret {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        text-align: center;
+        line-height: 18px;
+        border-radius: 4px;
+        background: var(--clr-surface-200);
+        color: var(--txt-secondary);
+        font-size: 0.6875rem;
+        margin-right: 0.5rem;
+        transition: transform 0.2s ease;
+    }
+    .client-parent-row.expanded .client-toggle-caret {
+        transform: rotate(90deg);
+        background: var(--clr-primary-600);
+        color: white;
+    }
+
+    .client-subrow {
+        background: #fafafa;
+        font-size: var(--text-xs);
+    }
+    .client-subrow td {
+        padding-top: 0.375rem;
+        padding-bottom: 0.375rem;
+        border-bottom: 1px dashed var(--brd-base);
+    }
+
+    .client-subrow-bullet {
+        margin-left: 1.625rem;
+        color: var(--txt-muted);
+        font-size: 0.6875rem;
     }
 </style>
 @endsection
 
 @section('content')
 
-{{-- Banner de bienvenida --}}
+{{-- 1. HERO BANNER DE BIENVENIDA Y ACCESO RÁPIDO --}}
 <div class="welcome-banner">
-    <div class="welcome-greeting">👋 Bienvenido de regreso</div>
-    <div class="welcome-name">{{ $user->name }}</div>
-    <div class="welcome-meta">
-        <div class="welcome-meta-item">
-            <span aria-hidden="true">🗓️</span>
-            <span>{{ now()->translatedFormat('l, d \d\e F \d\e Y') }}</span>
-        </div>
-        <div class="welcome-meta-item">
-            <span aria-hidden="true">🕐</span>
-            <span>{{ now()->format('H:i') }}</span>
-        </div>
-        @php
-            $isGlobalRole = $user->isAdmin() || $user->isAnalista();
-        @endphp
-        @if($isGlobalRole)
+    <div class="welcome-banner-info">
+        <div class="welcome-greeting">🌾 Sistema Fundo &bull; Gestión Agrícola</div>
+        <div class="welcome-name">Hola, {{ $user->name }}</div>
+        <div class="welcome-meta">
             <div class="welcome-meta-item">
-                <span aria-hidden="true">🌐</span>
-                <strong>Acceso global — todos los fundos</strong>
+                <span aria-hidden="true">🗓️</span>
+                <span>{{ now()->translatedFormat('l, d \d\e F \d\e Y') }}</span>
             </div>
-        @elseif($fundos->count())
-            <div class="welcome-meta-item">
-                <span aria-hidden="true">🏡</span>
-                <strong>{{ $fundos->pluck('name')->join(', ') }}</strong>
-            </div>
+            @if(Auth::user()->isAdmin() || Auth::user()->isAnalista())
+                <div class="welcome-meta-item" style="color: #bbf7d0;">
+                    <span aria-hidden="true">🌐</span>
+                    <span>Acceso a todos los fundos</span>
+                </div>
+            @elseif($fundos->count())
+                <div class="welcome-meta-item" style="color: #bbf7d0;">
+                    <span aria-hidden="true">🏡</span>
+                    <span>{{ $fundos->pluck('name')->join(', ') }}</span>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- Botones de acción directa para trabajadores --}}
+    <div class="welcome-actions">
+        @if(Auth::user()->isAdmin() || Auth::user()->isGeneral() || Auth::user()->isIndividual())
+            <a href="{{ route('ventas.create') }}" class="btn-hero-primary" id="btn-quick-create">
+                <span aria-hidden="true">➕</span>
+                <span>Registrar Venta</span>
+            </a>
         @endif
+        <a href="{{ route('ventas.index') }}" class="btn-hero-secondary">
+            <span aria-hidden="true">📋</span>
+            <span>Ver Historial</span>
+        </a>
     </div>
 </div>
 
-{{-- Tarjetas estadísticas --}}
-<div class="dashboard-grid" role="region" aria-label="Resumen estadístico">
+{{-- 2. RESUMEN DE NÚMEROS CLAVE (KPIS) --}}
+<div class="dashboard-grid" role="region" aria-label="Resumen de producción">
     <div class="stat-card">
-        <div class="stat-icon green" aria-hidden="true">📝</div>
+        <div class="stat-icon green" aria-hidden="true">⚖️</div>
         <div>
-            <div class="stat-value">{{ $ventas->count() }}</div>
-            <div class="stat-label">Registros visibles</div>
+            <div class="stat-value">{{ number_format($totalGeneralKg, 2) }} kg</div>
+            <div class="stat-label">Kilogramos Totales de Descarte</div>
         </div>
     </div>
 
     <div class="stat-card">
         <div class="stat-icon yellow" aria-hidden="true">💰</div>
         <div>
-            <div class="stat-value">S/ {{ number_format($ventas->sum('valor_venta'), 2) }}</div>
-            <div class="stat-label">Total acumulado</div>
+            <div class="stat-value">S/ {{ number_format($totalGeneralVenta, 2) }}</div>
+            <div class="stat-label">Valor Total en Ventas</div>
         </div>
     </div>
 
     <div class="stat-card">
-        <div class="stat-icon blue" aria-hidden="true">⚖️</div>
+        <div class="stat-icon blue" aria-hidden="true">📝</div>
         <div>
-            <div class="stat-value">{{ number_format($ventas->sum('kilogramos'), 2) }} kg</div>
-            <div class="stat-label">Kilogramos totales</div>
+            <div class="stat-value">{{ $ventas->count() }}</div>
+            <div class="stat-label">Envíos / Pesajes Registrados</div>
         </div>
     </div>
 </div>
 
-{{-- Grid de contenido principal --}}
-<div class="content-grid">
-
-    {{-- Columna principal: tabla de registros --}}
-    <div>
-        <div class="card" style="padding: 0; overflow: hidden;">
-            <div class="card-header">
+{{-- 3. TABLA 1: RESUMEN POR ORIGEN Y TIPO DE DESCARTE --}}
+<section class="dash-section" aria-labelledby="sec-title-motivos">
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="card-header" style="border-bottom: 1px solid var(--brd-base);">
+            <div class="section-header-box">
                 <div>
-                    <div class="card-title">
-                        <span aria-hidden="true">🛡️</span>
-                        Registros recientes
+                    <h2 class="section-title" id="sec-title-motivos">
+                        <span aria-hidden="true">📊</span> Resumen por Tipo de Venta y Descarte
+                    </h2>
+                    <div class="section-subtitle">
+                        Totales acumulados en Venta Nacional (Racimos y Granos), Venta Campo y Venta Packing
                     </div>
-                    <div class="card-subtitle">
-                        Datos filtrados por la política de acceso (FundoScope)
-                    </div>
-                </div>
-                <div class="dash-actions-group">
-                    <a href="{{ route('ventas.index') }}" class="btn btn-secondary btn-sm">
-                        Ver Historial Completo →
-                    </a>
-                    @if(Auth::user()->isAdmin() || Auth::user()->isGeneral() || Auth::user()->isIndividual())
-                    <a href="{{ route('ventas.create') }}" class="btn btn-primary btn-sm">
-                        ➕ Registrar Venta
-                    </a>
-                    @endif
                 </div>
             </div>
+        </div>
 
-            @if($ventas->isEmpty())
-                <div class="empty-state" role="status">
-                    <div class="empty-icon" aria-hidden="true">📭</div>
-                    <div class="empty-title">Sin registros visibles</div>
-                    <p class="empty-desc">No existen ventas de descarte accesibles para su usuario bajo la política actual de fundo.</p>
+        <div class="table-wrapper" style="border: none; border-radius: 0;">
+            <table class="table-clean" role="table" aria-label="Resumen por Tipo de Venta y Descarte">
+                <thead>
+                    <tr>
+                        <th scope="col" style="min-width: 180px;">Origen / Tipo</th>
+                        <th scope="col" class="text-center" style="width: 90px;">Envíos</th>
+                        <th scope="col" class="text-right" style="width: 140px;">Kilogramos (kg)</th>
+                        <th scope="col" style="width: 130px;">% Volumen</th>
+                        <th scope="col" class="text-right" style="width: 130px;">Precio Prom.</th>
+                        <th scope="col" class="text-right" style="width: 140px;">Total (S/)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($segregacionMotivos as $motivoKey => $mInfo)
+                        @php $meta = $mInfo['meta']; @endphp
+
+                        {{-- Fila agrupada de cabecera --}}
+                        <tr style="background: #f8fafc; font-weight: 700;">
+                            <td colspan="6" style="padding-top: 0.75rem; padding-bottom: 0.4rem;">
+                                <span class="motivo-pill motivo-pill-{{ $meta['badge'] }}">
+                                    <span>{{ $meta['icon'] }}</span>
+                                    <span>{{ $meta['titulo'] }}</span>
+                                </span>
+                            </td>
+                        </tr>
+
+                        {{-- Filas de cada tipo permitido --}}
+                        @foreach($mInfo['tipos'] as $tipoRow)
+                        <tr>
+                            <td style="padding-left: 2rem;">
+                                <span style="color: var(--txt-primary); font-weight: 500;">
+                                    &bull; {{ $tipoRow['tipo_descarte'] }}
+                                </span>
+                            </td>
+                            <td class="text-center" style="color: var(--txt-muted);">
+                                {{ $tipoRow['count'] }}
+                            </td>
+                            <td class="text-right" style="font-weight: 600; font-family: monospace;">
+                                {{ number_format($tipoRow['kilogramos'], 2) }}
+                            </td>
+                            <td>
+                                <div class="progress-bar-wrap">
+                                    <div class="progress-bar-fill progress-fill-{{ $meta['badge'] }}" style="width: {{ min(100, $tipoRow['porcentaje_kg']) }}%;"></div>
+                                </div>
+                                <span style="font-size: 0.6875rem; color: var(--txt-secondary);">{{ $tipoRow['porcentaje_kg'] }}%</span>
+                            </td>
+                            <td class="text-right" style="color: var(--txt-secondary); font-family: monospace;">
+                                S/ {{ number_format($tipoRow['precio_promedio'], 2) }}
+                            </td>
+                            <td class="text-right" style="font-weight: 600; color: var(--txt-primary); font-family: monospace;">
+                                S/ {{ number_format($tipoRow['valor_venta'], 2) }}
+                            </td>
+                        </tr>
+                        @endforeach
+
+                        {{-- Subtotal --}}
+                        <tr class="row-subtotal">
+                            <td style="padding-left: 1.5rem;">
+                                <strong>Subtotal {{ $meta['titulo'] }}</strong>
+                            </td>
+                            <td class="text-center"><strong>{{ $mInfo['count'] }}</strong></td>
+                            <td class="text-right" style="font-family: monospace;">
+                                <strong>{{ number_format($mInfo['total_kg'], 2) }}</strong>
+                            </td>
+                            <td>
+                                <span style="font-weight: 700; color: var(--txt-secondary);">{{ $mInfo['porcentaje_kg'] }}%</span>
+                            </td>
+                            <td class="text-right" style="font-family: monospace;">
+                                S/ {{ number_format($mInfo['precio_promedio'], 2) }}
+                            </td>
+                            <td class="text-right" style="font-family: monospace; color: var(--clr-primary-700);">
+                                <strong>S/ {{ number_format($mInfo['total_venta'], 2) }}</strong>
+                            </td>
+                        </tr>
+                    @endforeach
+
+                    {{-- Total General --}}
+                    <tr class="row-grand-total">
+                        <td>TOTAL GENERAL</td>
+                        <td class="text-center">{{ $ventas->count() }}</td>
+                        <td class="text-right" style="font-family: monospace;">{{ number_format($totalGeneralKg, 2) }} kg</td>
+                        <td>100.0%</td>
+                        <td class="text-right" style="font-family: monospace;">
+                            S/ {{ $totalGeneralKg > 0 ? number_format($totalGeneralVenta / $totalGeneralKg, 2) : '0.00' }}
+                        </td>
+                        <td class="text-right text-highlight" style="font-family: monospace;">
+                            S/ {{ number_format($totalGeneralVenta, 2) }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+{{-- 4. TABLA 2: RESUMEN POR CLIENTE --}}
+<section class="dash-section" aria-labelledby="sec-title-clientes">
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="card-header" style="border-bottom: 1px solid var(--brd-base);">
+            <div class="section-header-box">
+                <div>
+                    <h2 class="section-title" id="sec-title-clientes">
+                        <span aria-hidden="true">👥</span> Resumen de Ventas por Cliente
+                    </h2>
+                    <div class="section-subtitle">
+                        Detalle de compras por cliente con desglose de Cosecha Nacional, Campo y Packing
+                    </div>
                 </div>
-            @else
-                <div class="table-wrapper" style="border: none; border-radius: 0;">
-                    <table class="data-table dash-table" role="table" aria-label="Registros de venta de descarte">
-                        <thead>
-                            <tr>
-                                <th scope="col">Fundo</th>
-                                <th scope="col">Fecha</th>
-                                <th scope="col">Motivo</th>
-                                <th scope="col">Tipo</th>
-                                <th scope="col" class="text-right">Precio (S/)</th>
-                                <th scope="col" class="text-right">Kg</th>
-                                <th scope="col" class="text-right">Total (S/)</th>
-                                <th scope="col">Registrado por</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($ventas as $v)
-                            <tr>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="expandAllClients(true)" title="Ver detalle de todos los clientes">
+                        ➕ Abrir Todos
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="expandAllClients(false)" title="Ocultar detalles">
+                        ➖ Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{-- Filtros y buscador --}}
+        <div class="client-controls-bar">
+            <div class="search-box-client">
+                <span class="search-icon" aria-hidden="true">🔍</span>
+                <input
+                    type="search"
+                    id="client-search-input"
+                    placeholder="Buscar cliente o tipo..."
+                    oninput="filtrarTablaClientes()"
+                    aria-label="Buscar cliente"
+                >
+            </div>
+
+            <div class="filter-chips-wrap" role="group" aria-label="Filtro de motivo">
+                <button type="button" class="chip-btn active" data-filter="todos" onclick="setMotivoFilter('todos', this)">Todos</button>
+                <button type="button" class="chip-btn" data-filter="Cosecha Nacional" onclick="setMotivoFilter('Cosecha Nacional', this)">🌾 Nacional</button>
+                <button type="button" class="chip-btn" data-filter="Campo" onclick="setMotivoFilter('Campo', this)">🌿 Campo</button>
+                <button type="button" class="chip-btn" data-filter="Packing" onclick="setMotivoFilter('Packing', this)">📦 Packing</button>
+            </div>
+
+            <div class="view-toggle-btns" role="radiogroup" aria-label="Modo de vista">
+                <button type="button" id="btn-view-grouped" class="view-toggle-btn active" onclick="switchClientView('grouped')">
+                    📁 Por Cliente
+                </button>
+                <button type="button" id="btn-view-flat" class="view-toggle-btn" onclick="switchClientView('flat')">
+                    📋 Lista Plana
+                </button>
+            </div>
+        </div>
+
+        <div class="table-wrapper" style="border: none; border-radius: 0;">
+            {{-- MODO A: AGRUPADO POR CLIENTE --}}
+            <table class="table-clean" id="table-clients-grouped" role="table" aria-label="Ventas por Cliente">
+                <thead>
+                    <tr>
+                        <th scope="col" style="min-width: 220px;">Cliente</th>
+                        <th scope="col" style="width: 160px;">Origen</th>
+                        <th scope="col" style="width: 170px;">Tipo de Descarte</th>
+                        <th scope="col" class="text-right" style="width: 130px;">Kilos (kg)</th>
+                        <th scope="col" class="text-right" style="width: 130px;">Precio Prom.</th>
+                        <th scope="col" class="text-right" style="width: 140px;">Total (S/)</th>
+                    </tr>
+                </thead>
+                <tbody id="clients-grouped-tbody">
+                    @forelse($clientesAgrupados as $clienteNombre => $cData)
+                        {{-- Fila de Cliente --}}
+                        <tr class="client-parent-row expanded"
+                            id="row-client-{{ Str::slug($clienteNombre) }}"
+                            data-client-name="{{ strtolower($clienteNombre) }}"
+                            data-motivos="{{ implode(' ', $cData['motivos']) }}"
+                            onclick="toggleClientRows('{{ Str::slug($clienteNombre) }}')">
+                            <td>
+                                <span class="client-toggle-caret" id="caret-{{ Str::slug($clienteNombre) }}" aria-hidden="true">&#9658;</span>
+                                <strong style="color: var(--txt-primary); font-size: 0.875rem;">{{ $clienteNombre }}</strong>
+                                @if(!empty($cData['ruc']) && !str_contains($clienteNombre, $cData['ruc']))
+                                    <span style="display: block; font-size: 0.6875rem; color: var(--txt-muted); margin-left: 1.625rem;">
+                                        RUC: {{ $cData['ruc'] }}
+                                    </span>
+                                @endif
+                            </td>
+                            <td>
+                                @foreach($cData['motivos'] as $mName)
+                                    @php $bClass = $mName === 'Cosecha Nacional' ? 'amber' : ($mName === 'Packing' ? 'blue' : 'green'); @endphp
+                                    <span class="motivo-pill motivo-pill-{{ $bClass }}" style="font-size: 0.625rem; padding: 0.125rem 0.375rem;">
+                                        {{ $mName }}
+                                    </span>
+                                @endforeach
+                            </td>
+                            <td style="color: var(--txt-muted); font-size: var(--text-xs);">
+                                {{ count($cData['desglose']) }} variante(s)
+                            </td>
+                            <td class="text-right" style="font-weight: 700; font-family: monospace;">
+                                {{ number_format($cData['total_kg'], 2) }}
+                            </td>
+                            <td class="text-right" style="font-weight: 600; color: var(--txt-secondary); font-family: monospace;">
+                                S/ {{ number_format($cData['precio_promedio'], 2) }}
+                            </td>
+                            <td class="text-right" style="font-weight: 700; color: var(--clr-primary-700); font-family: monospace;">
+                                S/ {{ number_format($cData['total_venta'], 2) }}
+                            </td>
+                        </tr>
+
+                        {{-- Desglose por tipo --}}
+                        @foreach($cData['desglose'] as $dKey => $dData)
+                            @php $bClass = $dData['motivo'] === 'Cosecha Nacional' ? 'amber' : ($dData['motivo'] === 'Packing' ? 'blue' : 'green'); @endphp
+                            <tr class="client-subrow subrow-{{ Str::slug($clienteNombre) }}"
+                                data-client-name="{{ strtolower($clienteNombre) }}"
+                                data-motivo="{{ $dData['motivo'] }}"
+                                data-tipo="{{ strtolower($dData['tipo_descarte']) }}">
                                 <td>
-                                    <span style="font-weight: 600; color: var(--txt-primary);">{{ $v->fundo->name ?? '—' }}</span>
-                                    @if($v->fundo)
-                                        <span style="display: block; font-size: var(--text-xs); color: var(--txt-muted);">{{ $v->fundo->code ?? '' }}</span>
-                                    @endif
+                                    <span class="client-subrow-bullet" aria-hidden="true">&#8627;</span>
+                                    <span style="color: var(--txt-secondary);">Detalle</span>
                                 </td>
-                                <td style="white-space: nowrap; color: var(--txt-muted);">
-                                    {{ $v->fecha_produccion->format('d/m/Y') }}
+                                <td>
+                                    <span class="motivo-pill motivo-pill-{{ $bClass }}">
+                                        {{ $dData['motivo'] }}
+                                    </span>
                                 </td>
-                                <td>{{ $v->motivo }}</td>
-                                <td>{{ $v->tipo_descarte }}</td>
-                                <td class="text-right">{{ number_format($v->precio, 2) }}</td>
-                                <td class="text-right" style="white-space: nowrap;">{{ number_format($v->kilogramos, 2) }}</td>
-                                <td class="text-right" style="font-weight: 700; color: var(--clr-primary-700);">
-                                    {{ number_format($v->valor_venta, 2) }}
+                                <td>
+                                    <span style="font-weight: 600; color: var(--txt-primary);">
+                                        {{ $dData['tipo_descarte'] }}
+                                    </span>
+                                    <span style="font-size: 0.6875rem; color: var(--txt-muted);">({{ $dData['count'] }})</span>
                                 </td>
-                                <td style="color: var(--txt-muted); font-size: var(--text-xs);">
-                                    {{ $v->creator->name ?? 'Sistema' }}
+                                <td class="text-right" style="font-family: monospace;">
+                                    {{ number_format($dData['kilogramos'], 2) }}
+                                </td>
+                                <td class="text-right" style="font-family: monospace; color: var(--txt-secondary);">
+                                    S/ {{ number_format($dData['precio_promedio'], 2) }}
+                                </td>
+                                <td class="text-right" style="font-family: monospace; font-weight: 600; color: var(--txt-primary);">
+                                    S/ {{ number_format($dData['valor_venta'], 2) }}
                                 </td>
                             </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+                        @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--txt-muted);">
+                                No hay registros de ventas para clasificar por cliente.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+
+            {{-- MODO B: MATRIZ PLANA --}}
+            <table class="table-clean" id="table-clients-flat" style="display: none;" role="table" aria-label="Lista Plana de Clientes">
+                <thead>
+                    <tr>
+                        <th scope="col">Cliente</th>
+                        <th scope="col">RUC</th>
+                        <th scope="col">Origen</th>
+                        <th scope="col">Tipo de Descarte</th>
+                        <th scope="col" class="text-right">Kilos (kg)</th>
+                        <th scope="col" class="text-right">Precio Prom.</th>
+                        <th scope="col" class="text-right">Total (S/)</th>
+                    </tr>
+                </thead>
+                <tbody id="clients-flat-tbody">
+                    @forelse($filasClientesPlanas as $fila)
+                        @php $bClass = $fila['motivo'] === 'Cosecha Nacional' ? 'amber' : ($fila['motivo'] === 'Packing' ? 'blue' : 'green'); @endphp
+                        <tr class="flat-client-row"
+                            data-client-name="{{ strtolower($fila['cliente']) }}"
+                            data-motivo="{{ $fila['motivo'] }}"
+                            data-tipo="{{ strtolower($fila['tipo_descarte']) }}">
+                            <td><strong style="color: var(--txt-primary);">{{ $fila['cliente'] }}</strong></td>
+                            <td style="color: var(--txt-muted); font-size: var(--text-xs);">{{ $fila['ruc'] ?? '—' }}</td>
+                            <td><span class="motivo-pill motivo-pill-{{ $bClass }}">{{ $fila['motivo'] }}</span></td>
+                            <td><span style="font-weight: 600;">{{ $fila['tipo_descarte'] }}</span></td>
+                            <td class="text-right" style="font-weight: 600; font-family: monospace;">{{ number_format($fila['kilogramos'], 2) }}</td>
+                            <td class="text-right" style="color: var(--txt-secondary); font-family: monospace;">S/ {{ number_format($fila['precio_promedio'], 2) }}</td>
+                            <td class="text-right" style="font-weight: 700; color: var(--clr-primary-700); font-family: monospace;">S/ {{ number_format($fila['valor_venta'], 2) }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 2rem; color: var(--txt-muted);">
+                                No hay registros disponibles.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
+</section>
 
-    {{-- Columna secundaria: info del usuario y fundos --}}
-    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-
-        {{-- Tarjeta de rol --}}
-        <div class="card role-card role-card-{{ $role?->name ?? 'default' }}">
-            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <span class="role-badge role-badge-{{ $role?->name ?? 'default' }}" aria-label="Rol asignado">
-                    {{ $role?->display_name ?? 'Sin Rol' }}
-                </span>
-                @if($isGlobalRole)
-                    <span class="global-access" aria-label="Acceso global a todos los fundos">🌐 Acceso global</span>
-                @endif
-            </div>
-            <p style="font-size: var(--text-sm); color: var(--txt-secondary);">{{ $role?->description ?? 'No se ha asignado una descripción a este rol.' }}</p>
-            <div style="margin-top: 0.75rem; font-size: var(--text-xs); color: var(--txt-muted); display: flex; gap: 1rem;">
-                <span><strong style="color: var(--txt-secondary);">Correo:</strong> {{ $user->email }}</span>
-            </div>
-            <div style="margin-top: 0.25rem; font-size: var(--text-xs); color: var(--txt-muted);">
-                <strong style="color: var(--txt-secondary);">Estado:</strong>
-                @if($user->is_active)
-                    <span class="text-success" aria-label="Cuenta activa">● Activo</span>
-                @else
-                    <span class="text-danger" aria-label="Cuenta inactiva">● Inactivo</span>
-                @endif
-            </div>
-        </div>
-
-        {{-- Tarjeta de fundos asignados --}}
-        <div class="card">
-            <div class="card-header" style="margin-bottom: 0.875rem;">
-                <div class="card-title">
-                    <span aria-hidden="true">🏡</span> Fundos Asignados
-                </div>
-            </div>
-            @if($isGlobalRole)
-                <div class="alert alert-success" style="margin-bottom: 0.5rem;" role="status">
-                    <span aria-hidden="true">✅</span>
-                    <div style="font-size: var(--text-xs);">Acceso transversal a todos los fundos del sistema.</div>
-                </div>
-            @endif
-            @forelse($fundos as $fundo)
-                <div class="fundo-item">
-                    <div style="display: flex; align-items: center; gap: 0.625rem;">
-                        <div class="fundo-dot" aria-hidden="true"></div>
-                        <div>
-                            <div style="font-size: var(--text-sm); font-weight: 600; color: var(--txt-primary);">{{ $fundo->name }}</div>
-                            <div style="font-size: var(--text-xs); color: var(--txt-muted);">{{ $fundo->code }}</div>
-                        </div>
+{{-- 5. ÚLTIMOS REGISTROS REALIZADOS (AHORA A ANCHO COMPLETO, SIN COLUMNAS REDUNDANTES) --}}
+<section class="dash-section" aria-labelledby="sec-title-recientes">
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="card-header" style="border-bottom: 1px solid var(--brd-base);">
+            <div class="section-header-box">
+                <div>
+                    <h2 class="section-title" id="sec-title-recientes">
+                        <span aria-hidden="true">📋</span> Últimos Envíos Registrados
+                    </h2>
+                    <div class="section-subtitle">
+                        Movimientos recientes en el fundo
                     </div>
-                    <span style="font-size: var(--text-xs); color: var(--txt-muted);">ID {{ $fundo->id }}</span>
                 </div>
-            @empty
-                <div class="empty-state" style="padding: 1.25rem 0;" role="status">
-                    <div style="font-size: 1.5rem; margin-bottom: 0.375rem;" aria-hidden="true">🏡</div>
-                    <div style="font-size: var(--text-xs); color: var(--txt-muted);">No hay fundos directamente asignados.</div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <a href="{{ route('ventas.index') }}" class="btn btn-secondary btn-sm">
+                        Ver Historial Completo &rarr;
+                    </a>
                 </div>
-            @endforelse
+            </div>
         </div>
 
-        {{-- Estado técnico (Fase 3 verificada) --}}
-        <div class="card" style="background: var(--clr-primary-50); border-color: var(--clr-primary-200);">
-            <div style="display: flex; align-items: center; gap: 0.375rem; margin-bottom: 0.375rem;">
-                <span aria-hidden="true">✅</span>
-                <span style="font-size: var(--text-xs); font-weight: 700; color: var(--clr-primary-700); text-transform: uppercase; letter-spacing: 0.06em;">Fase 3 Verificada</span>
+        @if($ventas->isEmpty())
+            <div class="empty-state" role="status">
+                <div class="empty-icon" aria-hidden="true">📭</div>
+                <div class="empty-title">Sin registros visibles</div>
+                <p class="empty-desc">No existen ventas de descarte registradas aún.</p>
             </div>
-            <p style="font-size: var(--text-xs); color: var(--clr-primary-800); line-height: 1.6;">
-                Login, RBAC (4 roles), <code style="background: rgba(22,101,52,0.1); padding: 0.125rem 0.25rem; border-radius: 3px;">FundoScope</code> multi-tenant y 15 pruebas PHPUnit exitosas (55 aserciones).
-            </p>
-        </div>
+        @else
+            <div class="table-wrapper" style="border: none; border-radius: 0;">
+                <table class="table-clean" role="table" aria-label="Envíos recientes">
+                    <thead>
+                        <tr>
+                            <th scope="col">Fundo</th>
+                            <th scope="col">Fecha</th>
+                            <th scope="col">Cliente</th>
+                            <th scope="col">Origen</th>
+                            <th scope="col">Tipo de Descarte</th>
+                            <th scope="col" class="text-right">Precio/Kg</th>
+                            <th scope="col" class="text-right">Kilos</th>
+                            <th scope="col" class="text-right">Total (S/)</th>
+                            <th scope="col">Registrado por</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($ventas->take(8) as $v)
+                        <tr>
+                            <td>
+                                <strong style="color: var(--txt-primary);">{{ $v->fundo->name ?? '—' }}</strong>
+                            </td>
+                            <td style="white-space: nowrap; color: var(--txt-secondary); font-size: var(--text-xs);">
+                                {{ $v->fecha_produccion->format('d/m/Y') }}
+                            </td>
+                            <td>
+                                <span style="font-weight: 600; color: var(--txt-primary);">
+                                    {{ $v->cliente ?: ($v->ruc ? 'RUC: '.$v->ruc : 'Venta General') }}
+                                </span>
+                            </td>
+                            <td>
+                                @php $bClass = $v->motivo === 'Cosecha Nacional' ? 'amber' : ($v->motivo === 'Packing' ? 'blue' : 'green'); @endphp
+                                <span class="motivo-pill motivo-pill-{{ $bClass }}">
+                                    {{ $v->motivo }}
+                                </span>
+                            </td>
+                            <td>{{ $v->tipo_descarte }}</td>
+                            <td class="text-right" style="font-family: monospace;">S/ {{ number_format($v->precio, 2) }}</td>
+                            <td class="text-right" style="white-space: nowrap; font-family: monospace; font-weight: 600;">{{ number_format($v->kilogramos, 2) }} kg</td>
+                            <td class="text-right" style="font-weight: 700; color: var(--clr-primary-700); font-family: monospace;">
+                                S/ {{ number_format($v->valor_venta, 2) }}
+                            </td>
+                            <td style="color: var(--txt-muted); font-size: var(--text-xs);">
+                                {{ $v->creator->name ?? 'Sistema' }}
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
     </div>
-</div>
+</section>
+
+{{-- INTERACTIVIDAD JAVASCRIPT LIGERA Y RÁPIDA --}}
+<script>
+var filtroMotivoActual = 'todos';
+
+function toggleClientRows(slug) {
+    var parentRow = document.getElementById('row-client-' + slug);
+    var subrows = document.querySelectorAll('.subrow-' + slug);
+    if (!parentRow) return;
+
+    var isExpanded = parentRow.classList.contains('expanded');
+    if (isExpanded) {
+        parentRow.classList.remove('expanded');
+        subrows.forEach(function(row) { row.style.display = 'none'; });
+    } else {
+        parentRow.classList.add('expanded');
+        subrows.forEach(function(row) {
+            var rowMotivo = row.getAttribute('data-motivo');
+            if (filtroMotivoActual === 'todos' || filtroMotivoActual === rowMotivo) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+}
+
+function expandAllClients(expand) {
+    var parentRows = document.querySelectorAll('.client-parent-row');
+    parentRows.forEach(function(pRow) {
+        var id = pRow.id.replace('row-client-', '');
+        var subrows = document.querySelectorAll('.subrow-' + id);
+        if (expand) {
+            pRow.classList.add('expanded');
+            subrows.forEach(function(row) {
+                var rowMotivo = row.getAttribute('data-motivo');
+                if (filtroMotivoActual === 'todos' || filtroMotivoActual === rowMotivo) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        } else {
+            pRow.classList.remove('expanded');
+            subrows.forEach(function(row) { row.style.display = 'none'; });
+        }
+    });
+}
+
+function switchClientView(view) {
+    var tableGrouped = document.getElementById('table-clients-grouped');
+    var tableFlat = document.getElementById('table-clients-flat');
+    var btnGrouped = document.getElementById('btn-view-grouped');
+    var btnFlat = document.getElementById('btn-view-flat');
+
+    if (view === 'grouped') {
+        tableGrouped.style.display = '';
+        tableFlat.style.display = 'none';
+        btnGrouped.classList.add('active');
+        btnFlat.classList.remove('active');
+    } else {
+        tableGrouped.style.display = 'none';
+        tableFlat.style.display = '';
+        btnGrouped.classList.remove('active');
+        btnFlat.classList.add('active');
+    }
+    filtrarTablaClientes();
+}
+
+function setMotivoFilter(motivo, btn) {
+    filtroMotivoActual = motivo;
+    document.querySelectorAll('.filter-chips-wrap .chip-btn').forEach(function(b) {
+        b.classList.remove('active');
+    });
+    if (btn) btn.classList.add('active');
+    filtrarTablaClientes();
+}
+
+function filtrarTablaClientes() {
+    var q = (document.getElementById('client-search-input').value || '').trim().toLowerCase();
+    var isGrouped = document.getElementById('table-clients-grouped').style.display !== 'none';
+
+    if (isGrouped) {
+        var parentRows = document.querySelectorAll('.client-parent-row');
+        parentRows.forEach(function(pRow) {
+            var clientName = pRow.getAttribute('data-client-name') || '';
+            var slug = pRow.id.replace('row-client-', '');
+            var subrows = document.querySelectorAll('.subrow-' + slug);
+            var isExpanded = pRow.classList.contains('expanded');
+
+            var clientMatchesQuery = q === '' || clientName.indexOf(q) !== -1;
+            var anySubrowMatches = false;
+
+            subrows.forEach(function(sRow) {
+                var sMotivo = sRow.getAttribute('data-motivo') || '';
+                var sTipo = (sRow.getAttribute('data-tipo') || '').toLowerCase();
+
+                var matchesMotivo = filtroMotivoActual === 'todos' || filtroMotivoActual === sMotivo;
+                var matchesQuery = q === '' || clientName.indexOf(q) !== -1 || sTipo.indexOf(q) !== -1 || sMotivo.toLowerCase().indexOf(q) !== -1;
+
+                if (matchesMotivo && matchesQuery) {
+                    anySubrowMatches = true;
+                    if (isExpanded) {
+                        sRow.style.display = '';
+                    } else {
+                        sRow.style.display = 'none';
+                    }
+                } else {
+                    sRow.style.display = 'none';
+                }
+            });
+
+            if (anySubrowMatches || (clientMatchesQuery && (filtroMotivoActual === 'todos' || (pRow.getAttribute('data-motivos') || '').indexOf(filtroMotivoActual) !== -1))) {
+                pRow.style.display = '';
+            } else {
+                pRow.style.display = 'none';
+            }
+        });
+    } else {
+        var flatRows = document.querySelectorAll('.flat-client-row');
+        flatRows.forEach(function(row) {
+            var clientName = row.getAttribute('data-client-name') || '';
+            var motivo = row.getAttribute('data-motivo') || '';
+            var tipo = row.getAttribute('data-tipo') || '';
+
+            var matchesMotivo = filtroMotivoActual === 'todos' || filtroMotivoActual === motivo;
+            var matchesQuery = q === '' || clientName.indexOf(q) !== -1 || tipo.indexOf(q) !== -1 || motivo.toLowerCase().indexOf(q) !== -1;
+
+            if (matchesMotivo && matchesQuery) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+}
+</script>
 @endsection

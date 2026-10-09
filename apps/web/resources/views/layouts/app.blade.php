@@ -14,8 +14,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Sistema Fundo">
     <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/webp" href="/icons/icon.webp">
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
-    <link rel="apple-touch-icon" href="/icons/icon.svg">
+    <link rel="apple-touch-icon" href="/icons/icon-192.webp">
 
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1185,7 +1186,9 @@
         <aside class="sidebar" id="main-sidebar" role="navigation" aria-label="Menú principal">
             {{-- Brand --}}
             <a href="{{ route('dashboard') }}" class="sidebar-brand" aria-label="Inicio — Sistema Fundo">
-                <div class="sidebar-brand-icon" aria-hidden="true">🌾</div>
+                <div class="sidebar-brand-icon" aria-hidden="true" style="overflow:hidden;padding:0;">
+                    <img src="/icons/icon-192.webp" alt="Sistema Fundo" width="36" height="36" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block;">
+                </div>
                 <div class="sidebar-brand-text">
                     <strong>Sistema Fundo</strong>
                     <span>Gestión Agrícola</span>

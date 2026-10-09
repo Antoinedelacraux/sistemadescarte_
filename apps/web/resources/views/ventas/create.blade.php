@@ -419,7 +419,11 @@
                 </div>
             </div>
 
-            <div class="form-grid-2">
+            <div class="form-grid-3">
+                <div class="form-group">
+                    <label for="cliente" class="form-label">Cliente / Razón Social</label>
+                    <input type="text" name="cliente" id="cliente" class="form-control" placeholder="Ej. Frutas del Norte SAC" value="{{ old('cliente') }}">
+                </div>
                 <div class="form-group">
                     <label for="ruc" class="form-label">RUC Comprador</label>
                     <input type="text" name="ruc" id="ruc" class="form-control" placeholder="Ej. 20123456789" value="{{ old('ruc') }}">
@@ -479,11 +483,11 @@ function actualizarOpcionesTipoDescarte() {
 
     // Opciones de tipo según motivo:
     // Campo: Racimos, Racimos con plaga, Granos
-    // Packing: Granos, Racimos
-    // Cosecha Nacional: Racimos, Racimos con plaga, Granos
+    // Packing: Racimos, Granos
+    // Cosecha Nacional: Racimos, Granos (solo dos tipos de descarte)
     selectTipo.innerHTML = '';
     var opciones = [];
-    if (motivo === 'Packing') {
+    if (motivo === 'Packing' || motivo === 'Cosecha Nacional') {
         opciones = ['Racimos', 'Granos'];
     } else {
         opciones = ['Racimos', 'Racimos con plaga', 'Granos'];

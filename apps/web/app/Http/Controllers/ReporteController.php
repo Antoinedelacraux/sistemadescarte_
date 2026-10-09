@@ -30,6 +30,7 @@ class ReporteController extends Controller
         'conductor' => 'Nombre Conductor',
         'brevete' => 'Brevete',
         'ruc' => 'RUC Comprador',
+        'cliente' => 'Cliente / Razón Social',
         'viaje' => 'Número de Viaje',
         'observacion' => 'Observaciones',
     ];
@@ -173,6 +174,7 @@ class ReporteController extends Controller
                         'conductor' => $v->conductor ?? '',
                         'brevete' => $v->brevete ?? '',
                         'ruc' => $v->ruc ?? '',
+                        'cliente' => $v->cliente ?? '',
                         'viaje' => $v->viaje ?? '',
                         'observacion' => $v->observacion ?? '',
                         default => '',
