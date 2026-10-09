@@ -159,10 +159,30 @@ class VentaDescarteController extends Controller
         // Cálculo exacto del valor total (precio * kilogramos)
         $valorVenta = round((float) $validated['precio'] * (float) $validated['kilogramos'], 2);
 
-        // Si se seleccionó cuartel_id, extraer su nombre si cuartel_manual está vacío
-        if (!empty($validated['cuartel_id']) && empty($validated['cuartel_manual'])) {
+        // Reconocimiento y guardado automático de cuartel en el catálogo del lote
+        $cuartelNombre = trim((string) ($request->input('cuartel_manual') ?? ''));
+        if ($cuartelNombre === '' && !empty($validated['cuartel_id'])) {
             $cuartelObj = Cuartel::find($validated['cuartel_id']);
-            $validated['cuartel_manual'] = $cuartelObj?->nombre;
+            $cuartelNombre = $cuartelObj?->nombre ?? '';
+        }
+
+        if ($cuartelNombre !== '' && !empty($validated['lote_id'])) {
+            $cuartelRecord = Cuartel::where('lote_id', $validated['lote_id'])
+                ->whereRaw('LOWER(TRIM(nombre)) = ?', [strtolower($cuartelNombre)])
+                ->first();
+
+            if (!$cuartelRecord) {
+                $cuartelRecord = Cuartel::create([
+                    'lote_id' => $validated['lote_id'],
+                    'nombre' => $cuartelNombre,
+                ]);
+            }
+
+            $validated['cuartel_id'] = $cuartelRecord->id;
+            $validated['cuartel_manual'] = $cuartelRecord->nombre;
+        } else {
+            $validated['cuartel_id'] = null;
+            $validated['cuartel_manual'] = null;
         }
 
         $validated['valor_venta'] = $valorVenta;
@@ -245,9 +265,30 @@ class VentaDescarteController extends Controller
 
         $valorVenta = round((float) $validated['precio'] * (float) $validated['kilogramos'], 2);
 
-        if (!empty($validated['cuartel_id']) && empty($validated['cuartel_manual'])) {
+        // Reconocimiento y guardado automático de cuartel en el catálogo del lote
+        $cuartelNombre = trim((string) ($request->input('cuartel_manual') ?? ''));
+        if ($cuartelNombre === '' && !empty($validated['cuartel_id'])) {
             $cuartelObj = Cuartel::find($validated['cuartel_id']);
-            $validated['cuartel_manual'] = $cuartelObj?->nombre;
+            $cuartelNombre = $cuartelObj?->nombre ?? '';
+        }
+
+        if ($cuartelNombre !== '' && !empty($validated['lote_id'])) {
+            $cuartelRecord = Cuartel::where('lote_id', $validated['lote_id'])
+                ->whereRaw('LOWER(TRIM(nombre)) = ?', [strtolower($cuartelNombre)])
+                ->first();
+
+            if (!$cuartelRecord) {
+                $cuartelRecord = Cuartel::create([
+                    'lote_id' => $validated['lote_id'],
+                    'nombre' => $cuartelNombre,
+                ]);
+            }
+
+            $validated['cuartel_id'] = $cuartelRecord->id;
+            $validated['cuartel_manual'] = $cuartelRecord->nombre;
+        } else {
+            $validated['cuartel_id'] = null;
+            $validated['cuartel_manual'] = null;
         }
 
         $validated['valor_venta'] = $valorVenta;

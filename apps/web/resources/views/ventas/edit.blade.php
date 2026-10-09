@@ -494,6 +494,30 @@ function seleccionarCuartel(cuartelId) {
     }
 }
 
+function cargarLotesPorFundo(fundoId) {
+    if (!fundoId) return;
+
+    fetch('/api/catalogo/lotes?fundo_id=' + encodeURIComponent(fundoId), {
+        headers: { 'Accept': 'application/json' }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        lotesCache = data;
+        var selectLote = document.getElementById('lote_id');
+        selectLote.innerHTML = '<option value="">-- Seleccionar Lote --</option>';
+        data.forEach(function(l) {
+            var opt = document.createElement('option');
+            opt.value = l.id;
+            opt.textContent = l.nombre;
+            selectLote.appendChild(opt);
+        });
+        actualizarCuarteles('');
+    })
+    .catch(function(err) {
+        console.error('Error cargando lotes:', err);
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     actualizarOpcionesTipoDescarte();
     var loteInicial = document.getElementById('lote_id').value;

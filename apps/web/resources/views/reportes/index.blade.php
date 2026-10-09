@@ -190,7 +190,7 @@
         <div class="export-top-bar">
             <div>
                 <h2 style="font-size: clamp(0.95rem, 3.8vw, 1.125rem); font-weight: 700; color: var(--txt-primary); display: flex; align-items: center; gap: 0.5rem;">
-                    <span>📥</span> Exportar a Excel (.csv compatible)
+                    Exportar a Excel (.xlsx)
                 </h2>
                 <p style="font-size: var(--text-xs); color: var(--txt-muted);">
                     Selecciona con precisión las columnas que deseas incluir en el archivo descargable.
@@ -254,7 +254,7 @@
 
             <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
                 <button type="submit" class="btn-export" id="btn-descargar-excel">
-                    <span>📊</span> Descargar Archivo Excel
+                    Descargar Archivo Excel
                 </button>
             </div>
         </form>
@@ -264,9 +264,9 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 1.5rem;">
         {{-- Distribución por Motivo --}}
         <div class="card" style="padding: 0; overflow: hidden;">
-            <div class="card-header" style="border-bottom: 1px solid var(--brd-base);">
+            <div class="card-header" style="border-bottom: 1px solid var(--brd-base); padding: 1.125rem 1.375rem;">
                 <div class="card-title">
-                    <span>🏷️</span> Resumen por Motivo
+                    Resumen por Motivo
                 </div>
             </div>
             <div class="table-wrapper" style="border: none; border-radius: 0;">
@@ -299,9 +299,9 @@
 
         {{-- Distribución por Fundo --}}
         <div class="card" style="padding: 0; overflow: hidden;">
-            <div class="card-header" style="border-bottom: 1px solid var(--brd-base);">
+            <div class="card-header" style="border-bottom: 1px solid var(--brd-base); padding: 1.125rem 1.375rem;">
                 <div class="card-title">
-                    <span>🏡</span> Resumen por Fundo
+                    Resumen por Fundo
                 </div>
             </div>
             <div class="table-wrapper" style="border: none; border-radius: 0;">

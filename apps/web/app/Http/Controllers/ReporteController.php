@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Fundo;
 use App\Models\VentaDescarte;
+use App\Services\ExcelExporter;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -102,9 +104,9 @@ class ReporteController extends Controller
     }
 
     /**
-     * Descarga de datos en formato Excel compatible (.csv con BOM UTF-8 y delimitador punto y coma).
+     * Descarga de datos en formato Excel nativo (.xlsx).
      */
-    public function exportar(Request $request): StreamedResponse
+    public function exportar(Request $request): Response
     {
         $columnasSeleccionadas = $request->input('columnas', array_keys(self::COLUMNAS_DISPONIBLES));
         if (empty($columnasSeleccionadas) || !is_array($columnasSeleccionadas)) {
@@ -131,59 +133,52 @@ class ReporteController extends Controller
 
         $ventas = $query->get();
 
-        $filename = 'ventas_descarte_' . date('Y-m-d_His') . '.csv';
+        $filename = 'ventas_descarte_' . date('Y-m-d_His') . '.xlsx';
 
-        $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-            'Pragma' => 'no-cache',
-            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires' => '0',
-        ];
+        // Cabeceras seleccionadas
+        $headers = [];
+        foreach ($columnasSeleccionadas as $colKey) {
+            $headers[] = self::COLUMNAS_DISPONIBLES[$colKey];
+        }
 
-        return response()->stream(function () use ($ventas, $columnasSeleccionadas) {
-            $handle = fopen('php://output', 'w');
-
-            // BOM para compatibilidad con Microsoft Excel (reconocimiento UTF-8 de tildes y caracteres en español)
-            fputs($handle, "\xEF\xBB\xBF");
-
-            // Cabeceras de columnas seleccionadas
-            $headerRow = [];
+        // Filas formateadas con valores tipados
+        $dataRows = [];
+        foreach ($ventas as $v) {
+            $row = [];
             foreach ($columnasSeleccionadas as $colKey) {
-                $headerRow[] = self::COLUMNAS_DISPONIBLES[$colKey];
+                $row[] = match ($colKey) {
+                    'fundo' => $v->fundo?->name ?? 'N/A',
+                    'fecha_produccion' => $v->fecha_produccion->format('d/m/Y'),
+                    'lote' => $v->lote?->nombre ?? '',
+                    'cuartel' => $v->cuartel_manual ?? ($v->cuartel?->nombre ?? ''),
+                    'motivo' => $v->motivo,
+                    'tipo_descarte' => $v->tipo_descarte,
+                    'kilogramos' => (float) $v->kilogramos,
+                    'precio' => (float) $v->precio,
+                    'valor_venta' => (float) $v->valor_venta,
+                    'jabas' => $v->jabas !== null ? (int) $v->jabas : '',
+                    'peso_jaba' => $v->peso_jaba !== null ? (float) $v->peso_jaba : '',
+                    'placa' => $v->placa ?? '',
+                    'conductor' => $v->conductor ?? '',
+                    'brevete' => $v->brevete ?? '',
+                    'ruc' => $v->ruc ?? '',
+                    'cliente' => $v->cliente ?? '',
+                    'viaje' => $v->viaje ?? '',
+                    'observacion' => $v->observacion ?? '',
+                    default => '',
+                };
             }
-            fputcsv($handle, $headerRow, ';');
+            $dataRows[] = $row;
+        }
 
-            // Filas de datos
-            foreach ($ventas as $v) {
-                $row = [];
-                foreach ($columnasSeleccionadas as $colKey) {
-                    $row[] = match ($colKey) {
-                        'fundo' => $v->fundo?->name ?? 'N/A',
-                        'fecha_produccion' => $v->fecha_produccion->format('d/m/Y'),
-                        'lote' => $v->lote?->nombre ?? '',
-                        'cuartel' => $v->cuartel_manual ?? ($v->cuartel?->nombre ?? ''),
-                        'motivo' => $v->motivo,
-                        'tipo_descarte' => $v->tipo_descarte,
-                        'kilogramos' => number_format($v->kilogramos, 2, '.', ''),
-                        'precio' => number_format($v->precio, 2, '.', ''),
-                        'valor_venta' => number_format($v->valor_venta, 2, '.', ''),
-                        'jabas' => $v->jabas ?? '',
-                        'peso_jaba' => $v->peso_jaba ? number_format($v->peso_jaba, 2, '.', '') : '',
-                        'placa' => $v->placa ?? '',
-                        'conductor' => $v->conductor ?? '',
-                        'brevete' => $v->brevete ?? '',
-                        'ruc' => $v->ruc ?? '',
-                        'cliente' => $v->cliente ?? '',
-                        'viaje' => $v->viaje ?? '',
-                        'observacion' => $v->observacion ?? '',
-                        default => '',
-                    };
-                }
-                fputcsv($handle, $row, ';');
-            }
+        $xlsxBinary = ExcelExporter::generate($headers, $dataRows, 'Ventas Descarte');
 
-            fclose($handle);
-        }, 200, $headers);
+        return response($xlsxBinary, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control' => 'max-age=0, must-revalidate',
+            'Pragma' => 'public',
+            'Content-Length' => strlen($xlsxBinary),
+        ]);
     }
 }

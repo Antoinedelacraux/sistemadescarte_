@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cuartel;
 use App\Models\Fundo;
+use App\Models\Lote;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -27,23 +29,27 @@ class AdminController extends Controller implements HasMiddleware
     }
 
     /**
-     * Listado de fundos para el Administrador.
+     * Listado de fundos para el Administrador con sus lotes y cuarteles.
      */
     public function fundos(): View
     {
-        $fundos = Fundo::withCount(['lotes', 'ventas', 'users'])->latest('created_at')->get();
+        $fundos = Fundo::with(['lotes.cuarteles'])
+            ->withCount(['lotes', 'ventas', 'users'])
+            ->latest('created_at')
+            ->get();
 
         return view('admin.fundos.index', compact('fundos'));
     }
 
     /**
-     * Almacenar un nuevo fundo.
+     * Almacenar un nuevo fundo con sus lotes iniciales.
      */
     public function storeFundo(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100', 'unique:fundos,name'],
             'code' => ['required', 'string', 'max:20', 'unique:fundos,code'],
+            'lotes' => ['nullable', 'string'],
         ], [
             'name.required' => 'El nombre del fundo es obligatorio.',
             'name.unique' => 'Ya existe un fundo con este nombre.',
@@ -51,20 +57,41 @@ class AdminController extends Controller implements HasMiddleware
             'code.unique' => 'Ya existe un fundo con este código.',
         ]);
 
-        $validated['is_active'] = true;
-        Fundo::create($validated);
+        $fundo = Fundo::create([
+            'name' => $validated['name'],
+            'code' => $validated['code'],
+            'is_active' => true,
+        ]);
 
-        return redirect()->route('admin.fundos')->with('success', 'Fundo creado exitosamente.');
+        // Registrar los lotes ingresados de una vez
+        $lotesCreados = 0;
+        if ($request->filled('lotes')) {
+            $rawLotes = preg_split('/[\r\n,]+/', (string) $request->input('lotes'));
+            foreach ($rawLotes as $loteNombre) {
+                $loteNombre = trim($loteNombre);
+                if ($loteNombre !== '') {
+                    $fundo->lotes()->firstOrCreate(['nombre' => $loteNombre]);
+                    $lotesCreados++;
+                }
+            }
+        }
+
+        $mensaje = $lotesCreados > 0
+            ? "Fundo '{$fundo->name}' creado exitosamente con {$lotesCreados} lote(s)."
+            : "Fundo '{$fundo->name}' creado exitosamente.";
+
+        return redirect()->route('admin.fundos')->with('success', $mensaje);
     }
 
     /**
-     * Actualizar datos de un fundo existente.
+     * Actualizar datos de un fundo existente y agregar nuevos lotes si se especifican.
      */
     public function updateFundo(Request $request, Fundo $fundo): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100', Rule::unique('fundos', 'name')->ignore($fundo->id)],
             'code' => ['required', 'string', 'max:20', Rule::unique('fundos', 'code')->ignore($fundo->id)],
+            'nuevos_lotes' => ['nullable', 'string'],
         ], [
             'name.required' => 'El nombre del fundo es obligatorio.',
             'name.unique' => 'Ya existe otro fundo con este nombre.',
@@ -72,9 +99,103 @@ class AdminController extends Controller implements HasMiddleware
             'code.unique' => 'Ya existe otro fundo con este código.',
         ]);
 
-        $fundo->update($validated);
+        $fundo->update([
+            'name' => $validated['name'],
+            'code' => $validated['code'],
+        ]);
+
+        if ($request->filled('nuevos_lotes')) {
+            $rawLotes = preg_split('/[\r\n,]+/', (string) $request->input('nuevos_lotes'));
+            foreach ($rawLotes as $loteNombre) {
+                $loteNombre = trim($loteNombre);
+                if ($loteNombre !== '') {
+                    $fundo->lotes()->firstOrCreate(['nombre' => $loteNombre]);
+                }
+            }
+        }
 
         return redirect()->route('admin.fundos')->with('success', 'Fundo actualizado correctamente.');
+    }
+
+    /**
+     * Agregar lote(s) a un fundo específico.
+     */
+    public function storeLote(Request $request, Fundo $fundo): RedirectResponse
+    {
+        $request->validate([
+            'nombre' => ['required', 'string'],
+        ], [
+            'nombre.required' => 'Ingresa el nombre del lote.',
+        ]);
+
+        $rawLotes = preg_split('/[\r\n,]+/', (string) $request->input('nombre'));
+        $creados = 0;
+        foreach ($rawLotes as $lName) {
+            $lName = trim($lName);
+            if ($lName !== '') {
+                $fundo->lotes()->firstOrCreate(['nombre' => $lName]);
+                $creados++;
+            }
+        }
+
+        return redirect()->route('admin.fundos')
+            ->with('success', "Se agregaron {$creados} lote(s) al fundo '{$fundo->name}'.");
+    }
+
+    /**
+     * Eliminar un lote (solo si no tiene ventas asociadas).
+     */
+    public function destroyLote(Lote $lote): RedirectResponse
+    {
+        if ($lote->ventas()->exists()) {
+            return redirect()->route('admin.fundos')
+                ->with('error', "No se puede eliminar el lote '{$lote->nombre}' porque tiene registros de ventas asociados.");
+        }
+
+        $fundoNombre = $lote->fundo?->name ?? 'Fundo';
+        $nombreLote = $lote->nombre;
+        $lote->cuarteles()->delete();
+        $lote->delete();
+
+        return redirect()->route('admin.fundos')
+            ->with('success', "Lote '{$nombreLote}' eliminado de {$fundoNombre}.");
+    }
+
+    /**
+     * Agregar cuartel(es) a un lote específico.
+     */
+    public function storeCuartel(Request $request, Lote $lote): RedirectResponse
+    {
+        $request->validate([
+            'nombre' => ['required', 'string'],
+        ], [
+            'nombre.required' => 'Ingresa el nombre del cuartel.',
+        ]);
+
+        $rawCuarteles = preg_split('/[\r\n,]+/', (string) $request->input('nombre'));
+        $creados = 0;
+        foreach ($rawCuarteles as $cName) {
+            $cName = trim($cName);
+            if ($cName !== '') {
+                $lote->cuarteles()->firstOrCreate(['nombre' => $cName]);
+                $creados++;
+            }
+        }
+
+        return redirect()->route('admin.fundos')
+            ->with('success', "Se agregaron {$creados} cuartel(es) al lote '{$lote->nombre}'.");
+    }
+
+    /**
+     * Eliminar un cuartel.
+     */
+    public function destroyCuartel(Cuartel $cuartel): RedirectResponse
+    {
+        $nombre = $cuartel->nombre;
+        $cuartel->delete();
+
+        return redirect()->route('admin.fundos')
+            ->with('success', "Cuartel '{$nombre}' eliminado.");
     }
 
     /**

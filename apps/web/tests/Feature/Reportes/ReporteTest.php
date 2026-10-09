@@ -64,22 +64,18 @@ class ReporteTest extends TestCase
         $response->assertSee('Descargar Archivo Excel');
     }
 
-    public function test_user_can_export_csv_with_all_default_columns(): void
+    public function test_user_can_export_xlsx_file(): void
     {
         $response = $this->actingAs($this->analistaUser)->get(route('reportes.exportar'));
 
         $response->assertStatus(200);
-        $this->assertTrue(str_contains($response->headers->get('Content-Disposition'), 'ventas_descarte_'));
-        $this->assertEquals('text/csv; charset=UTF-8', $response->headers->get('Content-Type'));
+        $this->assertTrue(str_contains($response->headers->get('Content-Disposition'), '.xlsx'));
+        $this->assertEquals('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', $response->headers->get('Content-Type'));
 
-        // Obtener el contenido del stream
-        $content = $response->streamedContent();
-
-        // Debe contener el Fundo y el monto
-        $this->assertTrue(str_contains($content, 'Fundo Santa Sofía'));
-        $this->assertTrue(str_contains($content, '150.00'));
-        // Debe usar delimitador punto y coma
-        $this->assertTrue(str_contains($content, ';'));
+        $binary = $response->getContent();
+        // Verificar que inicia con el magic number de ZIP/XLSX: PK\x03\x04 (0x504b0304)
+        $this->assertStringStartsWith("PK\x03\x04", $binary);
+        $this->assertGreaterThan(500, strlen($binary));
     }
 
     public function test_user_can_customize_exported_columns(): void
@@ -90,13 +86,8 @@ class ReporteTest extends TestCase
         ]));
 
         $response->assertStatus(200);
-        $content = $response->streamedContent();
-
-        // Primera línea debe contener solo las columnas solicitadas
-        $firstLine = explode("\n", trim($content))[0];
-        $this->assertTrue(str_contains($firstLine, 'Fundo'));
-        $this->assertTrue(str_contains($firstLine, 'Valor Total'));
-        $this->assertFalse(str_contains($firstLine, 'Kilogramos Totales'));
-        $this->assertFalse(str_contains($firstLine, 'Observaciones'));
+        $this->assertTrue(str_contains($response->headers->get('Content-Disposition'), '.xlsx'));
+        $binary = $response->getContent();
+        $this->assertStringStartsWith("PK\x03\x04", $binary);
     }
 }

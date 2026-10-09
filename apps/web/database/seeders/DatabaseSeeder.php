@@ -42,22 +42,22 @@ class DatabaseSeeder extends Seeder
             'description' => 'Visualización y exportación de datos de todos los fundos',
         ]);
 
-        // 2. Fundos ficticios
-        $fundoSofia = Fundo::create([
-            'name' => 'Fundo Santa Sofía',
-            'code' => 'FSOFIA',
+        // 2. Fundos Reales del Sistema
+        $fundoAgritac = Fundo::create([
+            'name' => 'AGRICOLA TAMBO COLORADO (AGRITAC)',
+            'code' => 'AGRITAC',
             'is_active' => true,
         ]);
 
-        $fundoElena = Fundo::create([
-            'name' => 'Fundo Santa Elena',
-            'code' => 'FELENA',
+        $fundoProcom = Fundo::create([
+            'name' => 'AGRICOLA PROCOM (PROCOM)',
+            'code' => 'PROCOM',
             'is_active' => true,
         ]);
 
-        $fundoJose = Fundo::create([
-            'name' => 'Fundo San José',
-            'code' => 'FJOSE',
+        $fundoElNegro = Fundo::create([
+            'name' => 'TALSA GRAPE FARMS (EL NEGRO)',
+            'code' => 'ELNEGRO',
             'is_active' => true,
         ]);
 
@@ -71,34 +71,34 @@ class DatabaseSeeder extends Seeder
             'role_id' => $roleAdmin->id,
             'is_active' => true,
         ]);
-        $admin->fundos()->attach([$fundoSofia->id, $fundoElena->id, $fundoJose->id]);
+        $admin->fundos()->attach([$fundoAgritac->id, $fundoProcom->id, $fundoElNegro->id]);
 
         $generalSofia = User::create([
-            'name' => 'Jefe Fundo Santa Sofía',
-            'email' => 'general.sofia@fundo.test',
+            'name' => 'Jefe Fundo Agritac',
+            'email' => 'general.agritac@fundo.test',
             'password' => $defaultPassword,
             'role_id' => $roleGeneral->id,
             'is_active' => true,
         ]);
-        $generalSofia->fundos()->attach([$fundoSofia->id]);
+        $generalSofia->fundos()->attach([$fundoAgritac->id]);
 
         $generalElena = User::create([
-            'name' => 'Jefe Fundo Santa Elena',
-            'email' => 'general.elena@fundo.test',
+            'name' => 'Jefe Fundo Procom',
+            'email' => 'general.procom@fundo.test',
             'password' => $defaultPassword,
             'role_id' => $roleGeneral->id,
             'is_active' => true,
         ]);
-        $generalElena->fundos()->attach([$fundoElena->id]);
+        $generalElena->fundos()->attach([$fundoProcom->id]);
 
         $individualSofia = User::create([
-            'name' => 'Registrador Santa Sofía',
-            'email' => 'individual.sofia@fundo.test',
+            'name' => 'Registrador Agritac',
+            'email' => 'individual.agritac@fundo.test',
             'password' => $defaultPassword,
             'role_id' => $roleIndividual->id,
             'is_active' => true,
         ]);
-        $individualSofia->fundos()->attach([$fundoSofia->id]);
+        $individualSofia->fundos()->attach([$fundoAgritac->id]);
 
         $analista = User::create([
             'name' => 'Analista Central',
@@ -107,41 +107,46 @@ class DatabaseSeeder extends Seeder
             'role_id' => $roleAnalista->id,
             'is_active' => true,
         ]);
-        $analista->fundos()->attach([$fundoSofia->id, $fundoElena->id, $fundoJose->id]);
+        $analista->fundos()->attach([$fundoAgritac->id, $fundoProcom->id, $fundoElNegro->id]);
 
-        // 4. Catálogos: Lotes y Cuarteles ficticios por fundo
-        $loteSofia1 = \App\Models\Lote::withoutGlobalScopes()->create([
-            'fundo_id' => $fundoSofia->id,
-            'nombre' => 'Lote 01 - Norte',
-        ]);
-        \App\Models\Cuartel::create(['lote_id' => $loteSofia1->id, 'nombre' => 'Cuartel 1A']);
-        \App\Models\Cuartel::create(['lote_id' => $loteSofia1->id, 'nombre' => 'Cuartel 1B']);
+        // 4. Catálogos: Lotes exactos por Fundo
+        $lotesAgritac = [
+            'A03', 'A05', 'A06', 'L03', 'L06', 'L07',
+            'M03', 'M05', 'M04', 'M01', 'M02', 'A04',
+            'A02', 'A01', 'L01', 'L02', 'L04', 'L05'
+        ];
+        $instanciasLotesAgritac = [];
+        foreach ($lotesAgritac as $nombreLote) {
+            $instanciasLotesAgritac[$nombreLote] = \App\Models\Lote::withoutGlobalScopes()->create([
+                'fundo_id' => $fundoAgritac->id,
+                'nombre' => $nombreLote,
+            ]);
+        }
 
-        $loteSofia2 = \App\Models\Lote::withoutGlobalScopes()->create([
-            'fundo_id' => $fundoSofia->id,
-            'nombre' => 'Lote 02 - Sur',
-        ]);
-        \App\Models\Cuartel::create(['lote_id' => $loteSofia2->id, 'nombre' => 'Cuartel 2A']);
-        \App\Models\Cuartel::create(['lote_id' => $loteSofia2->id, 'nombre' => 'Cuartel 2B']);
+        $lotesProcom = ['H01', 'H02', 'H03', 'H04', 'H05', 'H06', 'H07', 'H08', 'H09'];
+        $instanciasLotesProcom = [];
+        foreach ($lotesProcom as $nombreLote) {
+            $instanciasLotesProcom[$nombreLote] = \App\Models\Lote::withoutGlobalScopes()->create([
+                'fundo_id' => $fundoProcom->id,
+                'nombre' => $nombreLote,
+            ]);
+        }
 
-        $loteElena1 = \App\Models\Lote::withoutGlobalScopes()->create([
-            'fundo_id' => $fundoElena->id,
-            'nombre' => 'Lote 01 - Valle',
-        ]);
-        \App\Models\Cuartel::create(['lote_id' => $loteElena1->id, 'nombre' => 'Cuartel V1']);
-        \App\Models\Cuartel::create(['lote_id' => $loteElena1->id, 'nombre' => 'Cuartel V2']);
-
-        $loteJose1 = \App\Models\Lote::withoutGlobalScopes()->create([
-            'fundo_id' => $fundoJose->id,
-            'nombre' => 'Lote 01 - Colina',
-        ]);
-        \App\Models\Cuartel::create(['lote_id' => $loteJose1->id, 'nombre' => 'Cuartel C1']);
+        $lotesElNegro = ['N01', 'N03', 'N04', 'N05', 'N06', 'N07', 'N08'];
+        $instanciasLotesElNegro = [];
+        foreach ($lotesElNegro as $nombreLote) {
+            $instanciasLotesElNegro[$nombreLote] = \App\Models\Lote::withoutGlobalScopes()->create([
+                'fundo_id' => $fundoElNegro->id,
+                'nombre' => $nombreLote,
+            ]);
+        }
 
         // 5. Registros ficticios para validar aislamiento entre fundos y tablas de análisis
+        $primerLoteAgritac = $instanciasLotesAgritac['A01'];
         VentaDescarte::withoutGlobalScopes()->create([
             'id' => (string) Str::uuid(),
-            'fundo_id' => $fundoSofia->id,
-            'lote_id' => $loteSofia1->id,
+            'fundo_id' => $fundoAgritac->id,
+            'lote_id' => $primerLoteAgritac->id,
             'cuartel_manual' => 'Cuartel 1A',
             'fecha_produccion' => '2026-10-08',
             'motivo' => 'Campo',

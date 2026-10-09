@@ -39,6 +39,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/administracion/fundos/{fundo}/toggle', [\App\Http\Controllers\AdminController::class, 'toggleFundo'])->name('admin.fundos.toggle');
     Route::delete('/administracion/fundos/{fundo}', [\App\Http\Controllers\AdminController::class, 'destroyFundo'])->name('admin.fundos.destroy');
 
+    // Gestión de Lotes y Cuarteles dentro de Fundos
+    Route::post('/administracion/fundos/{fundo}/lotes', [\App\Http\Controllers\AdminController::class, 'storeLote'])->name('admin.fundos.lotes.store');
+    Route::delete('/administracion/lotes/{lote}', [\App\Http\Controllers\AdminController::class, 'destroyLote'])->name('admin.lotes.destroy');
+    Route::post('/administracion/lotes/{lote}/cuarteles', [\App\Http\Controllers\AdminController::class, 'storeCuartel'])->name('admin.lotes.cuarteles.store');
+    Route::delete('/administracion/cuarteles/{cuartel}', [\App\Http\Controllers\AdminController::class, 'destroyCuartel'])->name('admin.cuarteles.destroy');
+
     Route::get('/administracion/usuarios', [\App\Http\Controllers\AdminController::class, 'usuarios'])->name('admin.usuarios');
     Route::post('/administracion/usuarios', [\App\Http\Controllers\AdminController::class, 'storeUsuario'])->name('admin.usuarios.store');
     Route::put('/administracion/usuarios/{user}', [\App\Http\Controllers\AdminController::class, 'updateUsuario'])->name('admin.usuarios.update');
