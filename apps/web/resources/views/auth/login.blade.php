@@ -2,6 +2,54 @@
 
 @section('title', 'Iniciar Sesión')
 
+@php
+    /**
+     * =========================================================================
+     * PANEL DE CONFIGURACIÓN VISUAL DEL LOGIN (PERSONALIZABLE)
+     * =========================================================================
+     * Puedes modificar directamente las imágenes y textos aquí, o simplemente
+     * colocar tus archivos en la carpeta `public/images/`.
+     */
+
+    // 1. IMAGEN DE FONDO (Desktop Hero)
+    // Ubicación predeterminada: apps/web/public/images/login-bg.webp o login-bg.jpg
+    $loginBgImage = file_exists(public_path('images/login-bg.webp'))
+        ? asset('images/login-bg.webp')
+        : (file_exists(public_path('images/login-bg.jpg')) ? asset('images/login-bg.jpg') : '');
+
+    // 2. ICONO / LOGO
+    // Sube tu logo a apps/web/public/images/logo.png (o .webp / .svg) para reemplazar el icono
+    $loginLogo = file_exists(public_path('images/logo.png'))
+        ? asset('images/logo.png')
+        : (file_exists(public_path('images/logo.webp'))
+            ? asset('images/logo.webp')
+            : (file_exists(public_path('images/logo.svg')) ? asset('images/logo.svg') : asset('icons/icon-192.webp')));
+
+    // 3. TEXTOS DE MARCA E IDENTIDAD
+    $brandName    = 'Sistema Web del Fundo';
+    $brandTagline = 'Gestión Agrícola';
+
+    // 4. TEXTOS DEL HERO (Panel Izquierdo en Desktop)
+    $heroTitle       = 'Control total<br>de tu <em>producción</em><br>agrícola.';
+    $heroDescription = 'Registra, sincroniza y analiza las ventas de descarte de tus fundos con precisión y en tiempo real, incluso sin conexión a internet.';
+
+    // Indicadores / Métricas destacadas del Hero
+    $heroStat1Value = '3';
+    $heroStat1Label = 'Fundos oficiales';
+
+    $heroStat2Value = '4';
+    $heroStat2Label = 'Roles de acceso';
+
+    $heroStat3Value = 'PWA';
+    $heroStat3Label = 'Modo offline';
+
+    $heroFooterText = 'TAL S.A. • Uso interno • ' . now()->year;
+
+    // 5. TEXTOS DEL FORMULARIO (Lado Derecho)
+    $formHeading    = 'Iniciar Sesión';
+    $formSubheading = 'Ingresa con tus credenciales autorizadas para continuar';
+@endphp
+
 @section('styles')
 <style>
     /* Layout: pantalla completa split */
@@ -23,8 +71,18 @@
         display: none; /* visible en desktop */
         flex-direction: column;
         justify-content: space-between;
-        padding: 2.5rem;
+        padding: clamp(2rem, 3.5vw, 3rem);
+        background-color: #0d1e13;
+        @if(!empty($loginBgImage))
+        background-image: 
+            linear-gradient(160deg, rgba(13, 30, 19, 0.85) 0%, rgba(18, 42, 26, 0.78) 45%, rgba(10, 22, 14, 0.94) 100%),
+            url('{{ $loginBgImage }}');
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
+        @else
         background: linear-gradient(160deg, #0f1f14 0%, #1a3322 40%, #0f2b1f 100%);
+        @endif
         position: relative;
         overflow: hidden;
     }
@@ -403,44 +461,42 @@
 
         {{-- Logo --}}
         <div class="hero-logo">
-            <div class="hero-logo-icon" style="overflow:hidden;padding:0;">
-                <img src="/icons/icon-192.webp" alt="Sistema Fundo" width="44" height="44" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block;">
+            <div class="hero-logo-icon" style="overflow:hidden;padding:0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);backdrop-filter:blur(8px);">
+                <img src="{{ $loginLogo }}" alt="{{ $brandName }}" width="44" height="44" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block;">
             </div>
             <div class="hero-logo-text">
-                <strong>Sistema Web del Fundo</strong>
-                <span>Gestión Agrícola</span>
+                <strong>{{ $brandName }}</strong>
+                <span>{{ $brandTagline }}</span>
             </div>
         </div>
 
         {{-- Mensaje central --}}
         <div class="hero-content">
             <h1 class="hero-title">
-                Control total<br>
-                de tu <em>producción</em><br>
-                agrícola.
+                {!! $heroTitle !!}
             </h1>
             <p class="hero-desc">
-                Registra, sincroniza y analiza las ventas de descarte de tus fundos con precisión y en tiempo real, incluso sin conexión a internet.
+                {{ $heroDescription }}
             </p>
             <div class="hero-stats">
                 <div>
-                    <div class="hero-stat-value">3</div>
-                    <div class="hero-stat-label">Fundos activos</div>
+                    <div class="hero-stat-value">{{ $heroStat1Value }}</div>
+                    <div class="hero-stat-label">{{ $heroStat1Label }}</div>
                 </div>
                 <div>
-                    <div class="hero-stat-value">4</div>
-                    <div class="hero-stat-label">Roles de acceso</div>
+                    <div class="hero-stat-value">{{ $heroStat2Value }}</div>
+                    <div class="hero-stat-label">{{ $heroStat2Label }}</div>
                 </div>
                 <div>
-                    <div class="hero-stat-value">PWA</div>
-                    <div class="hero-stat-label">Modo offline</div>
+                    <div class="hero-stat-value">{{ $heroStat3Value }}</div>
+                    <div class="hero-stat-label">{{ $heroStat3Label }}</div>
                 </div>
             </div>
         </div>
 
         {{-- Footer hero --}}
-        <div style="font-size: 0.6875rem; color: rgba(255,255,255,0.25); position: relative; z-index: 1;">
-            TAL S.A. &bull; Uso interno &bull; {{ now()->year }}
+        <div style="font-size: 0.6875rem; color: rgba(255,255,255,0.3); position: relative; z-index: 1;">
+            {{ $heroFooterText }}
         </div>
     </div>
 
@@ -449,17 +505,17 @@
 
         {{-- Logo móvil --}}
         <div class="login-mobile-brand" aria-hidden="true">
-            <div class="login-mobile-brand-icon" style="overflow:hidden;padding:0;">
-                <img src="/icons/icon-192.webp" alt="Sistema Fundo" width="36" height="36" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block;">
+            <div class="login-mobile-brand-icon" style="overflow:hidden;padding:0;background:rgba(22,101,52,0.1);border:1px solid rgba(22,101,52,0.2);">
+                <img src="{{ $loginLogo }}" alt="{{ $brandName }}" width="36" height="36" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block;">
             </div>
             <div class="login-mobile-brand-text">
-                <strong>Sistema Web del Fundo</strong>
-                <span>Gestión Agrícola</span>
+                <strong>{{ $brandName }}</strong>
+                <span>{{ $brandTagline }}</span>
             </div>
         </div>
 
-        <h1 class="login-heading">Iniciar Sesión</h1>
-        <p class="login-subheading">Ingresa con tus credenciales autorizadas para continuar</p>
+        <h1 class="login-heading">{{ $formHeading }}</h1>
+        <p class="login-subheading">{{ $formSubheading }}</p>
 
         {{-- Errores --}}
         @if ($errors->any())
@@ -558,26 +614,26 @@
                             <td>admin@fundo.test</td>
                             <td>Todos</td>
                         </tr>
-                        <tr onclick="fillLogin('general.sofia@fundo.test')" tabindex="0" role="row"
-                            onkeydown="if(event.key==='Enter')fillLogin('general.sofia@fundo.test')"
-                            aria-label="Autenticarse como General - Santa Sofía">
+                        <tr onclick="fillLogin('general.agritac@fundo.test')" tabindex="0" role="row"
+                            onkeydown="if(event.key==='Enter')fillLogin('general.agritac@fundo.test')"
+                            aria-label="Autenticarse como General - AGRITAC">
                             <td><span class="rpill rpill-general">General</span></td>
-                            <td>general.sofia@fundo.test</td>
-                            <td>Santa Sofía</td>
+                            <td>general.agritac@fundo.test</td>
+                            <td>AGRITAC</td>
                         </tr>
-                        <tr onclick="fillLogin('general.elena@fundo.test')" tabindex="0" role="row"
-                            onkeydown="if(event.key==='Enter')fillLogin('general.elena@fundo.test')"
-                            aria-label="Autenticarse como General - Santa Elena">
+                        <tr onclick="fillLogin('general.procom@fundo.test')" tabindex="0" role="row"
+                            onkeydown="if(event.key==='Enter')fillLogin('general.procom@fundo.test')"
+                            aria-label="Autenticarse como General - PROCOM">
                             <td><span class="rpill rpill-general">General</span></td>
-                            <td>general.elena@fundo.test</td>
-                            <td>Santa Elena</td>
+                            <td>general.procom@fundo.test</td>
+                            <td>PROCOM</td>
                         </tr>
-                        <tr onclick="fillLogin('individual.sofia@fundo.test')" tabindex="0" role="row"
-                            onkeydown="if(event.key==='Enter')fillLogin('individual.sofia@fundo.test')"
-                            aria-label="Autenticarse como Individual - Santa Sofía">
+                        <tr onclick="fillLogin('individual.agritac@fundo.test')" tabindex="0" role="row"
+                            onkeydown="if(event.key==='Enter')fillLogin('individual.agritac@fundo.test')"
+                            aria-label="Autenticarse como Individual - AGRITAC">
                             <td><span class="rpill rpill-individual">Individual</span></td>
-                            <td>individual.sofia@fundo.test</td>
-                            <td>Santa Sofía</td>
+                            <td>individual.agritac@fundo.test</td>
+                            <td>AGRITAC</td>
                         </tr>
                         <tr onclick="fillLogin('analista@fundo.test')" tabindex="0" role="row"
                             onkeydown="if(event.key==='Enter')fillLogin('analista@fundo.test')"
