@@ -1,9 +1,11 @@
-# Registro de riesgos
+# Registro de Riesgos
 
-| ID | Riesgo | Probabilidad | Impacto | Mitigación | Responsable | Estado |
+| ID | Riesgo | Probabilidad | Impacto | Mitigación Implementada | Responsable | Estado |
 |---|---|---|---|---|---|---|
-| R-01 | Requisitos ambiguos | Media | Alta | Aprobar reglas e historias antes de programar | Analista | Abierto (Esperando respuestas) |
-| R-02 | Exposición de datos/credenciales | Media | Alta | Mínimo privilegio, .gitignore, datos ficticios | Seguridad | Abierto |
-| R-03 | Autorización por fundo rota (Cross-tenant) | Alta | Crítico | Aplicar validación estricta (Global Scopes en Laravel) asegurando que Individual no acceda a datos de otros fundos. Pruebas automatizadas. | Backend | Abierto |
-| R-04 | Trazabilidad vulnerada o datos alterados | Media | Alta | Guardar fecha de sistema y usuario en Backend (no confiar en la UI). Mantener tabla de auditoría inmutable (audit_logs). | Arquitecto/Seguridad | Abierto |
-| R-05 | Fallos en validación de datos Offline-Online | Alta | Alta | Validar campos de vuelta en backend tras sincronizar. Evitar corrupción por UUIDs mal generados o decimales alterados. | QA / Backend | Abierto |
+| R-01 | Requisitos ambiguos | Baja | Alta | Requisitos aclarados en `PREGUNTAS_ABIERTAS.md` y formalizados en `REQUISITOS_APROBADOS.md`. | Analista | Mitigado |
+| R-02 | Exposición de datos/credenciales | Baja | Alta | Mínimo privilegio, `.gitignore`, `.env.example` sin credenciales reales y seeders con datos ficticios. | Seguridad | Mitigado |
+| R-03 | Acceso cruzado entre fundos (Cross-tenant) | Baja | Crítico | Implementado `FundoScope` (Eloquent Global Scope) con 4 pruebas automatizadas en `FundoScopeTest`. | Backend | Mitigado |
+| R-04 | Trazabilidad vulnerada o datos alterados | Baja | Alta | Marcas de tiempo del servidor y usuario autenticado forzado en `created_by` y `updated_by`. | Arquitectura / Backend | Mitigado |
+| R-05 | Fallos en validación de datos en campo | Baja | Alta | Validación estricta en servidor según motivo (Campo, Packing, Cosecha Nacional) probada con PHPUnit. | QA / Backend | Mitigado |
+| R-06 | Deformación visual en smartphones angostos | Baja | Media | Sistema responsive con tipografía `clamp()`, `table-wrapper` con scroll táctil y botones simétricos. | Frontend / UX | Mitigado |
+

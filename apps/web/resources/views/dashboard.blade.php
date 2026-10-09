@@ -9,7 +9,7 @@
     .welcome-banner {
         background: linear-gradient(135deg, var(--clr-primary-800) 0%, var(--clr-primary-900) 100%);
         border-radius: var(--radius-xl);
-        padding: 1.75rem 2rem;
+        padding: clamp(1.2rem, 4vw, 1.75rem) clamp(1rem, 4vw, 2rem);
         color: white;
         position: relative;
         overflow: hidden;
@@ -50,12 +50,13 @@
     }
 
     .welcome-name {
-        font-size: 1.625rem;
+        font-size: clamp(1.2rem, 5vw, 1.625rem);
         font-weight: 800;
         letter-spacing: -0.02em;
         line-height: 1.2;
         position: relative;
         z-index: 1;
+        word-break: break-word;
     }
 
     .welcome-meta {
@@ -88,6 +89,12 @@
         margin-bottom: 1.75rem;
     }
 
+    .stat-value {
+        font-size: clamp(1.2rem, 5vw, 1.625rem);
+        font-weight: 800;
+        line-height: 1.1;
+    }
+
     @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 560px) { .dashboard-grid { grid-template-columns: 1fr; } }
 
@@ -100,7 +107,38 @@
 
     @media (max-width: 900px) { .content-grid { grid-template-columns: 1fr; } }
 
+    /* Grupo de acciones del header en dashboard */
+    .dash-actions-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 640px) {
+        .dash-actions-group {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
+            width: 100% !important;
+            gap: 0.5rem !important;
+        }
+        .dash-actions-group .btn {
+            justify-content: center !important;
+            text-align: center !important;
+            padding: 0.5rem 0.35rem !important;
+            font-size: clamp(0.72rem, 2.7vw, 0.8125rem) !important;
+            white-space: nowrap !important;
+        }
+        .welcome-meta {
+            gap: 0.5rem 0.75rem;
+        }
+    }
+
     /* Tabla del dashboard */
+    .dash-table {
+        min-width: 580px;
+    }
+
     .dash-table th {
         padding: 0.5rem 0.875rem;
         background: var(--clr-surface-50);
@@ -239,7 +277,7 @@
     {{-- Columna principal: tabla de registros --}}
     <div>
         <div class="card" style="padding: 0; overflow: hidden;">
-            <div class="card-header" style="padding: 1.25rem 1.5rem;">
+            <div class="card-header">
                 <div>
                     <div class="card-title">
                         <span aria-hidden="true">🛡️</span>
@@ -249,7 +287,7 @@
                         Datos filtrados por la política de acceso (FundoScope)
                     </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <div class="dash-actions-group">
                     <a href="{{ route('ventas.index') }}" class="btn btn-secondary btn-sm">
                         Ver Historial Completo →
                     </a>

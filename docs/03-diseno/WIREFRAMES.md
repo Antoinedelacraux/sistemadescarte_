@@ -1,15 +1,15 @@
 # Wireframes y Diseño Funcional (UI/UX)
 
-El sistema empleará Alpine.js y Tailwind CSS para crear una interfaz rápida, minimalista y PWA-ready.
+El sistema emplea plantillas Blade, JavaScript Vanilla y CSS puro con sistema de Design Tokens (sin dependencias de Tailwind ni Alpine), optimizado para renderizado ultra rápido, PWA y adaptabilidad total en smartphones.
 
-## 1. Diseño Base (Layout Layout)
+## 1. Diseño Base (Layout Shell)
 - **Barra Superior (Header):**
-  - Izquierda: Botón de Hamburguesa (para ocultar/mostrar menú lateral).
-  - Centro: Nombre del módulo ("Venta de Descarte").
-  - Derecha: Estado de conexión (🔴 Offline / 🟢 Online) y Menú de Perfil (Nombre, Fundo activo, Cerrar Sesión).
-- **Menú Lateral (Sidebar Colapsable):**
-  - Oculto por defecto en móviles; visible o colapsable en Desktop.
-  - Opciones: Registro de Venta, Historial de Ventas, Exportar Reportes, (Administración).
+  - Izquierda: Botón de Hamburguesa (para deslizar/ocultar el menú lateral a pantalla completa).
+  - Centro: Título fluido del módulo actual con elipsis protectora.
+  - Derecha: Indicador de estado de red (`Online` / `Offline`) con reducción compacta en móviles angostos, badge de rol y avatar del usuario.
+- **Menú Lateral (Sidebar Deslizante):**
+  - Oculto por defecto en móviles; colapsable o deslizante en escritorio con persistencia en `localStorage`.
+  - Opciones filtradas por rol: Panel de Control, Registrar Venta, Historial de Ventas, Reportes, Exportar Excel, Fundos y Usuarios.
 
 ## 2. Pantalla: Registro de Venta (PWA Mobile First)
 ```text

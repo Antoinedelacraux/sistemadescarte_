@@ -86,9 +86,42 @@
         gap: 0.5rem;
     }
 
+    .form-top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+        gap: 0.75rem;
+    }
+
+    .form-top-bar h1 {
+        font-size: clamp(1.2rem, 4.5vw, 1.5rem);
+        font-weight: 700;
+        color: var(--txt-primary);
+        line-height: 1.2;
+    }
+
+    .form-top-bar p {
+        font-size: clamp(0.75rem, 2.5vw, 0.8125rem);
+        color: var(--txt-muted);
+        margin-top: 0.125rem;
+    }
+
+    .cuartel-input-group {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .total-amount {
+        font-size: clamp(1.4rem, 6vw, 2rem);
+        font-weight: 800;
+        color: var(--clr-primary-900);
+        font-variant-numeric: tabular-nums;
+    }
+
     .btn-submit-sale {
-        height: 50px;
-        font-size: 1.05rem;
+        height: 48px;
+        font-size: clamp(0.875rem, 3vw, 1.05rem);
         font-weight: 700;
         border-radius: var(--radius-md);
         background: linear-gradient(135deg, var(--clr-primary-700), var(--clr-primary-800));
@@ -108,6 +141,40 @@
         background: linear-gradient(135deg, var(--clr-primary-800), var(--clr-primary-900));
         transform: translateY(-1px);
     }
+
+    @media (max-width: 768px) {
+        .form-grid-2, .form-grid-3 {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        .form-card {
+            padding: 1rem 0.875rem;
+            border-radius: var(--radius-lg);
+        }
+        .form-top-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.625rem;
+        }
+        .form-top-bar .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        .cuartel-input-group {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .total-display-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.375rem;
+            padding: 1rem 0.875rem;
+        }
+        .audit-box {
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+    }
 </style>
 @endsection
 
@@ -115,10 +182,10 @@
 <div class="form-container">
 
     {{-- Encabezado con retorno --}}
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+    <div class="form-top-bar">
         <div>
-            <h1 style="font-size: var(--text-2xl); font-weight: 700; color: var(--txt-primary);">Editar Venta de Descarte</h1>
-            <p style="font-size: var(--text-sm); color: var(--txt-muted);">Modifica los datos del pesaje y guarda los cambios con auditoría</p>
+            <h1>Editar Venta de Descarte</h1>
+            <p>Modifica los datos del pesaje y guarda los cambios con auditoría</p>
         </div>
         <a href="{{ route('ventas.index') }}" class="btn btn-secondary btn-sm" aria-label="Volver al historial">
             ← Volver al historial
@@ -202,7 +269,7 @@
                 <label for="cuartel_manual" class="form-label">
                     Cuartel <span id="cuartel-required-star" class="required" style="display: none;">*</span>
                 </label>
-                <div style="display: flex; gap: 0.5rem;">
+                <div class="cuartel-input-group">
                     <select id="cuartel_select" class="form-control" onchange="seleccionarCuartel(this.value)">
                         <option value="">-- Cuartel de catálogo --</option>
                     </select>

@@ -1,5 +1,20 @@
-# Matriz de trazabilidad
+# Matriz de Trazabilidad de Requisitos
 
-| ID requisito | Fuente | Historia/flujo | Regla negocio | Criterio aceptación | Prueba | Módulo | Estado/aprobación |
+| ID Requisito | Fuente | Historia / Flujo | Regla de Negocio | Criterio de Aceptación | Prueba Automatizada | Módulo | Estado |
 |---|---|---|---|---|---|---|---|
-| POR-DEFINIR | Pendiente | Pendiente | Pendiente | Pendiente | Pendiente | Pendiente | Sin aprobar |
+| RF-01 | Requisitos Propietario | Iniciar sesión en el sistema | Autenticación por email/contraseña; rate limiting activo; usuarios inactivos no pueden ingresar | Retorna sesión y redirige a dashboard; error claro con credenciales inválidas | `AutenticacionTest` (4 tests) | Auth / Login | Verificado |
+| RF-02 | Requisitos Propietario | Control de acceso por rol (RBAC) | 4 roles: Admin (total), General (sus fundos), Individual (su fundo), Analista (reportes y lectura) | Las rutas y acciones se restringen según el rol del usuario autenticado | `AutenticacionTest`, `FundoScopeTest` | Auth / RBAC | Verificado |
+| RF-03 | Requisitos Propietario | Aislamiento multi-tenant | FundoScope filtra automáticamente registros por fundo asignado a nivel de base de datos | Usuario Individual o General no puede leer ni modificar ventas de otros fundos | `FundoScopeTest` (4 tests) | Core / FundoScope | Verificado |
+| RF-04 | Requisitos Propietario | Catálogo dinámico de Lotes y Cuarteles | Lotes predefinidos por fundo; cuarteles vinculados al lote seleccionado | Endpoint `/api/catalogo/lotes` devuelve estructura JSON filtrada por fundo | `CatalogoLotesTest` (4 tests) | Catálogos | Verificado |
+| RF-05 | Requisitos Propietario | Registro de venta de descarte | Motivos: Campo, Packing, Cosecha Nacional. Cálculo: `precio * kg` exacto a 2 decimales | Valor_venta se calcula y almacena; campos requeridos según motivo validados | `VentaDescarteTest` (7 tests) | Ventas / Create | Verificado |
+| RF-06 | Requisitos Propietario | Validación específica de Cosecha Nacional | Exige Cuartel obligatorio y Tipo de descarte: *Racimos*, *Racimos con plaga*, *Granos* | Rechaza guardado si falta cuartel o tipo en Cosecha Nacional | `VentaDescarteTest` | Ventas / Create | Verificado |
+| RF-07 | Requisitos Propietario | Auditoría en registros de venta | Registrar usuario creador (`created_by`), usuario modificador (`updated_by`) y marcas temporales | Se guardan IDs de usuario y se visualizan en formulario de edición y detalles | `VentaDescarteTest` | Ventas / Audit | Verificado |
+| RF-08 | Requisitos Propietario | Historial y listado de ventas | Paginación y filtros por Fundo, Motivo y Rango de fechas | Registros mostrados respetan FundoScope y filtros aplicados | `VentaDescarteTest` | Ventas / Index | Verificado |
+| RF-09 | Requisitos Propietario | Reportes analíticos con KPIs | Consolidación de Kg totales, Monto total (S/) y Conteo de pesajes | Cálculos agregados precisos; distribución por motivo y fundo | `ReporteTest` (4 tests) | Reportes | Verificado |
+| RF-10 | Requisitos Propietario | Exportación a Excel (.csv compatible) | Descarga en formato CSV con codificación UTF-8 BOM y delimitador `;` | Se abre directamente en Microsoft Excel sin problemas de tildes ni caracteres | `ReporteTest` | Reportes / Export | Verificado |
+| RF-11 | Requisitos Propietario | Selector dinámico de columnas para exportación | El usuario puede marcar/desmarcar qué campos incluir en el archivo | El archivo generado solo contiene las columnas seleccionadas | `ReporteTest` | Reportes / Export | Verificado |
+| RF-12 | Requisitos Propietario | Gestión de Fundos y Sedes | Crear nuevos fundos y conmutar estado activo/inactivo (solo Admin) | Se persisten fundos y se reflejan en selectores y FundoScope | `AdminTest` (3 tests) | Administración | Verificado |
+| RF-13 | Requisitos Propietario | Gestión de Usuarios y Asignación | Crear usuarios, asignar rol y vincular múltiples fundos (solo Admin) | Creación segura de credenciales; asignación en tabla `fundo_user` | `AdminTest` (3 tests) | Administración | Verificado |
+| RNF-01 | Requisitos Propietario | Soporte PWA y Móvil | Instalable en pantalla de inicio (Android / iPhone / PC); Service Worker activo | Manifiesto válido, iconos adaptativos y caché estática fuera de línea | Verificado visual / PWA Audit | PWA | Verificado |
+| RNF-02 | Requisitos Propietario | Responsive Design Estricto | Tipografía fluida con clamp(); tablas contenidas con scroll táctil; orden en botones | Sin solapamiento en resoluciones 360px - 1440px; uso táctil con una sola mano | Inspección visual en breakpoints | UI / UX | Verificado |
+

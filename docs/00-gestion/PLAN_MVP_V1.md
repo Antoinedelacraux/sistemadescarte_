@@ -1,60 +1,53 @@
 # Plan de desarrollo incremental — Sistema de Descarte
 
-**Estado:** Plan propuesto, sujeto a aprobación.
+**Estado:** Fases 0 a 6 COMPLETADAS. Fase 7 (Revisión y Empaquetado VPS) en curso.
 
-## Fase 0 — Revisar preparación existente
-- Validar que Antigravity haya leído AGENTS.md, agentes, skills, reglas y estado Git.
-- Conservar instrucciones y commits; no duplicar archivos ni sobrescribir decisiones.
-- Completar auditoría si solo se envió el prompt inicial y todavía no hay informe.
+## Fase 0 — Revisar preparación existente `[COMPLETADA]`
+- Validado que Antigravity leyó AGENTS.md, agentes, skills, reglas y estado Git.
+- Conservadas instrucciones y commits; no se duplicaron archivos ni se sobrescribieron decisiones.
+- Hito: Estructura multiagente validada y lista.
 
-## Fase 1 — Requisitos y decisiones
-- Incorporar el archivo TXT original al repositorio.
-- Separar fuente confirmada / propuestas / ambigüedades.
-- Crear matriz RF/RNF, roles y permisos, criterios de aceptación.
-- Resolver decisiones P1 (offline, permisos, tipo, dinero) o aislarlas claramente.
-- Hito: documento de requisitos revisado, sin generar código.
+## Fase 1 — Requisitos y decisiones `[COMPLETADA]`
+- Incorporado el archivo de requisitos original al repositorio (`docs/01-requisitos/`).
+- Matriz RF/RNF, roles y permisos, y criterios de aceptación formalizados.
+- Resueltas decisiones operativas en `PREGUNTAS_ABIERTAS.md`.
+- Hito: Requisitos aprobados formalmente.
 
-## Fase 2 — Arquitectura y datos
-- ADR stack Laravel/PHP/MySQL con verificación del VPS pendiente.
-- Modelo ER, relaciones por fundo, índices, restricciones, validaciones, esquema de auditoría.
-- Wireframes responsive para registro, listado y gestión de usuarios/fundos.
-- Plan de pruebas y despliegue seguro.
-- Hito: aprobación del diseño lógico y técnico.
+## Fase 2 — Arquitectura y datos `[COMPLETADA]`
+- ADRs aprobados: Arquitectura web Laravel 12 / PHP 8.4 y estrategia PWA/Offline-First.
+- Modelo ER de datos formalizado en `MODELO_DATOS_ER.md`.
+- Wireframes de alta fidelidad y tokens CSS documentados en `docs/03-diseno/`.
+- Hito: Diseño lógico, técnico y arquitectónico aprobado.
 
-## Fase 3 — Fundación técnica local
-- Proyecto Laravel dentro de ubicación acordada, repositorio limpio y .env.example sin secretos.
-- Tests y estilo de código, conexión con BD **de desarrollo**, login e interfaz base.
-- Implementar permisos y filtro de alcance por fundo, con pruebas automatizadas.
-- No entrar en DonWeb aún.
-- Hito: usuarios y autorizaciones funcionando localmente.
+## Fase 3 — Fundación técnica local `[COMPLETADA]`
+- Proyecto Laravel 12 instalado en `apps/web/` con PHP 8.4.
+- Migraciones y modelos para `roles`, `fundos`, `users`, `fundo_user` y `ventas_descarte`.
+- Implementado Login, RBAC (4 roles) y aislamiento estricto `FundoScope` multi-tenant.
+- Hito: 15 pruebas PHPUnit exitosas (55 aserciones).
 
-## Fase 4 — Catálogos
-- Fundos y usuarios asignados, lotes/cuarteles, motivos/tipos.
-- Validaciones, pruebas y seeder con datos ficticios.
-- Hito: datos maestros listos para el registro.
+## Fase 4 — Catálogos y Registro de Descarte `[COMPLETADA]`
+- Catálogos dinámicos de Lotes y Cuarteles por fundo vía API (`/api/catalogo/lotes`).
+- Formulario de Venta de Descarte con cálculo en tiempo real (`precio * kg`).
+- Validaciones estrictas por motivo: Campo, Packing y Cosecha Nacional (Cuartel + Tipo de descarte).
+- Auditoría de usuario creador y modificador (`created_by`, `updated_by`).
+- Hito: 23 pruebas PHPUnit pasando (82 aserciones).
 
-## Fase 5 — Venta de descarte
-- Crear/listar/ver registros, cálculos y validaciones; edición/anulación según reglas aprobadas.
-- Registro de autor/fechas y auditoría.
-- Testear aislamiento entre fundos y precisión del valor.
-- Hito: registro de descarte útil en celular.
+## Fase 5 — Historial y Auditoría de Ventas `[COMPLETADA]`
+- Listado de ventas con paginación y filtros por Fundo, Motivo y Rango de Fechas.
+- Formulario de edición con validación de FundoScope y auditoría de cambios.
+- Hito: Gestión completa del ciclo de vida de la venta de descarte.
 
-## Fase 6 — Reportes, Excel, UX y PWA
-- Filtros por fundo/fecha/lote/motivo y selección de columnas.
-- Excel sin usuario y hora en exportación operativa.
-- Sidebar colapsable, tablas responsivas y ajustes de accesibilidad.
-- PWA instalable; offline transaccional solo si se aprueba y diseña.
-- Hito: flujo completo listo para pruebas de usuario.
+## Fase 6 — Reportes, Excel, PWA, Admin y Responsive `[COMPLETADA]`
+- Módulo de Reportes analíticos con KPIs consolidados y tablas de distribución.
+- Exportador a Excel (.csv compatible con UTF-8 BOM) con selector dinámico de columnas.
+- PWA completa: `manifest.json`, iconos adaptativos y Service Worker (`sw.js`).
+- Módulo de Administración de Fundos y Usuarios con asignación multi-fundo.
+- Optimización responsive integral para smartphones (< 640px y < 440px) con tipografía `clamp()`, tablas en `table-wrapper` con scroll táctil y botones simétricos.
+- Hito: 29 pruebas PHPUnit exitosas (111 aserciones).
 
-## Fase 7 — QA, piloto y empaquetado (Preparación para VPS)
-- Tests de integración, seguridad, carga básica y recuperación.
-- Empaquetado del código precompilado (zip) sin .env ni node_modules.
-- Entrega del paquete al Administrador del VPS junto con el `PLAN_DESPLIEGUE.md`.
-- El despliegue final en producción (aislamiento, SSL, backups) será ejecutado **exclusivamente** por el Administrador del VPS ajeno al desarrollo.
+## Fase 7 — QA, Feedback del Propietario y Empaquetado VPS `[EN CURSO]`
+- Revisión funcional activa por parte del propietario del proyecto.
+- Incorporación de feedback y ajustes solicitados.
+- Preparación del paquete de despliegue precompilado (.zip) junto con `PLAN_DESPLIEGUE.md`.
+- Hito final: Entrega del paquete al Administrador del VPS DonWeb para despliegue productivo.
 
-## Política operativa
-- Orquestador define entregas pequeñas.
-- Arquitecto revisa dependencias; QA y seguridad revisan antes de merge.
-- Commits inteligentes por hito, no commits que mezclen cambios ajenos.
-- Ningún agente hace push/despliega/migra producción sin autorización.
-- Al final de cada fase: cambios, pruebas realizadas, pendientes y siguiente paso.

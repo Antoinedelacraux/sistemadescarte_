@@ -190,7 +190,7 @@
     }
 
     .login-heading {
-        font-size: 1.75rem;
+        font-size: clamp(1.4rem, 5vw, 1.75rem);
         font-weight: 800;
         color: var(--txt-primary);
         letter-spacing: -0.02em;
@@ -198,7 +198,7 @@
     }
 
     .login-subheading {
-        font-size: var(--text-sm);
+        font-size: clamp(0.75rem, 2.8vw, 0.875rem);
         color: var(--txt-muted);
         margin-bottom: 2rem;
     }
@@ -206,7 +206,7 @@
     /* Formulario */
     .login-form .form-control {
         height: 44px;
-        font-size: var(--text-sm);
+        font-size: 16px; /* Evita auto-zoom en iOS Safari */
         border-radius: var(--radius-md);
         border-color: #d1d9d4;
         transition: all var(--transition-fast);
@@ -243,8 +243,8 @@
     }
 
     .btn-login {
-        height: 46px;
-        font-size: var(--text-base);
+        height: 48px;
+        font-size: clamp(0.875rem, 3.5vw, 1rem);
         border-radius: var(--radius-md);
         width: 100%;
         background: linear-gradient(135deg, var(--clr-primary-700), var(--clr-primary-800));
@@ -295,6 +295,12 @@
         margin-bottom: 0.75rem;
     }
 
+    .demo-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+    }
+
     .demo-table {
         width: 100%;
         border-collapse: collapse;
@@ -310,6 +316,7 @@
         letter-spacing: 0.04em;
         font-size: 0.625rem;
         border-bottom: 1px solid var(--brd-base);
+        white-space: nowrap;
     }
 
     .demo-table td {
@@ -317,6 +324,7 @@
         border-bottom: 1px solid var(--clr-surface-100);
         color: var(--txt-secondary);
         vertical-align: middle;
+        white-space: nowrap;
     }
 
     .demo-table tbody tr {
@@ -335,7 +343,7 @@
         display: inline-flex;
         align-items: center;
         gap: 0.25rem;
-        font-size: 0.625rem;
+        font-size: clamp(0.625rem, 2.2vw, 0.6875rem);
         color: var(--txt-muted);
         background: var(--clr-surface-100);
         padding: 0.1875rem 0.4375rem;
@@ -368,7 +376,18 @@
     }
 
     @media (max-width: 500px) {
-        .login-panel { padding: 1.75rem 1.25rem; }
+        .login-panel { padding: clamp(1.25rem, 5vw, 1.75rem) clamp(0.875rem, 4vw, 1.25rem); }
+        .demo-table {
+            font-size: clamp(0.65rem, 2.3vw, 0.75rem);
+            min-width: 290px;
+        }
+        .demo-table th, .demo-table td {
+            padding: 0.35rem 0.35rem;
+        }
+        .rpill {
+            font-size: 0.5625rem;
+            padding: 0.1rem 0.35rem;
+        }
     }
 </style>
 @endsection
@@ -518,52 +537,54 @@
                 🔑 Contraseña común: <strong>password123</strong>
             </div>
 
-            <table class="demo-table" role="table" aria-label="Lista de usuarios de prueba">
-                <thead>
-                    <tr>
-                        <th scope="col">Rol</th>
-                        <th scope="col">Correo</th>
-                        <th scope="col">Alcance</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr onclick="fillLogin('admin@fundo.test')" tabindex="0" role="row"
-                        onkeydown="if(event.key==='Enter')fillLogin('admin@fundo.test')"
-                        aria-label="Autenticarse como Administrador">
-                        <td><span class="rpill rpill-admin">Admin</span></td>
-                        <td>admin@fundo.test</td>
-                        <td>Todos</td>
-                    </tr>
-                    <tr onclick="fillLogin('general.sofia@fundo.test')" tabindex="0" role="row"
-                        onkeydown="if(event.key==='Enter')fillLogin('general.sofia@fundo.test')"
-                        aria-label="Autenticarse como General - Santa Sofía">
-                        <td><span class="rpill rpill-general">General</span></td>
-                        <td>general.sofia@fundo.test</td>
-                        <td>Santa Sofía</td>
-                    </tr>
-                    <tr onclick="fillLogin('general.elena@fundo.test')" tabindex="0" role="row"
-                        onkeydown="if(event.key==='Enter')fillLogin('general.elena@fundo.test')"
-                        aria-label="Autenticarse como General - Santa Elena">
-                        <td><span class="rpill rpill-general">General</span></td>
-                        <td>general.elena@fundo.test</td>
-                        <td>Santa Elena</td>
-                    </tr>
-                    <tr onclick="fillLogin('individual.sofia@fundo.test')" tabindex="0" role="row"
-                        onkeydown="if(event.key==='Enter')fillLogin('individual.sofia@fundo.test')"
-                        aria-label="Autenticarse como Individual - Santa Sofía">
-                        <td><span class="rpill rpill-individual">Individual</span></td>
-                        <td>individual.sofia@fundo.test</td>
-                        <td>Santa Sofía</td>
-                    </tr>
-                    <tr onclick="fillLogin('analista@fundo.test')" tabindex="0" role="row"
-                        onkeydown="if(event.key==='Enter')fillLogin('analista@fundo.test')"
-                        aria-label="Autenticarse como Analista">
-                        <td><span class="rpill rpill-analista">Analista</span></td>
-                        <td>analista@fundo.test</td>
-                        <td>Todos</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="demo-table-wrapper">
+                <table class="demo-table" role="table" aria-label="Lista de usuarios de prueba">
+                    <thead>
+                        <tr>
+                            <th scope="col">Rol</th>
+                            <th scope="col">Correo</th>
+                            <th scope="col">Alcance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr onclick="fillLogin('admin@fundo.test')" tabindex="0" role="row"
+                            onkeydown="if(event.key==='Enter')fillLogin('admin@fundo.test')"
+                            aria-label="Autenticarse como Administrador">
+                            <td><span class="rpill rpill-admin">Admin</span></td>
+                            <td>admin@fundo.test</td>
+                            <td>Todos</td>
+                        </tr>
+                        <tr onclick="fillLogin('general.sofia@fundo.test')" tabindex="0" role="row"
+                            onkeydown="if(event.key==='Enter')fillLogin('general.sofia@fundo.test')"
+                            aria-label="Autenticarse como General - Santa Sofía">
+                            <td><span class="rpill rpill-general">General</span></td>
+                            <td>general.sofia@fundo.test</td>
+                            <td>Santa Sofía</td>
+                        </tr>
+                        <tr onclick="fillLogin('general.elena@fundo.test')" tabindex="0" role="row"
+                            onkeydown="if(event.key==='Enter')fillLogin('general.elena@fundo.test')"
+                            aria-label="Autenticarse como General - Santa Elena">
+                            <td><span class="rpill rpill-general">General</span></td>
+                            <td>general.elena@fundo.test</td>
+                            <td>Santa Elena</td>
+                        </tr>
+                        <tr onclick="fillLogin('individual.sofia@fundo.test')" tabindex="0" role="row"
+                            onkeydown="if(event.key==='Enter')fillLogin('individual.sofia@fundo.test')"
+                            aria-label="Autenticarse como Individual - Santa Sofía">
+                            <td><span class="rpill rpill-individual">Individual</span></td>
+                            <td>individual.sofia@fundo.test</td>
+                            <td>Santa Sofía</td>
+                        </tr>
+                        <tr onclick="fillLogin('analista@fundo.test')" tabindex="0" role="row"
+                            onkeydown="if(event.key==='Enter')fillLogin('analista@fundo.test')"
+                            aria-label="Autenticarse como Analista">
+                            <td><span class="rpill rpill-analista">Analista</span></td>
+                            <td>analista@fundo.test</td>
+                            <td>Todos</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

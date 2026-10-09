@@ -113,9 +113,74 @@
         background: var(--clr-surface-50);
     }
 
+    .index-top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .index-top-bar h1 {
+        font-size: clamp(1.2rem, 4.5vw, 1.5rem);
+        font-weight: 700;
+        color: var(--txt-primary);
+        line-height: 1.2;
+    }
+
+    .index-top-bar p {
+        font-size: clamp(0.75rem, 2.5vw, 0.8125rem);
+        color: var(--txt-muted);
+        margin-top: 0.125rem;
+    }
+
+    .index-actions-group {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
     @media (max-width: 768px) {
         .filter-grid {
             grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .index-top-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.75rem;
+        }
+        .index-actions-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: 100%;
+            gap: 0.5rem;
+        }
+        .index-actions-group .btn {
+            width: 100%;
+            justify-content: center;
+            font-size: clamp(0.72rem, 2.6vw, 0.8125rem);
+            padding: 0.5rem 0.25rem;
+            text-align: center;
+        }
+        .sales-table th {
+            padding: 0.5rem 0.5rem;
+            font-size: 0.625rem;
+        }
+        .sales-table td {
+            padding: 0.5rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        .badge-motivo {
+            font-size: 0.5625rem;
+            padding: 0.125rem 0.35rem;
+        }
+        .badge-tipo {
+            font-size: 0.65rem;
+            padding: 0.1rem 0.3rem;
         }
     }
 </style>
@@ -124,13 +189,13 @@
 @section('content')
 <div>
     {{-- Barra superior de acciones --}}
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+    <div class="index-top-bar">
         <div>
-            <h1 style="font-size: var(--text-2xl); font-weight: 700; color: var(--txt-primary);">Historial de Ventas de Descarte</h1>
-            <p style="font-size: var(--text-sm); color: var(--txt-muted);">Consulta de pesajes y descarte registrado en campo y packing</p>
+            <h1>Historial de Ventas de Descarte</h1>
+            <p>Consulta de pesajes y descarte registrado en campo y packing</p>
         </div>
 
-        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <div class="index-actions-group">
             <a href="{{ route('reportes.index') }}" class="btn btn-secondary" title="Exportar datos a Excel">
                 <span>📥</span> Exportar Excel
             </a>

@@ -1027,7 +1027,7 @@
         .sidebar-overlay.active { display: block; }
 
         /* ============================================================
-         * RESPONSIVE
+         * RESPONSIVE & ADAPTACIÓN MÓVIL PROFESIONAL
          * ============================================================ */
         @media (max-width: 1024px) {
             .sidebar {
@@ -1046,12 +1046,130 @@
             .grid-3 { grid-template-columns: repeat(2, 1fr); }
         }
 
-        @media (max-width: 640px) {
+        @media (max-width: 768px) {
             .page-content { padding: 1.25rem 1rem; }
-            .app-header { padding: 0 1rem; }
             .grid-2, .grid-3 { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 640px) {
+            .page-content { padding: 1rem 0.75rem; }
+            .app-header {
+                padding: 0 0.75rem;
+                gap: 0.5rem;
+            }
+
+            .header-breadcrumb {
+                min-width: 0;
+                overflow: hidden;
+            }
+
+            .header-breadcrumb .page-title {
+                font-size: clamp(0.8125rem, 3.2vw, 0.9375rem);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 100%;
+            }
+
+            .header-actions {
+                gap: 0.375rem;
+                flex-shrink: 0;
+            }
+
             .header-user-name { display: none; }
             .fundo-chip { display: none; }
+
+            .card {
+                padding: 1rem 0.875rem;
+                border-radius: var(--radius-md);
+            }
+
+            .card-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+
+            .card-title {
+                font-size: clamp(0.95rem, 3.8vw, 1.15rem);
+                word-break: break-word;
+            }
+
+            .card-subtitle {
+                font-size: clamp(0.72rem, 2.6vw, 0.8125rem);
+                word-break: break-word;
+            }
+
+            .page-header h1 {
+                font-size: clamp(1.2rem, 5vw, 1.5rem);
+            }
+
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                width: 100%;
+                max-width: 100%;
+                border-radius: var(--radius-md);
+            }
+
+            .data-table {
+                min-width: 520px; /* Evita que las columnas se aplasten o se monten en móviles */
+            }
+
+            .data-table th, .data-table td {
+                padding: 0.5rem 0.625rem;
+                font-size: clamp(0.7rem, 2.5vw, 0.8125rem);
+                white-space: nowrap;
+            }
+
+            .form-control {
+                font-size: 16px; /* Evita auto-zoom molesto en iOS */
+            }
+        }
+
+        /* Pantallas muy pequeñas (smartphones angostos < 440px) */
+        @media (max-width: 440px) {
+            .app-header {
+                padding: 0 0.5rem;
+                gap: 0.375rem;
+            }
+
+            .header-toggle {
+                width: 32px;
+                height: 32px;
+            }
+
+            .net-indicator {
+                padding: 0.3rem 0.45rem;
+            }
+
+            #net-label {
+                display: none;
+            }
+
+            .role-badge {
+                font-size: 0.5625rem;
+                padding: 0.125rem 0.375rem;
+            }
+
+            .user-avatar {
+                width: 28px !important;
+                height: 28px !important;
+                font-size: 0.6875rem !important;
+            }
+
+            .btn {
+                font-size: clamp(0.72rem, 2.6vw, 0.8125rem);
+                padding: 0.45rem 0.65rem;
+            }
+
+            .card-title {
+                font-size: clamp(0.875rem, 3.8vw, 1rem);
+            }
+
+            .card-subtitle {
+                font-size: clamp(0.6875rem, 2.7vw, 0.75rem);
+            }
         }
     </style>
     @yield('styles')

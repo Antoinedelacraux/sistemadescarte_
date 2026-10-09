@@ -7,7 +7,7 @@
 <style>
     .kpi-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 1.25rem;
         margin-bottom: 1.5rem;
     }
@@ -30,11 +30,12 @@
     }
 
     .kpi-value {
-        font-size: 1.85rem;
+        font-size: clamp(1.35rem, 5vw, 1.85rem);
         font-weight: 800;
         color: var(--clr-primary-900);
         line-height: 1.1;
         font-variant-numeric: tabular-nums;
+        word-break: break-word;
     }
 
     .export-box {
@@ -44,6 +45,21 @@
         padding: 1.5rem;
         margin-bottom: 1.75rem;
         box-shadow: var(--shadow-sm);
+    }
+
+    .export-top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        border-bottom: 1px solid var(--brd-base);
+        padding-bottom: 1rem;
+    }
+
+    .export-help-actions {
+        display: flex;
+        gap: 0.5rem;
     }
 
     .columns-selector-grid {
@@ -95,6 +111,51 @@
         background: linear-gradient(135deg, #15803d 0%, #166534 100%);
         transform: translateY(-1px);
     }
+
+    @media (max-width: 640px) {
+        .export-box {
+            padding: 1rem 0.875rem;
+        }
+
+        .export-top-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.875rem;
+        }
+
+        .export-help-actions {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            width: 100% !important;
+            gap: 0.375rem !important;
+        }
+
+        .export-help-actions .btn {
+            padding: 0.5rem 0.25rem !important;
+            font-size: clamp(0.65rem, 2.3vw, 0.75rem) !important;
+            text-align: center !important;
+            justify-content: center !important;
+            white-space: normal !important;
+            line-height: 1.15 !important;
+        }
+
+        .columns-selector-grid {
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+            gap: 0.5rem !important;
+            padding: 0.75rem !important;
+        }
+
+        .col-checkbox-label {
+            font-size: clamp(0.72rem, 2.7vw, 0.8125rem);
+        }
+
+        .btn-export {
+            width: 100% !important;
+            justify-content: center !important;
+            font-size: clamp(0.875rem, 3.5vw, 1rem) !important;
+            height: 48px !important;
+        }
+    }
 </style>
 @endsection
 
@@ -102,8 +163,8 @@
 <div>
     {{-- Encabezado --}}
     <div style="margin-bottom: 1.5rem;">
-        <h1 style="font-size: var(--text-2xl); font-weight: 700; color: var(--txt-primary);">Reportes y Análisis de Descarte</h1>
-        <p style="font-size: var(--text-sm); color: var(--txt-muted);">Consolidado analítico y herramienta de exportación a Excel con columnas personalizadas</p>
+        <h1 style="font-size: clamp(1.2rem, 5vw, 1.5rem); font-weight: 700; color: var(--txt-primary);">Reportes y Análisis de Descarte</h1>
+        <p style="font-size: clamp(0.75rem, 2.8vw, 0.875rem); color: var(--txt-muted);">Consolidado analítico y herramienta de exportación a Excel con columnas personalizadas</p>
     </div>
 
     {{-- KPIs Resumen --}}
@@ -126,16 +187,16 @@
 
     {{-- CAJA DE EXPORTACIÓN A EXCEL CON SELECCIÓN DE COLUMNAS --}}
     <div class="export-box">
-        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; border-bottom: 1px solid var(--brd-base); padding-bottom: 1rem;">
+        <div class="export-top-bar">
             <div>
-                <h2 style="font-size: var(--text-lg); font-weight: 700; color: var(--txt-primary); display: flex; align-items: center; gap: 0.5rem;">
+                <h2 style="font-size: clamp(0.95rem, 3.8vw, 1.125rem); font-weight: 700; color: var(--txt-primary); display: flex; align-items: center; gap: 0.5rem;">
                     <span>📥</span> Exportar a Excel (.csv compatible)
                 </h2>
                 <p style="font-size: var(--text-xs); color: var(--txt-muted);">
                     Selecciona con precisión las columnas que deseas incluir en el archivo descargable.
                 </p>
             </div>
-            <div style="display: flex; gap: 0.5rem;">
+            <div class="export-help-actions">
                 <button type="button" class="btn btn-secondary btn-sm" onclick="seleccionarTodas(true)">Marcar todas</button>
                 <button type="button" class="btn btn-secondary btn-sm" onclick="seleccionarTodas(false)">Desmarcar todas</button>
                 <button type="button" class="btn btn-secondary btn-sm" onclick="seleccionarEsenciales()">Solo esenciales</button>
@@ -200,71 +261,75 @@
     </div>
 
     {{-- TABLAS DE DISTRIBUCIÓN --}}
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 1.5rem;">
         {{-- Distribución por Motivo --}}
-        <div class="card">
-            <div class="card-header">
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div class="card-header" style="border-bottom: 1px solid var(--brd-base);">
                 <div class="card-title">
                     <span>🏷️</span> Resumen por Motivo
                 </div>
             </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Motivo</th>
-                        <th class="text-right">Registros</th>
-                        <th class="text-right">Kg Totales</th>
-                        <th class="text-right">Total (S/)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($porMotivo as $item)
+            <div class="table-wrapper" style="border: none; border-radius: 0;">
+                <table class="data-table" style="min-width: 340px;">
+                    <thead>
                         <tr>
-                            <td><strong>{{ $item['motivo'] }}</strong></td>
-                            <td class="text-right">{{ $item['cantidad'] }}</td>
-                            <td class="text-right">{{ number_format($item['kg'], 2) }}</td>
-                            <td class="text-right" style="font-weight: 700; color: var(--clr-primary-700);">
-                                S/ {{ number_format($item['monto'], 2) }}
-                            </td>
+                            <th>Motivo</th>
+                            <th class="text-right">Registros</th>
+                            <th class="text-right">Kg Totales</th>
+                            <th class="text-right">Total (S/)</th>
                         </tr>
-                    @empty
-                        <tr><td colspan="4" class="text-center text-muted" style="padding: 1.5rem;">Sin registros</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @forelse($porMotivo as $item)
+                            <tr>
+                                <td><strong>{{ $item['motivo'] }}</strong></td>
+                                <td class="text-right">{{ $item['cantidad'] }}</td>
+                                <td class="text-right">{{ number_format($item['kg'], 2) }}</td>
+                                <td class="text-right" style="font-weight: 700; color: var(--clr-primary-700);">
+                                    S/ {{ number_format($item['monto'], 2) }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="4" class="text-center text-muted" style="padding: 1.5rem;">Sin registros</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         {{-- Distribución por Fundo --}}
-        <div class="card">
-            <div class="card-header">
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div class="card-header" style="border-bottom: 1px solid var(--brd-base);">
                 <div class="card-title">
                     <span>🏡</span> Resumen por Fundo
                 </div>
             </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Fundo</th>
-                        <th class="text-right">Registros</th>
-                        <th class="text-right">Kg Totales</th>
-                        <th class="text-right">Total (S/)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($porFundo as $item)
+            <div class="table-wrapper" style="border: none; border-radius: 0;">
+                <table class="data-table" style="min-width: 340px;">
+                    <thead>
                         <tr>
-                            <td><strong>{{ $item['fundo'] }}</strong></td>
-                            <td class="text-right">{{ $item['cantidad'] }}</td>
-                            <td class="text-right">{{ number_format($item['kg'], 2) }}</td>
-                            <td class="text-right" style="font-weight: 700; color: var(--clr-primary-700);">
-                                S/ {{ number_format($item['monto'], 2) }}
-                            </td>
+                            <th>Fundo</th>
+                            <th class="text-right">Registros</th>
+                            <th class="text-right">Kg Totales</th>
+                            <th class="text-right">Total (S/)</th>
                         </tr>
-                    @empty
-                        <tr><td colspan="4" class="text-center text-muted" style="padding: 1.5rem;">Sin registros</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @forelse($porFundo as $item)
+                            <tr>
+                                <td><strong>{{ $item['fundo'] }}</strong></td>
+                                <td class="text-right">{{ $item['cantidad'] }}</td>
+                                <td class="text-right">{{ number_format($item['kg'], 2) }}</td>
+                                <td class="text-right" style="font-weight: 700; color: var(--clr-primary-700);">
+                                    S/ {{ number_format($item['monto'], 2) }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="4" class="text-center text-muted" style="padding: 1.5rem;">Sin registros</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
