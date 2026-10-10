@@ -14,9 +14,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Sistema Fundo">
     <link rel="manifest" href="/manifest.json">
-    <link rel="icon" type="image/webp" href="/icons/icon.webp">
-    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
-    <link rel="apple-touch-icon" href="/icons/icon-192.webp">
+    <link rel="icon" type="image/png" href="/images/logo-emblem.png">
+    <link rel="icon" type="image/webp" href="/images/logo-emblem.webp">
+    <link rel="apple-touch-icon" href="/images/logo-emblem.png">
 
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -199,14 +199,23 @@
         .sidebar-brand-icon {
             width: 36px;
             height: 36px;
-            border-radius: var(--radius-md);
-            background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.125rem;
             flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(34,197,94,0.35);
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+
+        .sidebar-brand-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            background: transparent !important;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));
         }
 
         .sidebar-brand-text {
@@ -1604,13 +1613,13 @@
 
         {{-- SIDEBAR --}}
         <aside class="sidebar" id="main-sidebar" role="navigation" aria-label="Menú principal">
-            {{-- Brand --}}
-            <a href="{{ route('dashboard') }}" class="sidebar-brand" aria-label="Inicio — Sistema Fundo">
-                <div class="sidebar-brand-icon" aria-hidden="true" style="overflow:hidden;padding:0;">
-                    <img src="/icons/icon-192.webp" alt="Sistema Fundo" width="36" height="36" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block;">
+            {{-- Brand (Emblema transparente de la empresa) --}}
+            <a href="{{ route('dashboard') }}" class="sidebar-brand" aria-label="Inicio — TALSA Grape Farms">
+                <div class="sidebar-brand-icon" aria-hidden="true">
+                    <img src="/images/logo-emblem.webp" alt="TALSA" width="36" height="36" class="sidebar-brand-img">
                 </div>
                 <div class="sidebar-brand-text">
-                    <strong>Sistema Fundo</strong>
+                    <strong>TALSA Grape Farms</strong>
                     <span>Gestión Agrícola</span>
                 </div>
             </a>

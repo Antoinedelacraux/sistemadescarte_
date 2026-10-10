@@ -584,7 +584,10 @@
 {{-- 1. HERO BANNER DE BIENVENIDA Y ACCESO RÁPIDO --}}
 <div class="welcome-banner">
     <div class="welcome-banner-info">
-        <div class="welcome-greeting">Sistema Fundo &bull; Gestión Agrícola</div>
+        <div class="welcome-greeting" style="display: flex; align-items: center; gap: 0.5rem;">
+            <img src="/images/logo-emblem.webp" alt="TALSA" width="20" height="20" style="object-fit: contain; background: transparent; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4)) drop-shadow(0 0 6px rgba(255,255,255,0.4));">
+            <span>TALSA Grape Farms &bull; Gestión Agrícola</span>
+        </div>
         <div class="welcome-name">Hola, {{ $user->name }}</div>
         <div class="welcome-meta">
             <div class="welcome-meta-item">

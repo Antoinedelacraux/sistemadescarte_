@@ -17,13 +17,15 @@
         ? asset('images/login-bg.webp')
         : (file_exists(public_path('images/login-bg.jpg')) ? asset('images/login-bg.jpg') : '');
 
-    // 2. ICONO / LOGO
-    // Sube tu logo a apps/web/public/images/logo.png (o .webp / .svg) para reemplazar el icono
-    $loginLogo = file_exists(public_path('images/logo.png'))
-        ? asset('images/logo.png')
-        : (file_exists(public_path('images/logo.webp'))
-            ? asset('images/logo.webp')
-            : (file_exists(public_path('images/logo.svg')) ? asset('images/logo.svg') : asset('icons/icon-192.webp')));
+    // 2. LOGO CON NOMBRE DE LA EMPRESA (Transparente, sin fondo)
+    $loginLogoFull = file_exists(public_path('images/logo.webp'))
+        ? asset('images/logo.webp')
+        : (file_exists(public_path('images/logo.png')) ? asset('images/logo.png') : asset('icons/icon-192.webp'));
+
+    // 3. LOGO DE LA EMPRESA / EMBLEMA (Transparente, sin fondo)
+    $loginLogoEmblem = file_exists(public_path('images/logo-emblem.webp'))
+        ? asset('images/logo-emblem.webp')
+        : (file_exists(public_path('images/logo-emblem.png')) ? asset('images/logo-emblem.png') : asset('icons/icon-192.webp'));
 
     // 3. TEXTOS DE MARCA E IDENTIDAD
     $brandName    = 'Sistema para registro de venta de descarte';
@@ -99,29 +101,31 @@
     .hero-logo {
         display: flex;
         align-items: center;
-        gap: 0.875rem;
+        gap: 1.25rem;
         position: relative;
         z-index: 1;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
     }
 
-    .hero-logo-badge {
-        height: 52px;
-        padding: 4px 12px;
-        border-radius: var(--radius-md);
-        background: #ffffff;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .hero-logo-badge img {
-        height: 100%;
+    .hero-logo-img {
+        height: clamp(48px, 5.5vw, 68px);
         width: auto;
-        max-width: 140px;
+        max-width: 220px;
         object-fit: contain;
         display: block;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 18px rgba(255, 255, 255, 0.45));
+    }
+
+    .hero-brand-divider {
+        width: 1px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.25);
+        flex-shrink: 0;
     }
 
     .hero-logo-text strong {
@@ -226,44 +230,38 @@
         overflow-y: auto;
     }
 
-    /* Mobile: logo arriba */
-    .login-mobile-brand {
+    /* Panel derecho: marca y logo con nombre de la empresa (sin fondo) */
+    .login-panel-brand {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 1rem;
         margin-bottom: 2rem;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
     }
 
-    .login-mobile-brand-badge {
-        height: 44px;
-        padding: 4px 8px;
-        border-radius: var(--radius-md);
-        background: #ffffff;
-        border: 1px solid var(--brd-base);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .login-mobile-brand-badge img {
-        height: 100%;
+    .login-panel-logo-img {
+        height: clamp(42px, 4.8vw, 56px);
         width: auto;
-        max-width: 115px;
+        max-width: 175px;
         object-fit: contain;
         display: block;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
     }
 
-    .login-mobile-brand-text strong {
+    .login-panel-brand-text strong {
         display: block;
-        font-size: clamp(0.9rem, 3.2vw, 1rem);
+        font-size: clamp(0.9rem, 2.8vw, 1rem);
         font-weight: 700;
         color: var(--txt-primary);
         line-height: 1.25;
     }
 
-    .login-mobile-brand-text span {
+    .login-panel-brand-text span {
         font-size: var(--text-xs);
         color: var(--txt-muted);
         display: block;
@@ -482,11 +480,10 @@
         <div class="hero-orb hero-orb-1"></div>
         <div class="hero-orb hero-orb-2"></div>
 
-        {{-- Logo Desktop Hero --}}
+        {{-- Logo Desktop Hero (Sin fondo) --}}
         <div class="hero-logo">
-            <div class="hero-logo-badge">
-                <img src="{{ $loginLogo }}" alt="TALSA Grape Farms" class="hero-logo-img">
-            </div>
+            <img src="{{ $loginLogoFull }}" alt="TALSA Grape Farms" class="hero-logo-img">
+            <div class="hero-brand-divider"></div>
             <div class="hero-logo-text">
                 <strong>{{ $brandName }}</strong>
                 <span>{{ $brandTagline }}</span>
@@ -526,12 +523,10 @@
     {{-- PANEL DERECHO: FORMULARIO --}}
     <div class="login-panel">
 
-        {{-- Logo móvil --}}
-        <div class="login-mobile-brand" aria-hidden="true">
-            <div class="login-mobile-brand-badge">
-                <img src="{{ $loginLogo }}" alt="TALSA Grape Farms" class="login-mobile-brand-img">
-            </div>
-            <div class="login-mobile-brand-text">
+        {{-- Logo con nombre de la empresa (Sin fondo) --}}
+        <div class="login-panel-brand" aria-hidden="true">
+            <img src="{{ $loginLogoFull }}" alt="TALSA Grape Farms" class="login-panel-logo-img">
+            <div class="login-panel-brand-text">
                 <strong>{{ $brandName }}</strong>
                 <span>{{ $brandTagline }}</span>
             </div>
