@@ -19,7 +19,7 @@ Se estructura el repositorio en `apps/web/` conteniendo toda la solución Larave
 
 ## Estructura del repositorio
 ```
-.agents/ / .agent/   (reglas, roles de agentes y skills persistentes)
+.agents/             (reglas, roles de agentes y skills persistentes de Antigravity)
 docs/                (especificación, arquitectura, calidad, gestión y operación)
 apps/web/            (Laravel 12: app/, database/, resources/, public/, tests/)
 scripts/             (utilidades de verificación de estructura)
