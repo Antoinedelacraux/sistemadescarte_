@@ -117,14 +117,91 @@
         }
     });
 
-    /* --- Registro de Service Worker (PWA) --- */
+    /* ============================================================
+     * GESTOR PWA: SERVICE WORKER & INSTALACIÓN DESCARGABLE
+     * ============================================================ */
+    var deferredPrompt = null;
+    var pwaInstallBtn  = document.getElementById('btn-pwa-install');
+    var iosModal       = document.getElementById('ios-install-modal');
+
+    var isRunningStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+                              (window.navigator.standalone === true);
+
+    var isIosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+    // Registro del Service Worker v3
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js').catch(function(err) {
-                console.log('SW registration notice:', err);
+            navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                // Verificar actualizaciones disponibles
+                reg.onupdatefound = function() {
+                    var installingWorker = reg.installing;
+                    if (installingWorker) {
+                        installingWorker.onstatechange = function() {
+                            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                console.log('[PWA] Nueva versión disponible en fondo.');
+                            }
+                        };
+                    }
+                };
+            }).catch(function(err) {
+                console.warn('[PWA] Service Worker registration notice:', err);
             });
         });
     }
+
+    // Captura del evento estándar de instalación (Android / Chrome / Edge / Desktop)
+    window.addEventListener('beforeinstallprompt', function(e) {
+        // Prevenir el banner automático intrusivo por defecto
+        e.preventDefault();
+        deferredPrompt = e;
+
+        // Mostrar botón amigable si no está en modo standalone ya instalada
+        if (!isRunningStandalone && pwaInstallBtn) {
+            pwaInstallBtn.style.display = 'inline-flex';
+        }
+    });
+
+    // En iOS Safari no existe beforeinstallprompt; mostrar botón si no está en standalone
+    if (isIosDevice && !isRunningStandalone && pwaInstallBtn) {
+        pwaInstallBtn.style.display = 'inline-flex';
+    }
+
+    // Disparador de instalación
+    window.triggerPwaInstall = function() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function(choiceResult) {
+                if (choiceResult.outcome === 'accepted') {
+                    if (pwaInstallBtn) pwaInstallBtn.style.display = 'none';
+                }
+                deferredPrompt = null;
+            });
+        } else if (isIosDevice) {
+            // Mostrar modal con pasos para iOS
+            if (iosModal) {
+                iosModal.style.display = 'flex';
+            }
+        } else {
+            // Fallback para otros navegadores
+            alert('Para instalar esta aplicación, utiliza el menú de tu navegador (los tres puntos o botón de configuración) y selecciona "Instalar aplicación" o "Añadir a pantalla de inicio".');
+        }
+    };
+
+    window.closeIosInstallModal = function() {
+        if (iosModal) {
+            iosModal.style.display = 'none';
+        }
+    };
+
+    // Confirmación al completarse la instalación
+    window.addEventListener('appinstalled', function() {
+        console.log('[PWA] TALSA Fundo instalada exitosamente.');
+        if (pwaInstallBtn) {
+            pwaInstallBtn.style.display = 'none';
+        }
+        deferredPrompt = null;
+    });
 
     /* ============================================================
      * MOTOR DE LISTAS DESPLEGABLES CONTROLADAS (CUSTOM SELECT)

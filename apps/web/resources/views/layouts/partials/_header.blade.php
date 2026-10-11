@@ -21,6 +21,22 @@
 
     {{-- Acciones del header --}}
     <div class="header-actions">
+        {{-- Botón de instalación PWA (visible al dispararse prompt o en móviles compatibles) --}}
+        <button type="button"
+                id="btn-pwa-install"
+                class="btn-pwa-install"
+                style="display:none;"
+                onclick="triggerPwaInstall()"
+                title="Instalar aplicación en dispositivo"
+                aria-label="Descargar e instalar TALSA Fundo como aplicación en tu pantalla">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span class="btn-pwa-text">Instalar App</span>
+        </button>
+
         {{-- Indicador de red --}}
         <div class="net-indicator online" id="net-indicator" role="status" aria-live="polite" aria-label="Estado de conexión: en línea">
             <div class="net-dot" aria-hidden="true"></div>

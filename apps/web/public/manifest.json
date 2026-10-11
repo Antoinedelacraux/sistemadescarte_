@@ -1,35 +1,87 @@
 {
-  "name": "Sistema Fundo — Gestión Agrícola",
-  "short_name": "Sistema Fundo",
-  "description": "Sistema de gestión agrícola para fundos, registro de venta de descarte y reportes.",
+  "name": "TALSA — Venta de Descarte (Gestión Agrícola)",
+  "short_name": "TALSA Fundo",
+  "description": "Sistema de registro, control y análisis de ventas de fruta de descarte en fundos agrícolas TALSA.",
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#0f1f14",
+  "orientation": "portrait-primary",
+  "background_color": "#0f172a",
   "theme_color": "#166534",
+  "categories": [
+    "business",
+    "productivity",
+    "utilities"
+  ],
   "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
     {
       "src": "/icons/icon-192.webp",
       "sizes": "192x192",
       "type": "image/webp",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-512.webp",
       "sizes": "512x512",
       "type": "image/webp",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icons/icon.webp",
-      "sizes": "512x512",
-      "type": "image/webp"
+      "purpose": "any"
     },
     {
       "src": "/icons/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Registrar Venta de Descarte",
+      "short_name": "Nueva Venta",
+      "description": "Registrar nuevo pesaje de fruta de descarte en campo",
+      "url": "/ventas/registrar",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Historial de Ventas",
+      "short_name": "Historial",
+      "description": "Consultar historial y filtros de ventas",
+      "url": "/ventas",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

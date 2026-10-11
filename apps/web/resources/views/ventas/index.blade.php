@@ -350,6 +350,17 @@
             padding: 0.45rem 0.75rem;
             font-size: 0.8125rem;
         }
+        .row-actions-btn-group {
+            gap: 0.45rem;
+        }
+        .btn-action-icon {
+            width: 38px;
+            height: 38px;
+        }
+        .btn-action-icon svg {
+            width: 17px;
+            height: 17px;
+        }
     }
 
     /* Acciones en fila de tabla - Iconos Minimalistas */

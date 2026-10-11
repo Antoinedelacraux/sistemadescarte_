@@ -12,11 +12,12 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Sistema Fundo">
+    <meta name="apple-mobile-web-app-title" content="TALSA Fundo">
     <link rel="manifest" href="/manifest.json">
-    <link rel="icon" type="image/png" href="/images/logo-emblem.png">
-    <link rel="icon" type="image/webp" href="/images/logo-emblem.webp">
-    <link rel="apple-touch-icon" href="/images/logo-emblem.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
 
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -70,6 +71,39 @@
                 @yield('content')
             </main>
         @endauth
+
+        {{-- Modal de guía para instalación PWA en iOS Safari --}}
+        <div id="ios-install-modal" class="ios-install-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="ios-modal-title">
+            <div class="ios-install-backdrop" onclick="closeIosInstallModal()"></div>
+            <div class="ios-install-sheet">
+                <div class="ios-install-header">
+                    <h3 id="ios-modal-title" style="margin:0;font-size:var(--text-base);font-weight:700;color:var(--txt-primary);">📲 Instalar TALSA Fundo</h3>
+                    <button type="button" class="ios-install-close" onclick="closeIosInstallModal()" aria-label="Cerrar">&times;</button>
+                </div>
+                <div class="ios-install-body">
+                    <p style="font-size:var(--text-sm);color:var(--txt-secondary);margin-bottom:1rem;line-height:1.5;">
+                        Instala la app en tu iPhone o iPad para abrirla en pantalla completa y acceder rápidamente sin conexión en los cuarteles:
+                    </p>
+                    <div class="ios-step-item">
+                        <span class="ios-step-badge">1</span>
+                        <span>Toca el botón <strong>Compartir</strong> <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:text-bottom;display:inline-block;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg> en la barra inferior de Safari.</span>
+                    </div>
+                    <div class="ios-step-item">
+                        <span class="ios-step-badge">2</span>
+                        <span>Desplaza hacia abajo y pulsa en <strong>Añadir a pantalla de inicio</strong> ➕.</span>
+                    </div>
+                    <div class="ios-step-item">
+                        <span class="ios-step-badge">3</span>
+                        <span>Toca <strong>Añadir</strong> en la esquina superior derecha.</span>
+                    </div>
+                </div>
+                <div class="ios-install-footer">
+                    <button type="button" class="btn btn-primary" style="width:100%;justify-content:center;" onclick="closeIosInstallModal()">
+                        Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
 
     </div><!-- /.app-shell -->
 

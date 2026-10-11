@@ -1,4 +1,4 @@
-﻿    <style>
+    <style>
         /* ============================================================
          * SISTEMA DE DISEÑO — FUNDO AGRÍCOLA
          * Versión: 4.0 | Fase 4
@@ -1498,6 +1498,21 @@
             .form-control, .custom-select-trigger {
                 font-size: 16px; /* Evita auto-zoom en navegadores móviles */
             }
+
+            /* Touch targets optimizados para dedos y guantes agrícolas en campo */
+            .btn-action-icon {
+                width: 38px !important;
+                height: 38px !important;
+            }
+
+            .btn-action-icon svg {
+                width: 17px !important;
+                height: 17px !important;
+            }
+
+            .row-actions-btn-group, .row-actions {
+                gap: 0.45rem !important;
+            }
         }
 
         /* Pantallas móviles estrechas (< 480px) */
@@ -1575,5 +1590,137 @@
                 width: 28px !important;
                 height: 28px !important;
                 font-size: 0.68rem !important;
+            }
+        }
+
+        /* ============================================================
+         * COMPONENTES PWA: BOTÓN INSTALAR Y MODAL GUÍA IOS
+         * ============================================================ */
+        .btn-pwa-install {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--clr-primary-700) 0%, var(--clr-primary-900) 100%);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: var(--text-xs);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(22, 101, 52, 0.25);
+            white-space: nowrap;
+        }
+
+        .btn-pwa-install:hover {
+            background: linear-gradient(135deg, var(--clr-primary-600) 0%, var(--clr-primary-800) 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(22, 101, 52, 0.35);
+        }
+
+        .btn-pwa-install svg {
+            color: var(--clr-primary-300);
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 480px) {
+            .btn-pwa-install .btn-pwa-text {
+                display: none;
+            }
+            .btn-pwa-install {
+                padding: 0.35rem;
+                width: 32px;
+                height: 32px;
+                justify-content: center;
+            }
+        }
+
+        /* Modal iOS Safari */
+        .ios-install-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10000;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .ios-install-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        .ios-install-sheet {
+            position: relative;
+            background: var(--clr-surface-0);
+            border: 1px solid var(--brd-base);
+            border-radius: 1.25rem 1.25rem 0 0;
+            width: 100%;
+            max-width: 500px;
+            padding: 1.5rem;
+            box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.25);
+            animation: sheetSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 10001;
+        }
+
+        @keyframes sheetSlideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .ios-install-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.875rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--brd-base);
+        }
+
+        .ios-install-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            line-height: 1;
+            color: var(--txt-muted);
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+
+        .ios-step-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0;
+            border-bottom: 1px solid var(--brd-base);
+            font-size: var(--text-sm);
+            color: var(--txt-secondary);
+        }
+
+        .ios-step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--clr-primary-100);
+            color: var(--clr-primary-800);
+            font-weight: 700;
+            font-size: var(--text-xs);
+            flex-shrink: 0;
+        }
+
+        .ios-install-footer {
+            margin-top: 1.25rem;
         }
     </style>
