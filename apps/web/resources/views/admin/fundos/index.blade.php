@@ -513,7 +513,7 @@
                 addCuartelForm.method = 'POST';
                 addCuartelForm.action = '{{ url("/administracion/lotes") }}/' + lote.id + '/cuarteles';
                 addCuartelForm.style.cssText = 'display: flex; gap: 0.35rem; align-items: center;';
-                addCuartelForm.innerHTML = '@csrf<input type="text" name="nombre" placeholder="+ Nuevo cuartel (ej. C01, Cuartel 1)" required style="height: 28px; font-size: 0.72rem; padding: 0 0.5rem; border: 1px solid var(--brd-base); border-radius: var(--radius-sm); flex: 1; max-width: 220px;"><button type="submit" class="btn btn-secondary btn-sm" style="height: 28px; padding: 0 0.5rem; font-size: 0.6875rem;">+ Agregar Cuartel</button>';
+                addCuartelForm.innerHTML = '@csrf<input type="text" name="nombre" placeholder="+ Nuevo cuartel (ej. C01, Cuartel 1)" required style="height: 28px; font-size: 0.72rem; padding: 0 0.5rem; border: 1px solid var(--brd-base); border-radius: var(--radius-sm); flex: 1; max-width: 220px;"><button type="submit" class="btn btn-secondary btn-sm" style="height: 28px; width: 28px; padding: 0; font-size: 0.875rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;" title="Agregar cuartel" aria-label="Agregar cuartel">+</button>';
                 cuartelesSection.appendChild(addCuartelForm);
 
                 loteCard.appendChild(cuartelesSection);
