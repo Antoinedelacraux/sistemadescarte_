@@ -1,17 +1,18 @@
-# Estado del Proyecto Sistema Fundo en Antigravity
+# Estado del Proyecto Sistema Fundo — TALSA Grape Farms
 
-El sistema web agrícola y módulo de venta de descarte se encuentra en su **Fase 6 completada**, con todos sus módulos operativos, probados y verificados.
+El sistema web agrícola y módulo de venta de descarte se encuentra en su **Versión 0.5.8**, con todos sus módulos operativos, probados y verificados.
 
 ## Resumen de la Implementación
 1. **Núcleo:** Laravel 12 en `apps/web/` con aislamiento multi-tenant `FundoScope` y RBAC de 4 roles.
-2. **Registro de Descarte:** Cálculo en tiempo real, validaciones dinámicas según motivo y auditoría total.
-3. **Catálogos Dinámicos:** Lotes y Cuarteles cargados reactivamente por fundo.
-4. **Reportes & Excel:** KPIs y descarga en formato compatible con Excel (.csv UTF-8 BOM con selector de columnas).
-5. **PWA & Offline:** Service Worker y manifest configurados para instalación en Android, iPhone y PC.
-6. **Administración:** Gestión completa de fundos y cuentas de usuario.
-7. **Diseño Responsive:** Tipografía fluida `clamp()`, tablas adaptadas con scroll táctil y botones simétricos.
-8. **Pruebas:** 29 tests en PHPUnit con 111 aserciones exitosas.
+2. **Fundos Oficiales:** AGRITAC, PROCOM y EL NEGRO con sus 34 lotes y catálogo dinámico de cuarteles.
+3. **Registro de Descarte:** Cálculo en tiempo real, validaciones dinámicas según motivo (Cosecha Nacional: Racimos y Granos con cuartel obligatorio) y auditoría total.
+4. **Historial con Doble Paginación:** Paginación compacta superior para laptops y smartphones sin deslizar hacia abajo, ciclo de eliminación en 2 pasos y modal de inspección instantáneo.
+5. **Panel de Control Analítico:** Segregación operativa, tabla interactiva por cliente y selector de pestañas interactivas.
+6. **Reportes & Excel Nativo:** Descarga directa en formato binario OpenXML `.xlsx` estructurado (desde historial y panel de control).
+7. **PWA & Offline:** Service Worker y manifest configurados para instalación en Android, iPhone y PC con WebP optimizado.
+8. **Administración:** Gestión completa de fundos, lotes y cuentas de usuario.
+9. **Diseño Responsive:** Tipografía fluida `clamp()`, motor `initCustomSelect` con scroll vertical suave y sin dropdowns fantasmas.
+10. **Pruebas:** 55 tests en PHPUnit con 242 aserciones exitosas.
 
 ## Próximo Hito
-Recibir retroalimentación y solicitudes de cambio del propietario para preparar el empaquetado final de despliegue en el VPS DonWeb.
-
+Avanzar en el empaquetado final de despliegue para el VPS DonWeb y puesta en producción.

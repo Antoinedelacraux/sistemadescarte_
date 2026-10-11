@@ -1,12 +1,12 @@
-# Sistema Web del Fundo — Gestión Agrícola y Venta de Descarte
+# Sistema Web del Fundo — TALSA Grape Farms (Gestión Agrícola y Venta de Descarte)
 
 Sistema web empresarial y progresivo (PWA) para el registro, control, análisis y exportación de ventas de descarte agrícola en fundos, diseñado para operar en campo tanto en dispositivos móviles (Android / iOS) como en estaciones de escritorio.
 
-- **Versión:** 0.3.1 (Fase 6 Completada — Listo para Feedback del Propietario)
+- **Versión:** 0.5.8 (Estable — Módulos Completados y Verificados)
 - **Framework & Backend:** Laravel 12 (PHP 8.4)
 - **Frontend & UI:** Blade + Vanilla CSS moderno con Design Tokens (sin Tailwind) + JavaScript Vanilla
 - **Base de Datos:** SQLite local (desarrollo) / MySQL 8.0 (producción en VPS DonWeb)
-- **Cobertura de Pruebas:** 29 pruebas automatizadas PHPUnit pasando (111 aserciones)
+- **Cobertura de Pruebas:** 55 pruebas automatizadas PHPUnit pasando (242 aserciones)
 - **Ubicación de la App:** `apps/web/`
 
 ---
@@ -15,46 +15,60 @@ Sistema web empresarial y progresivo (PWA) para el registro, control, análisis 
 
 1. **Autenticación y Control de Acceso por Roles (RBAC):**
    - 4 roles con permisos diferenciados: `Administrador`, `General`, `Individual` y `Analista`.
-   - Cuentas activas/inactivas con bloqueo automático.
-   - Cuentas de demostración de un solo clic para pruebas en [login](file:///apps/web/resources/views/auth/login.blade.php).
+   - Cuentas activas/inactivas con bloqueo automático y sesión segura.
+   - Branding corporativo TALSA Grape Farms (isotipo e imagotipo transparentes) con fondo panorámico de viñedos en [login](file:///apps/web/resources/views/auth/login.blade.php).
 
 2. **Aislamiento Multi-Tenant (`FundoScope`):**
    - Filtrado transparente y seguro a nivel de base de datos (`Eloquent Global Scope`).
-   - El rol `Individual` solo opera sobre su fundo asignado.
-   - El rol `General` visualiza únicamente los fundos que tiene asignados.
+   - Fundos oficiales del negocio configurados con nombres diferenciados (operativos vs. razones sociales):
+     - **AGRITAC** (`AGRICOLA TAMBO COLORADO`)
+     - **PROCOM** (`AGRICOLA PROCOM`)
+     - **EL NEGRO** (`TALSA GRAPE FARMS`)
+   - El rol `Individual` solo opera sobre su fundo asignado (ej. PROCOM sin select fantasma).
+   - El rol `General` visualiza únicamente los fundos asignados.
    - `Administrador` y `Analista` poseen acceso transversal a todos los fundos.
 
 3. **Catálogos Dinámicos de Campo:**
    - Carga reactiva de Lotes y Cuarteles por Fundo (`GET /api/catalogo/lotes`).
-   - Filtrado automático de cuarteles al seleccionar el lote correspondiente.
+   - 34 lotes oficiales precargados (AGRITAC: 18 lotes, PROCOM: 9 lotes, EL NEGRO: 7 lotes).
+   - Catálogo de Cuarteles dinámico: opcional en general y obligatorio para Cosecha Nacional, aprendiendo y guardando automáticamente cuarteles nuevos.
 
 4. **Registro y Edición de Venta de Descarte:**
-   - Validación estricta por motivo: `Campo`, `Packing` y `Cosecha Nacional` (este último exige Cuartel y Tipo de descarte: *Racimos*, *Racimos con plaga*, *Granos*).
+   - Validación estricta por motivo: `Campo`, `Packing` y `Cosecha Nacional`.
+   - Regla de Cosecha Nacional: exige obligatoriamente Cuartel y está restringida exclusivamente a dos Tipos de Descarte: *Racimos* y *Granos*.
+   - Campo admite *Racimos*, *Racimos con plaga* y *Granos*; Packing admite *Racimos* y *Granos*.
    - Cálculo automático en tiempo real del valor total (`Precio (S/) × Kilogramos`).
-   - Auditoría completa de creación (`created_by`) y modificación (`updated_by`).
+   - Campo de Cliente / Razón Social para trazabilidad comercial directa.
+   - Auditoría completa de creación (`created_by`), edición (`updated_by`) y marcas de tiempo.
 
-5. **Historial de Ventas:**
-   - Filtros por Fundo, Motivo, Rango de fechas (`fecha_desde` / `fecha_hasta`).
-   - Paginación y visualización clara con badges de estado y tipo.
+5. **Historial de Ventas y Ciclo de Vida en 2 Pasos:**
+   - Filtros en tiempo real por Fundo, Motivo, Estado y Rango de fechas.
+   - **Doble Paginación (Opción A):** Botonera compacta superior en cabecera de tabla (`Anterior`, `Pág. X de Y`, botones directos y `Siguiente`) para navegación inmediata en laptops y smartphones sin deslizar hacia abajo, más paginación inferior completa.
+   - **Ciclo de eliminación seguro:** Primero *Anular* (descuenta totales sin destruir datos) y solo tras anular se habilita la *Eliminación física* definitiva.
+   - Botón *Ver* con modal emergente accesible para inspección detallada sin recargar página, y ficha técnica standalone.
 
-6. **Reportes y Exportación Excel:**
-   - KPIs consolidados: Kilogramos totales, Valor de venta acumulado y Total de pesajes.
-   - Tablas de distribución analítica por Motivo y por Fundo.
-   - Exportador a Excel (.csv compatible con UTF-8 BOM) con **selector dinámico de columnas**.
+6. **Panel de Control Analítico (Dashboard):**
+   - KPIs consolidados en tiempo real.
+   - Tabla de segregación operativa (Venta Nacional, Campo y Packing por tipos de descarte con volúmenes, porcentajes y precios promedio).
+   - Tabla dinámica e interactiva por Cliente con filtros instantáneos por motivo/tipo, búsqueda reactiva y modo drill-down agrupado.
+   - Selector de pestañas interactivas ("Todas", "Por Tipo y Descarte", "Por Cliente", "Últimos Envíos") con persistencia en `localStorage`.
 
-7. **Progresive Web App (PWA) & Modo Offline:**
-   - [manifest.json](file:///apps/web/public/manifest.json) con iconos adaptativos para Android e iPhone.
-   - Service Worker ([sw.js](file:///apps/web/public/sw.js)) con estrategia de caché offline para recursos estáticos y visualización fuera de línea.
+7. **Exportación Nativa a Microsoft Excel (.xlsx):**
+   - Descarga directa en formato binario OpenXML `.xlsx` estructurado (no simple CSV).
+   - Exportación desde Historial de Ventas (`/ventas/exportar`) con los 21 campos operativos, nombres limpios de fundos, RUCs protegidos como texto, formato contable y fila de TOTAL GENERAL bold.
+   - Exportación contextual desde Panel de Control (`/dashboard/exportar`) respetando filtros activos en tiempo real.
 
-8. **Módulo de Administración:**
-   - Gestión de Fundos: creación de nuevas sedes agrícolas y conmutación de estado.
-   - Gestión de Usuarios: creación con asignación de roles y vinculación multi-fundo.
+8. **Progresive Web App (PWA) & Modo Offline:**
+   - [manifest.json](file:///apps/web/public/manifest.json) e iconos en formato WebP optimizados para instalación en Android, iPhone y PC.
+   - Service Worker ([sw.js](file:///apps/web/public/sw.js)) con estrategia de caché offline para recursos estáticos y resiliencia en campo.
 
-9. **Optimización Responsive Integral para Celulares:**
-   - Tipografía fluida con `clamp()` que previene solapamiento y saltos de línea irregulares.
-   - Tablas blindadas con scroll horizontal suave (`.table-wrapper`) y `min-width` calibrado.
-   - Cuadrículas simétricas de botones táctiles (44px - 48px) para operación con una mano en campo.
-   - Prevención de auto-zoom invasivo en navegadores móviles (iOS Safari).
+9. **Módulo de Administración:**
+   - Gestión de Fundos: creación de sedes con asignación inmediata de lotes y conmutación de estado.
+   - Gestión de Usuarios: creación y edición con asignación de roles y vinculación multi-fundo.
+
+10. **Optimización Responsive Integral y Selects Controlados:**
+    - Motor `initCustomSelect` con altura máxima contenida (max-height: 200px), scroll vertical suave ("ir bajando") y buscador en tiempo real para listas con >6 opciones.
+    - Tipografía fluida con `clamp()`, espaciado generoso anti-colisión en bordes curvados y aceleración GPU (60 FPS) en menú lateral.
 
 ---
 
@@ -67,7 +81,7 @@ cd apps/web
 # Iniciar servidor local
 php artisan serve
 
-# Ejecutar las 29 pruebas automatizadas
+# Ejecutar la suite completa de 55 pruebas automatizadas
 php artisan test
 ```
 
@@ -84,4 +98,3 @@ Acceder en el navegador a: `http://127.0.0.1:8000`
 - [docs/04-calidad/](file:///docs/04-calidad/): Matriz de pruebas automatizadas y checklist de release.
 - [docs/05-operacion/](file:///docs/05-operacion/): Plan de despliegue para VPS DonWeb, Runbook y seguridad.
 - [docs/06-mantenimiento/](file:///docs/06-mantenimiento/): Procedimiento de gestión de cambios posteriores.
-

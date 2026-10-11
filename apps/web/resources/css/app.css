@@ -1,9 +1,30 @@
-@import 'tailwindcss';
+/* ==========================================================================
+   SISTEMA FUNDO — GESTIÓN AGRÍCOLA
+   Arquitectura de Estilos: Vanilla CSS con Design Tokens Corporativos
+   Sin dependencias pesadas de Tailwind CSS ni precompiladores Node.js.
+   Los estilos principales residen en public/css/ y layouts/app.blade.php.
+   ========================================================================== */
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
+:root {
+    --clr-primary-50:  #f0fdf4;
+    --clr-primary-100: #dcfce7;
+    --clr-primary-200: #bbf7d0;
+    --clr-primary-300: #86efac;
+    --clr-primary-400: #4ade80;
+    --clr-primary-500: #22c55e;
+    --clr-primary-600: #16a34a;
+    --clr-primary-700: #15803d;
+    --clr-primary-800: #166534;
+    --clr-primary-900: #14532d;
+    --clr-primary-950: #052e16;
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --clr-surface-0:   #ffffff;
+    --clr-surface-50:  #f8fafc;
+    --clr-surface-100: #f1f5f9;
+    --clr-surface-200: #e2e8f0;
+
+    --txt-primary:   #0f172a;
+    --txt-secondary: #334155;
+    --txt-muted:     #64748b;
+    --brd-base:      #e2e8f0;
 }

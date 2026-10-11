@@ -39,15 +39,19 @@
 
 ## Fase 6 — Reportes, Excel, PWA, Admin y Responsive `[COMPLETADA]`
 - Módulo de Reportes analíticos con KPIs consolidados y tablas de distribución.
-- Exportador a Excel (.csv compatible con UTF-8 BOM) con selector dinámico de columnas.
-- PWA completa: `manifest.json`, iconos adaptativos y Service Worker (`sw.js`).
+- PWA completa: `manifest.json`, iconos adaptativos WebP y Service Worker (`sw.js`).
 - Módulo de Administración de Fundos y Usuarios con asignación multi-fundo.
-- Optimización responsive integral para smartphones (< 640px y < 440px) con tipografía `clamp()`, tablas en `table-wrapper` con scroll táctil y botones simétricos.
-- Hito: 29 pruebas PHPUnit exitosas (111 aserciones).
+- Optimización responsive integral para smartphones con tipografía `clamp()`, tablas en `table-wrapper` con scroll táctil y botones simétricos.
 
-## Fase 7 — QA, Feedback del Propietario y Empaquetado VPS `[EN CURSO]`
-- Revisión funcional activa por parte del propietario del proyecto.
-- Incorporación de feedback y ajustes solicitados.
+## Fase 7 — Maduración Operativa y Feedback del Propietario (v0.4.0 - v0.5.8) `[COMPLETADA]`
+- **Fundos y Lotes Oficiales:** Configuración de AGRITAC (18 lotes), PROCOM (9 lotes) y EL NEGRO (7 lotes).
+- **Exportación Nativa .xlsx:** Migración integral a OpenXML binario con tipado contable, RUCs protegidos y fórmulas sumatorias en Historial de Ventas y Panel de Control.
+- **Analítica de Panel:** Tablas de segregación por motivo/tipo y tabla interactiva por cliente con búsqueda en tiempo real y modo drill-down.
+- **Identidad Corporativa TALSA Grape Farms:** Integración de isotipo e imagotipo transparentes en login, sidebar y dashboard.
+- **Ergonomía de Paginación:** Implementación de Doble Paginación (Opción A) en cabecera de tabla para navegación ágil en smartphones y laptops sin deslizar hacia abajo.
+- **Hito:** 55 pruebas automatizadas PHPUnit pasando con éxito (242 aserciones).
+
+## Fase 8 — Empaquetado y Puesta en Producción en VPS DonWeb `[EN CURSO]`
 - Preparación del paquete de despliegue precompilado (.zip) junto con `PLAN_DESPLIEGUE.md`.
-- Hito final: Entrega del paquete al Administrador del VPS DonWeb para despliegue productivo.
+- Verificación de checklist de entrega y puesta en marcha en VPS de producción.
 
