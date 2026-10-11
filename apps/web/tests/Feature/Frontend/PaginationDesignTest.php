@@ -77,11 +77,17 @@ class PaginationDesignTest extends TestCase
 
         $response->assertStatus(200);
 
-        // Clases del diseño agrícola
+        // Clases del diseño agrícola inferior
         $response->assertSee('fundo-pagination-container');
         $response->assertSee('fundo-pagination-summary');
         $response->assertSee('fundo-pagination-nav');
         $response->assertSee('pagination-btn-active');
+
+        // Doble paginación: Barra superior compacta (Opción A)
+        $response->assertSee('table-header-summary');
+        $response->assertSee('table-mini-pagination');
+        $response->assertSee('mini-pag-btn');
+        $response->assertSee('mini-pag-numbers');
 
         // Textos en español claros y profesionales
         $response->assertSee('Mostrando del');

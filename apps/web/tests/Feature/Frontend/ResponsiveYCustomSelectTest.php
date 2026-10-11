@@ -108,4 +108,33 @@ class ResponsiveYCustomSelectTest extends TestCase
         $response->assertSee('data-custom-select="true"', false);
         $response->assertSee('refreshCustomSelect', false);
     }
+
+    public function test_registrador_con_un_solo_fundo_muestra_fundo_readonly_sin_select_fantasma(): void
+    {
+        $regRole = Role::firstOrCreate(
+            ['name' => Role::INDIVIDUAL],
+            ['display_name' => 'Individual']
+        );
+
+        $registrador = User::create([
+            'email' => 'registrador_procom@fundo.test',
+            'name' => 'Registrador Procom',
+            'password' => Hash::make('password123'),
+            'role_id' => $regRole->id,
+            'is_active' => true,
+        ]);
+        $registrador->fundos()->sync([$this->fundo->id]);
+
+        $response = $this->actingAs($registrador)->get(route('ventas.create'));
+
+        $response->assertStatus(200);
+        // Debe mostrar el input readonly con el nombre del fundo asignado
+        $response->assertSee('value="' . $this->fundo->name . '" readonly', false);
+        // Debe tener el input hidden para fundo_id
+        $response->assertSee('type="hidden" name="fundo_id" id="fundo_id"', false);
+        // NO debe tener un select para fundo_id
+        $response->assertDontSee('<select name="fundo_id"', false);
+        // El motor initCustomSelect debe tener salvaguarda estricta de tagName === "SELECT"
+        $response->assertSee("nativeSelect.tagName !== 'SELECT'", false);
+    }
 }

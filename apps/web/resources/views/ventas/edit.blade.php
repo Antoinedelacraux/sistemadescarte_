@@ -543,7 +543,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inicializar listas desplegables controladas
     ['fundo_id', 'lote_id', 'cuartel_select', 'motivo', 'tipo_descarte'].forEach(function(id) {
         var el = document.getElementById(id);
-        if (el && window.initCustomSelect) {
+        if (el && el.tagName === 'SELECT' && window.initCustomSelect) {
             window.initCustomSelect(el);
         }
     });

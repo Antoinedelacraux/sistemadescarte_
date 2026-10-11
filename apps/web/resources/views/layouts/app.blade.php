@@ -1956,7 +1956,7 @@
          * Control estricto de altura (max-height: 200px) y scroll fluido
          * ============================================================ */
         window.initCustomSelect = function(nativeSelect) {
-            if (!nativeSelect || nativeSelect._customSelectInitialized) return;
+            if (!nativeSelect || nativeSelect.tagName !== 'SELECT' || nativeSelect._customSelectInitialized) return;
 
             // Contenedor principal
             var wrap = document.createElement('div');

@@ -60,13 +60,133 @@
     }
 
     .table-header-bar {
-        padding: 1rem 1.25rem;
+        padding: 0.875rem 1.25rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
         border-bottom: 1px solid var(--brd-base);
         flex-wrap: wrap;
         gap: 0.75rem;
+        background: var(--clr-surface-0);
+    }
+
+    .table-header-summary {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        font-size: var(--text-sm);
+        font-weight: 600;
+        color: var(--txt-primary);
+        flex-wrap: wrap;
+    }
+
+    .table-header-summary .summary-count {
+        color: var(--clr-primary-700);
+        font-weight: 700;
+    }
+
+    .table-header-summary .summary-range {
+        font-size: var(--text-xs);
+        color: var(--txt-muted);
+        font-weight: 500;
+        margin-left: 0.25rem;
+    }
+
+    .table-mini-pagination {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .mini-pag-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.65rem;
+        font-size: 0.775rem;
+        font-weight: 600;
+        color: var(--txt-secondary);
+        background: var(--clr-surface-0);
+        border: 1px solid var(--brd-base);
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        transition: all 0.15s ease;
+        line-height: 1;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .mini-pag-btn:hover:not(.is-disabled) {
+        color: #166534;
+        background: #f0fdf4;
+        border-color: #86efac;
+        box-shadow: 0 1px 3px rgba(22, 101, 52, 0.12);
+    }
+
+    .mini-pag-btn:active:not(.is-disabled) {
+        transform: translateY(1px);
+    }
+
+    .mini-pag-btn.is-disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        background: var(--clr-surface-50);
+        color: var(--txt-muted);
+        border-color: var(--brd-base);
+    }
+
+    .mini-pag-numbers {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .mini-pag-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 28px;
+        padding: 0 0.35rem;
+        font-size: 0.775rem;
+        font-weight: 600;
+        color: var(--txt-secondary);
+        background: var(--clr-surface-0);
+        border: 1px solid var(--brd-base);
+        border-radius: var(--radius-md);
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+
+    .mini-pag-num:hover:not(.is-active) {
+        color: #166534;
+        background: #f0fdf4;
+        border-color: #86efac;
+    }
+
+    .mini-pag-num.is-active {
+        background: #166534;
+        color: #ffffff;
+        border-color: #166534;
+        font-weight: 700;
+    }
+
+    .mini-pag-ellipsis {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 28px;
+        font-size: 0.8125rem;
+        color: var(--txt-muted);
+        user-select: none;
+    }
+
+    .mini-pag-mobile-info {
+        display: none;
+        font-size: var(--text-xs);
+        color: var(--txt-secondary);
+        white-space: nowrap;
     }
 
     .sales-table {
@@ -209,6 +329,26 @@
         }
         .modal-footer .btn {
             justify-content: center;
+        }
+        .table-header-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.625rem;
+            padding: 0.75rem 0.875rem;
+        }
+        .table-mini-pagination {
+            justify-content: space-between;
+            width: 100%;
+        }
+        .mini-pag-numbers {
+            display: none;
+        }
+        .mini-pag-mobile-info {
+            display: inline-block;
+        }
+        .mini-pag-btn {
+            padding: 0.45rem 0.75rem;
+            font-size: 0.8125rem;
         }
     }
 
@@ -629,9 +769,61 @@
     {{-- Tabla de Registros --}}
     <div class="table-container">
         <div class="table-header-bar">
-            <div style="font-size: var(--text-sm); font-weight: 600; color: var(--txt-primary);">
-                Registros encontrados: <span style="color: var(--clr-primary-700);">{{ $ventas->total() }}</span>
+            <div class="table-header-summary">
+                <span class="summary-label">Registros encontrados:</span>
+                <span class="summary-count">{{ $ventas->total() }}</span>
+                @if($ventas->total() > 0)
+                    <span class="summary-range">(Mostrando {{ $ventas->firstItem() }}-{{ $ventas->lastItem() }})</span>
+                @endif
             </div>
+
+            @if($ventas->hasPages())
+                <nav class="table-mini-pagination" aria-label="Paginación superior rápida">
+                    {{-- Botón Anterior --}}
+                    @if($ventas->onFirstPage())
+                        <span class="mini-pag-btn is-disabled" aria-disabled="true" title="Primera página">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+                            <span class="mini-pag-text">Anterior</span>
+                        </span>
+                    @else
+                        <a href="{{ $ventas->previousPageUrl() }}" class="mini-pag-btn" aria-label="Ir a página anterior" title="Página anterior">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+                            <span class="mini-pag-text">Anterior</span>
+                        </a>
+                    @endif
+
+                    {{-- Indicador y números de página rápidos en desktop --}}
+                    <div class="mini-pag-numbers">
+                        @for($page = 1; $page <= $ventas->lastPage(); $page++)
+                            @if($page == $ventas->currentPage())
+                                <span class="mini-pag-num is-active" aria-current="page">{{ $page }}</span>
+                            @elseif($ventas->lastPage() <= 6 || $page == 1 || $page == $ventas->lastPage() || abs($page - $ventas->currentPage()) <= 1)
+                                <a href="{{ $ventas->url($page) }}" class="mini-pag-num" aria-label="Ir a página {{ $page }}">{{ $page }}</a>
+                            @elseif($page == 2 || $page == $ventas->lastPage() - 1)
+                                <span class="mini-pag-ellipsis">&hellip;</span>
+                            @endif
+                        @endfor
+                    </div>
+
+                    {{-- Info en móvil compacto --}}
+                    <span class="mini-pag-mobile-info">
+                        Pág. <strong>{{ $ventas->currentPage() }}</strong> / <strong>{{ $ventas->lastPage() }}</strong>
+                    </span>
+
+                    {{-- Botón Siguiente --}}
+                    @if($ventas->hasMorePages())
+                        <a href="{{ $ventas->nextPageUrl() }}" class="mini-pag-btn" aria-label="Ir a página siguiente" title="Página siguiente">
+                            <span class="mini-pag-text">Siguiente</span>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                        </a>
+                    @else
+                        <span class="mini-pag-btn is-disabled" aria-disabled="true" title="Última página">
+                            <span class="mini-pag-text">Siguiente</span>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                        </span>
+                    @endif
+                </nav>
+            @endif
         </div>
 
         <div style="overflow-x: auto;">
