@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!navigator.onLine) {
             window.FundoOffline.enqueue(payload);
             if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-            window.FundoOffline.showToast('✅ Venta guardada LOCALMENTE en tu teléfono. Se sincronizará automáticamente apenas tengas señal.', 'warning', 6000);
+            window.FundoOffline.showToast('Venta guardada localmente en tu dispositivo. Se sincronizará automáticamente apenas tengas señal.', 'warning', 6000, 'Guardado sin conexión');
             prepararSiguientePesaje();
             return;
         }
@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (res.status === 201 || res.status === 200) {
                 if (navigator.vibrate) navigator.vibrate(80);
-                window.FundoOffline.showToast('✅ Venta registrada en el servidor con éxito.', 'success', 4000);
+                window.FundoOffline.showToast('Venta registrada y sincronizada correctamente en el servidor.', 'success', 4000, '¡Venta Registrada!');
                 prepararSiguientePesaje();
             } else if (res.status === 422) {
                 var errorData = await res.json();
@@ -409,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (errorData.message) {
                     msg += errorData.message;
                 }
-                window.FundoOffline.showToast(msg, 'danger', 6000);
+                window.FundoOffline.showToast(msg, 'danger', 6000, 'Error de Validación');
                 if (btnSubmit) {
                     btnSubmit.disabled = false;
                     btnSubmit.textContent = originalBtnText;
@@ -420,7 +420,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.warn('[Offline Engine] Fallo de red, encolando localmente:', error);
             window.FundoOffline.enqueue(payload);
-            window.FundoOffline.showToast('⚠️ Señal débil. Venta guardada de forma segura en tu teléfono; se subirá automáticamente.', 'warning', 6000);
+            window.FundoOffline.showToast('Señal débil. Venta guardada de forma segura en tu dispositivo; se subirá automáticamente.', 'warning', 6000, 'Guardado localmente');
             prepararSiguientePesaje();
         }
     });

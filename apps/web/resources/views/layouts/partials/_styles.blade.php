@@ -1781,57 +1781,181 @@
             }
         }
 
-        /* Notificaciones Flotantes (Toast) */
+        /* Notificaciones Flotantes Ultra-Premium (Toast) */
         .fundo-toast-container {
             position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 99999;
+            top: 1.25rem;
+            right: 1.25rem;
+            z-index: 999999;
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.625rem;
             pointer-events: none;
-            max-width: 92vw;
-            width: 400px;
+            max-width: 94vw;
+            width: 410px;
+        }
+
+        @media (max-width: 640px) {
+            .fundo-toast-container {
+                top: 0.75rem;
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+                width: calc(100% - 1.5rem);
+            }
         }
 
         .fundo-toast {
             pointer-events: auto;
+            position: relative;
             display: flex;
             align-items: flex-start;
-            gap: 0.75rem;
-            padding: 0.875rem 1rem;
-            border-radius: var(--radius-lg);
-            background: var(--clr-surface-0);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            border: 1px solid var(--brd-base);
-            border-left: 5px solid var(--clr-primary-600);
+            gap: 0.875rem;
+            padding: 1rem 1.125rem;
+            border-radius: var(--radius-xl, 14px);
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.16), 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            border-left: 5px solid #10b981;
             font-size: var(--text-sm);
-            font-weight: 500;
             color: var(--txt-primary);
-            line-height: 1.4;
+            line-height: 1.45;
             opacity: 0;
-            transform: translateY(-12px);
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(-16px) scale(0.96);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
         }
 
         .fundo-toast.show {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
         }
 
+        .fundo-toast.hiding {
+            opacity: 0;
+            transform: translateY(-8px) scale(0.96);
+            transition: all 0.25s ease-in;
+        }
+
+        /* Icon wrapper */
+        .fundo-toast-icon-wrap {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: #ffffff;
+            margin-top: 1px;
+        }
+
+        .fundo-toast-icon-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.32);
+        }
+
+        .fundo-toast-icon-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            box-shadow: 0 4px 10px rgba(245, 158, 11, 0.32);
+        }
+
+        .fundo-toast-icon-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.32);
+        }
+
+        .fundo-toast-icon-info {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.32);
+        }
+
+        /* Body (title + message) */
+        .fundo-toast-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .fundo-toast-title {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.125rem;
+            letter-spacing: -0.01em;
+            line-height: 1.25;
+        }
+
+        .fundo-toast-message {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: #475569;
+            line-height: 1.45;
+            word-break: break-word;
+        }
+
+        /* Close button */
+        .fundo-toast-close {
+            background: transparent;
+            border: none;
+            padding: 4px;
+            border-radius: 6px;
+            color: #94a3b8;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: -2px;
+            margin-right: -4px;
+            transition: all 0.15s ease;
+        }
+
+        .fundo-toast-close:hover {
+            color: #0f172a;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Variants */
         .fundo-toast-success {
-            border-left-color: var(--clr-success);
+            border-left-color: #10b981;
         }
 
         .fundo-toast-warning {
-            border-left-color: #d97706;
-            background: #fffbeb;
+            border-left-color: #f59e0b;
+            background: rgba(255, 251, 235, 0.98);
         }
 
         .fundo-toast-danger {
-            border-left-color: var(--clr-danger);
-            background: #fef2f2;
+            border-left-color: #ef4444;
+            background: rgba(254, 242, 242, 0.98);
+        }
+
+        .fundo-toast-info {
+            border-left-color: #3b82f6;
+        }
+
+        /* Progress indicator bar */
+        .fundo-toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 100%;
+            opacity: 0.35;
+            transform-origin: left;
+            animation: fundoToastCountdown linear forwards;
+        }
+
+        .fundo-toast-success .fundo-toast-progress { background: #10b981; }
+        .fundo-toast-warning .fundo-toast-progress { background: #f59e0b; }
+        .fundo-toast-danger .fundo-toast-progress  { background: #ef4444; }
+        .fundo-toast-info .fundo-toast-progress    { background: #3b82f6; }
+
+        @keyframes fundoToastCountdown {
+            from { width: 100%; }
+            to { width: 0%; }
         }
 
         /* Modal iOS Safari */

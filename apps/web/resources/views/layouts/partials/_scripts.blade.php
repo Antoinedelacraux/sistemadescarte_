@@ -145,7 +145,7 @@
             });
         }
 
-        function showToast(message, type, duration) {
+        function showToast(message, type, duration, title) {
             type = type || 'success';
             duration = duration || 5000;
             var container = document.getElementById('fundo-toast-container');
@@ -156,22 +156,70 @@
                 document.body.appendChild(container);
             }
 
+            // Sanitizar y limpiar cualquier emoji repetido que venga al inicio del texto
+            var cleanMessage = (message || '').replace(/^([\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u27BF]|[\uE000-\uF8FF]|✅|⚠️|❌|ℹ️|\s)+/gu, '').trim();
+            if (!cleanMessage) cleanMessage = message || '';
+
+            // Título amigable por defecto según el tipo si no se especificó
+            if (!title) {
+                if (type === 'success') title = '¡Operación Exitosa!';
+                else if (type === 'warning') title = 'Aviso del Sistema';
+                else if (type === 'danger') title = 'Atención';
+                else title = 'Información';
+            }
+
+            // SVGs vectoriales nítidos y modernos
+            var svgIcon = '';
+            if (type === 'success') {
+                svgIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+            } else if (type === 'warning') {
+                svgIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+            } else if (type === 'danger') {
+                svgIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+            } else {
+                svgIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+            }
+
             var toast = document.createElement('div');
             toast.className = 'fundo-toast fundo-toast-' + type;
-            var icon = type === 'success' ? '✅' : (type === 'warning' ? '⚠️' : (type === 'danger' ? '❌' : 'ℹ️'));
-            toast.innerHTML = '<span aria-hidden="true" style="font-size:1.1rem;flex-shrink:0;">' + icon + '</span><span>' + message + '</span>';
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = 
+                '<div class="fundo-toast-icon-wrap fundo-toast-icon-' + type + '">' + svgIcon + '</div>' +
+                '<div class="fundo-toast-body">' +
+                    '<div class="fundo-toast-title">' + title + '</div>' +
+                    '<div class="fundo-toast-message">' + cleanMessage + '</div>' +
+                '</div>' +
+                '<button type="button" class="fundo-toast-close" title="Cerrar notificación" aria-label="Cerrar">' +
+                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+                '</button>' +
+                '<div class="fundo-toast-progress" style="animation-duration:' + duration + 'ms;"></div>';
+
+            // Cierre manual instantáneo con animación
+            var closeBtn = toast.querySelector('.fundo-toast-close');
+            var dismissTimeout = null;
+            function dismissToast() {
+                if (dismissTimeout) clearTimeout(dismissTimeout);
+                toast.classList.remove('show');
+                toast.classList.add('hiding');
+                setTimeout(function() {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 260);
+            }
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dismissToast();
+                });
+            }
+
             container.appendChild(toast);
 
             requestAnimationFrame(function() {
                 toast.classList.add('show');
             });
 
-            setTimeout(function() {
-                toast.classList.remove('show');
-                setTimeout(function() {
-                    if (toast.parentNode) toast.parentNode.removeChild(toast);
-                }, 300);
-            }, duration);
+            dismissTimeout = setTimeout(dismissToast, duration);
         }
 
         async function syncNow() {
@@ -182,7 +230,7 @@
             }
 
             if (!navigator.onLine) {
-                showToast('Aún sin conexión para sincronizar los ' + queue.length + ' registros pendientes.', 'warning', 4000);
+                showToast('Aún sin conexión para sincronizar los ' + queue.length + ' registros pendientes.', 'warning', 4000, 'Sin Conexión');
                 return;
             }
 
@@ -231,7 +279,7 @@
             if (btn) btn.classList.remove('syncing');
 
             if (syncedCount > 0) {
-                showToast('¡Se sincronizaron ' + syncedCount + ' venta(s) correctamente con el servidor!', 'success', 5000);
+                showToast('Se sincronizaron ' + syncedCount + ' venta(s) correctamente con el servidor.', 'success', 5000, '¡Sincronización Exitosa!');
                 if (window.location.pathname === '/ventas' || window.location.pathname === '/') {
                     setTimeout(function() { window.location.reload(); }, 1200);
                 }
