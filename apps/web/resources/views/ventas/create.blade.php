@@ -216,3 +216,142 @@
     </form>
 </div>
 @endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var formVenta = document.getElementById('form-venta');
+    if (!formVenta) return;
+
+    formVenta.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // 1. Obtención y validación de campos obligatorios
+        var fundoId = document.getElementById('fundo_id')?.value;
+        var fechaProduccion = document.getElementById('fecha_produccion')?.value;
+        var loteId = document.getElementById('lote_id')?.value;
+        var motivo = document.getElementById('motivo')?.value;
+        var tipoDescarte = document.getElementById('tipo_descarte')?.value;
+        var kgInput = document.getElementById('kilogramos');
+        var precioInput = document.getElementById('precio');
+        var cuartelInput = document.getElementById('cuartel_manual');
+
+        var kg = parseFloat(kgInput?.value);
+        var precio = parseFloat(precioInput?.value);
+
+        if (!fundoId || !fechaProduccion || !loteId || !motivo || !tipoDescarte) {
+            window.FundoOffline.showToast('Por favor completa todos los campos requeridos (*).', 'danger');
+            return;
+        }
+
+        if (isNaN(kg) || kg <= 0) {
+            window.FundoOffline.showToast('Ingresa un peso en kilogramos válido mayor a 0.', 'danger');
+            kgInput?.focus();
+            return;
+        }
+
+        if (isNaN(precio) || precio <= 0) {
+            window.FundoOffline.showToast('Ingresa un precio por kilogramo válido mayor a 0.', 'danger');
+            precioInput?.focus();
+            return;
+        }
+
+        if (motivo === 'Cosecha Nacional' && (!cuartelInput?.value || cuartelInput.value.trim() === '')) {
+            window.FundoOffline.showToast('El cuartel es obligatorio para el motivo Cosecha Nacional.', 'danger');
+            cuartelInput?.focus();
+            return;
+        }
+
+        var btnSubmit = document.getElementById('btn-submit');
+        var originalBtnText = btnSubmit ? btnSubmit.textContent : 'Guardar Venta de Descarte';
+        if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = 'Guardando registro...';
+        }
+
+        // 2. Construir objeto de datos con UUID v4 permanente
+        var saleUuid = window.FundoOffline.generateUUID();
+        var formData = new FormData(formVenta);
+        var payload = { id: saleUuid };
+        formData.forEach(function(val, key) {
+            payload[key] = val;
+        });
+
+        // Asegurar que campos vacíos no viajen como strings vacíos que rompan validaciones
+        if (!payload.cuartel_id) payload.cuartel_id = null;
+        if (!payload.cuartel_manual) payload.cuartel_manual = null;
+        if (!payload.jabas) payload.jabas = null;
+        if (!payload.peso_jaba) payload.peso_jaba = null;
+        if (!payload.cliente) payload.cliente = null;
+        if (!payload.ruc) payload.ruc = null;
+        if (!payload.placa) payload.placa = null;
+        if (!payload.conductor) payload.conductor = null;
+        if (!payload.brevete) payload.brevete = null;
+        if (!payload.viaje) payload.viaje = null;
+        if (!payload.observacion) payload.observacion = null;
+
+        function prepararSiguientePesaje() {
+            kgInput.value = '';
+            precioInput.value = '';
+            document.getElementById('total-display').textContent = 'S/ 0.00';
+            kgInput.focus();
+            if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = originalBtnText;
+            }
+        }
+
+        // 3. Caso: Sin conexión a internet (Modo Cuartel / Campo Desconectado)
+        if (!navigator.onLine) {
+            window.FundoOffline.enqueue(payload);
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            window.FundoOffline.showToast('✅ Venta guardada LOCALMENTE en tu teléfono. Se sincronizará automáticamente apenas tengas señal.', 'warning', 6000);
+            prepararSiguientePesaje();
+            return;
+        }
+
+        // 4. Caso: Con conexión (Envío directo a servidor con fallback resiliente)
+        try {
+            var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                || payload._token;
+
+            var res = await fetch(formVenta.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken || ''
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.status === 201 || res.status === 200) {
+                if (navigator.vibrate) navigator.vibrate(80);
+                window.FundoOffline.showToast('✅ Venta registrada en el servidor con éxito.', 'success', 4000);
+                prepararSiguientePesaje();
+            } else if (res.status === 422) {
+                var errorData = await res.json();
+                var msg = 'Errores de validación: ';
+                if (errorData.errors) {
+                    msg += Object.values(errorData.errors).flat().join(', ');
+                } else if (errorData.message) {
+                    msg += errorData.message;
+                }
+                window.FundoOffline.showToast(msg, 'danger', 6000);
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = originalBtnText;
+                }
+            } else {
+                throw new Error('Servidor retornó estado ' + res.status);
+            }
+        } catch (error) {
+            console.warn('[Offline Engine] Fallo de red, encolando localmente:', error);
+            window.FundoOffline.enqueue(payload);
+            window.FundoOffline.showToast('⚠️ Señal débil. Venta guardada de forma segura en tu teléfono; se subirá automáticamente.', 'warning', 6000);
+            prepararSiguientePesaje();
+        }
+    });
+});
+</script>
+@endsection

@@ -1,9 +1,10 @@
-// Service Worker — Sistema Fundo PWA (v3)
-// Estrategia híbrida optimizada para operaciones agrícolas en campo con conectividad intermitente
-const CACHE_NAME = 'fundo-pwa-v4';
+// Service Worker — Sistema Fundo PWA (v5)
+// Soporte offline-first y sincronización de ventas en campo
+const CACHE_NAME = 'fundo-pwa-v5';
 
 const PRECACHE_ASSETS = [
     '/',
+    '/ventas/registrar',
     '/manifest.json',
     '/offline.html',
     '/apple-touch-icon.png',
@@ -77,6 +78,11 @@ self.addEventListener('fetch', (event) => {
                     const cachedPage = await caches.match(req);
                     if (cachedPage) {
                         return cachedPage;
+                    }
+                    // Si el usuario intentaba ir a registrar venta, servir el formulario precacheado
+                    if (url.pathname.includes('/ventas/registrar')) {
+                        const cachedForm = await caches.match('/ventas/registrar');
+                        if (cachedForm) return cachedForm;
                     }
                     // Si no estaba en caché, mostrar la pantalla de contingencia offline institucional
                     const offlinePage = await caches.match('/offline.html');

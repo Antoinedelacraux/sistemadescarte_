@@ -272,7 +272,7 @@ class VentaDescarteController extends Controller
     /**
      * Almacena una nueva venta de descarte validando reglas de negocio.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         $user = Auth::user();
 
@@ -282,6 +282,7 @@ class VentaDescarteController extends Controller
             : $user->fundos()->pluck('fundos.id')->toArray();
 
         $validated = $request->validate([
+            'id' => ['nullable', 'string', 'max:50'],
             'fundo_id' => ['required', 'integer', Rule::in($fundosAccesibles)],
             'fecha_produccion' => ['required', 'date'],
             'motivo' => ['required', 'string', Rule::in(['Campo', 'Packing', 'Cosecha Nacional'])],
@@ -362,7 +363,21 @@ class VentaDescarteController extends Controller
         $validated['valor_venta'] = $valorVenta;
         $validated['created_by'] = $user->id;
 
-        VentaDescarte::create($validated);
+        // Idempotencia: Si viene con UUID desde la cola offline del cliente, usamos firstOrCreate
+        $venta = !empty($validated['id'])
+            ? VentaDescarte::firstOrCreate(['id' => $validated['id']], $validated)
+            : VentaDescarte::create($validated);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Venta de descarte registrada y sincronizada exitosamente.',
+                'data' => [
+                    'id' => $venta->id,
+                    'valor_venta' => $venta->valor_venta,
+                ]
+            ], 201);
+        }
 
         return redirect()->route('ventas.index')
             ->with('success', 'Venta de descarte registrada exitosamente.');

@@ -350,4 +350,52 @@ class VentaDescarteTest extends TestCase
         $response->assertSee('Distribuidora del Sur');
         $response->assertSee('360.00');
     }
+
+    public function test_store_offline_sync_accepts_json_and_client_uuid_idempotently(): void
+    {
+        $clientUuid = (string) Str::uuid();
+
+        $payload = [
+            'id' => $clientUuid,
+            'fundo_id' => $this->fundoSofia->id,
+            'fecha_produccion' => '2026-10-12',
+            'motivo' => 'Campo',
+            'tipo_descarte' => 'Racimos',
+            'lote_id' => $this->loteSofia->id,
+            'cuartel_id' => $this->cuartelSofia->id,
+            'precio' => 1.75,
+            'kilogramos' => 120.00,
+            'cliente' => 'Cliente Offline Test SAC',
+        ];
+
+        // 1. Primer envío (sincronización exitosa desde celular offline)
+        $response = $this->actingAs($this->individualUser)
+            ->postJson(route('ventas.store'), $payload);
+
+        $response->assertStatus(201)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'id' => $clientUuid,
+                    'valor_venta' => 210.00,
+                ],
+            ]);
+
+        $this->assertDatabaseHas('ventas_descarte', [
+            'id' => $clientUuid,
+            'cliente' => 'Cliente Offline Test SAC',
+            'valor_venta' => 210.00,
+        ]);
+
+        // 2. Segundo envío con mismo UUID (reintento por red intermitente)
+        $responseRetry = $this->actingAs($this->individualUser)
+            ->postJson(route('ventas.store'), $payload);
+
+        $responseRetry->assertStatus(201);
+
+        // Comprobación de idempotencia: NO se duplica la fila en la base de datos
+        $count = VentaDescarte::where('id', $clientUuid)->count();
+        $this->assertSame(1, $count, 'La venta con UUID del cliente no debe duplicarse bajo reintentos de sincronización.');
+    }
 }
+

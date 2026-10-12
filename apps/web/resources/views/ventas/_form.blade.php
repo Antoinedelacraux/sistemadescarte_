@@ -234,8 +234,9 @@
 </div>
 
 <script>
-// Almacén de lotes y cuarteles en memoria para interactividad rápida
+// Almacén de lotes, fundos y cuarteles en memoria para interactividad offline instantánea
 var lotesCache = @json($lotes);
+var fundosData = @json($fundos);
 
 function calcularTotal() {
     var kg = parseFloat(document.getElementById('kilogramos').value) || 0;
@@ -324,28 +325,42 @@ function seleccionarCuartel(cuartelId) {
     }
 }
 
+function renderLotesEnSelect(lotesList) {
+    lotesCache = lotesList;
+    var selectLote = document.getElementById('lote_id');
+    selectLote.innerHTML = '<option value="">-- Seleccionar Lote --</option>';
+    lotesList.forEach(function(l) {
+        var opt = document.createElement('option');
+        opt.value = l.id;
+        opt.textContent = l.nombre;
+        selectLote.appendChild(opt);
+    });
+
+    if (selectLote.refreshCustomSelect) {
+        selectLote.refreshCustomSelect();
+    }
+    actualizarCuarteles('');
+}
+
 function cargarLotesPorFundo(fundoId) {
     if (!fundoId) return;
 
+    // 1. Intento inmediato en memoria (100% offline)
+    if (typeof fundosData !== 'undefined' && Array.isArray(fundosData)) {
+        var fundoEncontrado = fundosData.find(function(f) { return f.id == fundoId; });
+        if (fundoEncontrado && fundoEncontrado.lotes) {
+            renderLotesEnSelect(fundoEncontrado.lotes);
+            return;
+        }
+    }
+
+    // 2. Si no estuviera en memoria, fallback por red
     fetch('/api/catalogo/lotes?fundo_id=' + encodeURIComponent(fundoId), {
         headers: { 'Accept': 'application/json' }
     })
     .then(function(res) { return res.json(); })
     .then(function(data) {
-        lotesCache = data;
-        var selectLote = document.getElementById('lote_id');
-        selectLote.innerHTML = '<option value="">-- Seleccionar Lote --</option>';
-        data.forEach(function(l) {
-            var opt = document.createElement('option');
-            opt.value = l.id;
-            opt.textContent = l.nombre;
-            selectLote.appendChild(opt);
-        });
-
-        if (selectLote.refreshCustomSelect) {
-            selectLote.refreshCustomSelect();
-        }
-        actualizarCuarteles('');
+        renderLotesEnSelect(data);
     })
     .catch(function(err) {
         console.error('Error cargando lotes:', err);

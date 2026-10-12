@@ -86,6 +86,186 @@
     window.addEventListener('offline', updateNetStatus);
     updateNetStatus();
 
+    /* ============================================================
+     * MOTOR OFFLINE-FIRST: COLA LOCAL Y SINCRONIZACIÓN AUTOMÁTICA
+     * ============================================================ */
+    window.FundoOffline = (function() {
+        var STORAGE_KEY = 'fundo_offline_ventas';
+        var isSyncing = false;
+
+        function getQueue() {
+            try {
+                var raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : [];
+            } catch(e) {
+                console.error('[Offline] Error al leer cola:', e);
+                return [];
+            }
+        }
+
+        function saveQueue(items) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+            } catch(e) {
+                console.error('[Offline] Error al guardar cola:', e);
+            }
+            updateBadge();
+        }
+
+        function enqueue(ventaData) {
+            var queue = getQueue();
+            if (!ventaData.id) {
+                ventaData.id = generateUUID();
+            }
+            if (!ventaData.created_at_local) {
+                ventaData.created_at_local = new Date().toISOString();
+            }
+            queue.push(ventaData);
+            saveQueue(queue);
+            return ventaData;
+        }
+
+        function updateBadge() {
+            var count = getQueue().length;
+            var btn = document.getElementById('btn-sync-pending');
+            var countEl = document.getElementById('sync-pending-count');
+            if (btn && countEl) {
+                countEl.textContent = count;
+                btn.style.display = count > 0 ? 'inline-flex' : 'none';
+            }
+        }
+
+        function generateUUID() {
+            if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+                return crypto.randomUUID();
+            }
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function showToast(message, type, duration) {
+            type = type || 'success';
+            duration = duration || 5000;
+            var container = document.getElementById('fundo-toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'fundo-toast-container';
+                container.className = 'fundo-toast-container';
+                document.body.appendChild(container);
+            }
+
+            var toast = document.createElement('div');
+            toast.className = 'fundo-toast fundo-toast-' + type;
+            var icon = type === 'success' ? '✅' : (type === 'warning' ? '⚠️' : (type === 'danger' ? '❌' : 'ℹ️'));
+            toast.innerHTML = '<span aria-hidden="true" style="font-size:1.1rem;flex-shrink:0;">' + icon + '</span><span>' + message + '</span>';
+            container.appendChild(toast);
+
+            requestAnimationFrame(function() {
+                toast.classList.add('show');
+            });
+
+            setTimeout(function() {
+                toast.classList.remove('show');
+                setTimeout(function() {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 300);
+            }, duration);
+        }
+
+        async function syncNow() {
+            if (isSyncing) return;
+            var queue = getQueue();
+            if (queue.length === 0) {
+                return;
+            }
+
+            if (!navigator.onLine) {
+                showToast('Aún sin conexión para sincronizar los ' + queue.length + ' registros pendientes.', 'warning', 4000);
+                return;
+            }
+
+            isSyncing = true;
+            var btn = document.getElementById('btn-sync-pending');
+            if (btn) btn.classList.add('syncing');
+
+            var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                || document.querySelector('input[name="_token"]')?.value;
+
+            var syncedCount = 0;
+            var remainingQueue = [];
+
+            for (var i = 0; i < queue.length; i++) {
+                var item = queue[i];
+                try {
+                    var response = await fetch('/ventas', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken || ''
+                        },
+                        body: JSON.stringify(item)
+                    });
+
+                    if (response.status === 201 || response.status === 200) {
+                        syncedCount++;
+                    } else if (response.status === 422) {
+                        var errData = await response.json();
+                        console.error('[Offline] Error validando venta:', errData);
+                        remainingQueue.push(item);
+                    } else {
+                        remainingQueue.push(item);
+                        break;
+                    }
+                } catch (err) {
+                    console.error('[Offline] Error de red durante sync:', err);
+                    remainingQueue.push(item);
+                    break;
+                }
+            }
+
+            saveQueue(remainingQueue);
+            isSyncing = false;
+            if (btn) btn.classList.remove('syncing');
+
+            if (syncedCount > 0) {
+                showToast('¡Se sincronizaron ' + syncedCount + ' venta(s) correctamente con el servidor!', 'success', 5000);
+                if (window.location.pathname === '/ventas' || window.location.pathname === '/') {
+                    setTimeout(function() { window.location.reload(); }, 1200);
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateBadge();
+            if (navigator.onLine && getQueue().length > 0) {
+                setTimeout(syncNow, 1200);
+            }
+        });
+
+        window.addEventListener('online', function() {
+            setTimeout(syncNow, 600);
+        });
+
+        setInterval(function() {
+            if (navigator.onLine && getQueue().length > 0) {
+                syncNow();
+            }
+        }, 60000);
+
+        return {
+            getQueue: getQueue,
+            saveQueue: saveQueue,
+            enqueue: enqueue,
+            updateBadge: updateBadge,
+            generateUUID: generateUUID,
+            showToast: showToast,
+            syncNow: syncNow
+        };
+    })();
+
     /* --- Menú de usuario (dropdown) --- */
     var userMenu = document.getElementById('header-user-menu');
 

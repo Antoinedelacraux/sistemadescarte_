@@ -1636,6 +1636,106 @@
             }
         }
 
+        /* ============================================================
+         * SINCRONIZACIÓN OFFLINE Y NOTIFICACIONES FLOTANTES (TOAST)
+         * ============================================================ */
+        .btn-sync-pending {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            font-size: var(--text-xs);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(217, 119, 6, 0.35);
+            white-space: nowrap;
+            animation: sync-badge-pulse 2s infinite ease-in-out;
+        }
+
+        .btn-sync-pending:hover {
+            background: linear-gradient(135deg, #f59e0b 0%, #92400e 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(217, 119, 6, 0.45);
+        }
+
+        .btn-sync-pending.syncing svg {
+            animation: sync-spin 0.8s linear infinite;
+        }
+
+        @keyframes sync-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes sync-badge-pulse {
+            0%, 100% { box-shadow: 0 2px 6px rgba(217, 119, 6, 0.35); transform: scale(1); }
+            50% { box-shadow: 0 0 10px rgba(245, 158, 11, 0.65); transform: scale(1.02); }
+        }
+
+        @media (max-width: 480px) {
+            .btn-sync-pending .sync-pending-label {
+                display: none;
+            }
+        }
+
+        /* Notificaciones Flotantes (Toast) */
+        .fundo-toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            pointer-events: none;
+            max-width: 92vw;
+            width: 400px;
+        }
+
+        .fundo-toast {
+            pointer-events: auto;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            border-radius: var(--radius-lg);
+            background: var(--clr-surface-0);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--brd-base);
+            border-left: 5px solid var(--clr-primary-600);
+            font-size: var(--text-sm);
+            font-weight: 500;
+            color: var(--txt-primary);
+            line-height: 1.4;
+            opacity: 0;
+            transform: translateY(-12px);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .fundo-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .fundo-toast-success {
+            border-left-color: var(--clr-success);
+        }
+
+        .fundo-toast-warning {
+            border-left-color: #d97706;
+            background: #fffbeb;
+        }
+
+        .fundo-toast-danger {
+            border-left-color: var(--clr-danger);
+            background: #fef2f2;
+        }
+
         /* Modal iOS Safari */
         .ios-install-modal {
             position: fixed;
