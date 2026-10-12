@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cliente;
 use App\Models\Cuartel;
 use App\Models\Fundo;
 use App\Models\Lote;
@@ -262,8 +263,9 @@ class VentaDescarteController extends Controller
 
         // Lotes disponibles para el primer fundo (reutiliza la relación en memoria sin consultas redundantes)
         $lotes = $fundos->first()?->lotes ?? collect();
+        $clientes = Cliente::orderBy('nombre')->get();
 
-        return view('ventas.create', compact('fundos', 'lotes'));
+        return view('ventas.create', compact('fundos', 'lotes', 'clientes'));
     }
 
     /**
@@ -347,6 +349,18 @@ class VentaDescarteController extends Controller
         $validated['valor_venta'] = $valorVenta;
         $validated['created_by'] = $user->id;
 
+        // Auto-guardado de cliente en catálogo de clientes para autocompletado futuro
+        if (!empty($validated['cliente'])) {
+            $clienteNombre = trim((string) $validated['cliente']);
+            if ($clienteNombre !== '') {
+                $clienteRuc = !empty($validated['ruc']) ? trim((string) $validated['ruc']) : null;
+                Cliente::updateOrCreate(
+                    ['nombre' => $clienteNombre],
+                    ['ruc' => $clienteRuc]
+                );
+            }
+        }
+
         // Idempotencia: Si viene con UUID desde la cola offline del cliente, usamos firstOrCreate
         $venta = !empty($validated['id'])
             ? VentaDescarte::firstOrCreate(['id' => $validated['id']], $validated)
@@ -359,6 +373,8 @@ class VentaDescarteController extends Controller
                 'data' => [
                     'id' => $venta->id,
                     'valor_venta' => $venta->valor_venta,
+                    'cliente' => $venta->cliente,
+                    'ruc' => $venta->ruc,
                 ]
             ], 201);
         }
@@ -379,8 +395,9 @@ class VentaDescarteController extends Controller
             : $user->fundos()->where('is_active', true)->with('lotes.cuarteles')->get();
 
         $lotes = Lote::where('fundo_id', $venta->fundo_id)->with('cuarteles')->get();
+        $clientes = Cliente::orderBy('nombre')->get();
 
-        return view('ventas.edit', compact('venta', 'fundos', 'lotes'));
+        return view('ventas.edit', compact('venta', 'fundos', 'lotes', 'clientes'));
     }
 
     /**
@@ -453,6 +470,18 @@ class VentaDescarteController extends Controller
 
         $validated['valor_venta'] = $valorVenta;
         $validated['updated_by'] = $user->id;
+
+        // Auto-guardado de cliente en catálogo de clientes para autocompletado futuro
+        if (!empty($validated['cliente'])) {
+            $clienteNombre = trim((string) $validated['cliente']);
+            if ($clienteNombre !== '') {
+                $clienteRuc = !empty($validated['ruc']) ? trim((string) $validated['ruc']) : null;
+                Cliente::updateOrCreate(
+                    ['nombre' => $clienteNombre],
+                    ['ruc' => $clienteRuc]
+                );
+            }
+        }
 
         $venta->update($validated);
 

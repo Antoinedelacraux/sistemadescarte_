@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Ventas;
 
+use App\Models\Cliente;
 use App\Models\Cuartel;
 use App\Models\Fundo;
 use App\Models\Lote;
@@ -396,6 +397,75 @@ class VentaDescarteTest extends TestCase
         // Comprobación de idempotencia: NO se duplica la fila en la base de datos
         $count = VentaDescarte::where('id', $clientUuid)->count();
         $this->assertSame(1, $count, 'La venta con UUID del cliente no debe duplicarse bajo reintentos de sincronización.');
+    }
+
+    public function test_venta_store_saves_and_updates_cliente_catalog(): void
+    {
+        $this->assertEquals(0, Cliente::count());
+
+        $payload1 = [
+            'fundo_id' => $this->fundoSofia->id,
+            'fecha_produccion' => '2026-10-12',
+            'motivo' => 'Campo',
+            'tipo_descarte' => 'Racimos',
+            'lote_id' => $this->loteSofia->id,
+            'precio' => 1.50,
+            'kilogramos' => 100.00,
+            'cliente' => 'Agroexport del Norte SAC',
+            'ruc' => '20555666777',
+        ];
+
+        // 1. Guardar primera venta con nuevo cliente
+        $this->actingAs($this->individualUser)
+            ->post(route('ventas.store'), $payload1)
+            ->assertRedirect(route('ventas.index'));
+
+        $this->assertEquals(1, Cliente::count());
+        $cliente = Cliente::where('nombre', 'Agroexport del Norte SAC')->first();
+        $this->assertNotNull($cliente);
+        $this->assertEquals('20555666777', $cliente->ruc);
+
+        // 2. Guardar segunda venta con el mismo cliente pero actualizando RUC
+        $payload2 = array_merge($payload1, [
+            'ruc' => '20999888111',
+            'kilogramos' => 80.00,
+        ]);
+
+        $this->actingAs($this->individualUser)
+            ->post(route('ventas.store'), $payload2)
+            ->assertRedirect(route('ventas.index'));
+
+        // No debe duplicar el cliente, debe mantener 1 registro y actualizar su RUC
+        $this->assertEquals(1, Cliente::count());
+        $clienteActualizado = Cliente::where('nombre', 'Agroexport del Norte SAC')->first();
+        $this->assertEquals('20999888111', $clienteActualizado->ruc);
+    }
+
+    public function test_ventas_create_and_edit_pass_clientes_to_view(): void
+    {
+        Cliente::create(['nombre' => 'Frutera Andina', 'ruc' => '20111222333']);
+
+        $responseCreate = $this->actingAs($this->individualUser)->get(route('ventas.create'));
+        $responseCreate->assertStatus(200);
+        $responseCreate->assertViewHas('clientes');
+
+        $venta = VentaDescarte::create([
+            'id' => (string) Str::uuid(),
+            'fundo_id' => $this->fundoSofia->id,
+            'lote_id' => $this->loteSofia->id,
+            'fecha_produccion' => '2026-10-12',
+            'motivo' => 'Campo',
+            'tipo_descarte' => 'Racimos',
+            'precio' => 1.50,
+            'kilogramos' => 50.00,
+            'valor_venta' => 75.00,
+            'cliente' => 'Frutera Andina',
+            'created_by' => $this->individualUser->id,
+        ]);
+
+        $responseEdit = $this->actingAs($this->individualUser)->get(route('ventas.edit', $venta));
+        $responseEdit->assertStatus(200);
+        $responseEdit->assertViewHas('clientes');
     }
 }
 

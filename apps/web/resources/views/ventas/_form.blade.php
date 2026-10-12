@@ -172,9 +172,28 @@
     </summary>
 
     <div class="form-grid-2" style="margin-top: 1rem;">
-        <div class="form-group">
-            <label for="cliente" class="form-label">Cliente / Razón Social</label>
-            <input type="text" name="cliente" id="cliente" class="form-control" placeholder="Ej. Agroexport del Sur SAC" value="{{ old('cliente', $venta?->cliente) }}">
+        <div class="form-group" style="position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem;">
+                <label for="cliente" class="form-label" style="margin-bottom: 0;">Cliente / Razón Social</label>
+                <span id="cliente_guardado_badge" style="font-size: 0.72rem; color: #16a34a; display: none; font-weight: 600; background: #dcfce7; padding: 2px 8px; border-radius: 9999px;">
+                    ✓ Registrado
+                </span>
+            </div>
+            <div class="cliente-input-container" style="position: relative; display: flex; align-items: center;">
+                <input type="text" name="cliente" id="cliente" class="form-control" placeholder="Escriba o elija un cliente..." value="{{ old('cliente', $venta?->cliente) }}" autocomplete="off" style="padding-right: 2.25rem;">
+                <button type="button" id="btn_toggle_clientes" title="Ver clientes registrados" style="position: absolute; right: 0.5rem; background: none; border: none; cursor: pointer; color: #64748b; padding: 0.25rem; display: flex; align-items: center; justify-content: center; border-radius: 4px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+            </div>
+            {{-- Menú flotante de clientes registrados con búsqueda en tiempo real --}}
+            <div id="clientes_dropdown" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 50; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); max-height: 220px; overflow-y: auto; margin-top: 4px;">
+                <div id="clientes_dropdown_list">
+                    {{-- Elementos renderizados dinámicamente --}}
+                </div>
+            </div>
+            <small class="form-hint" style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; display: block;">
+                Los clientes se van guardando solos. Puede elegir uno existente o escribir uno nuevo.
+            </small>
         </div>
         <div class="form-group">
             <label for="ruc" class="form-label">RUC del Cliente</label>
@@ -323,10 +342,169 @@ function cargarLotesPorFundo(fundoId) {
     });
 }
 
+// Catálogo de clientes precargado
+var clientesData = @json(($clientes ?? collect())->map(function($c) {
+    return ['nombre' => $c->nombre, 'ruc' => $c->ruc];
+}));
+
+function inicializarSelectorClientes() {
+    var clienteInput = document.getElementById('cliente');
+    var rucInput = document.getElementById('ruc');
+    var btnToggle = document.getElementById('btn_toggle_clientes');
+    var dropdown = document.getElementById('clientes_dropdown');
+    var dropdownList = document.getElementById('clientes_dropdown_list');
+    var badge = document.getElementById('cliente_guardado_badge');
+
+    if (!clienteInput || !dropdown || !dropdownList) return;
+
+    function renderDropdown(filtro) {
+        var query = (filtro || '').trim().toLowerCase();
+        dropdownList.innerHTML = '';
+
+        var items = clientesData.filter(function(item) {
+            if (!query) return true;
+            return item.nombre.toLowerCase().includes(query) || (item.ruc && item.ruc.includes(query));
+        });
+
+        if (items.length === 0) {
+            var empty = document.createElement('div');
+            empty.style.padding = '0.75rem 1rem';
+            empty.style.fontSize = '0.8125rem';
+            empty.style.color = '#64748b';
+            empty.textContent = query ? 'Sin coincidencias (se guardará como cliente nuevo)' : 'No hay clientes registrados aún';
+            dropdownList.appendChild(empty);
+            return;
+        }
+
+        items.forEach(function(item) {
+            var row = document.createElement('div');
+            row.className = 'cliente-option-item';
+            row.style.padding = '0.625rem 1rem';
+            row.style.cursor = 'pointer';
+            row.style.display = 'flex';
+            row.style.justifyContent = 'space-between';
+            row.style.alignItems = 'center';
+            row.style.borderBottom = '1px solid #f1f5f9';
+            row.style.transition = 'background-color 0.12s ease';
+
+            row.addEventListener('mouseenter', function() {
+                row.style.backgroundColor = '#f0fdf4';
+            });
+            row.addEventListener('mouseleave', function() {
+                row.style.backgroundColor = 'transparent';
+            });
+
+            var nameSpan = document.createElement('span');
+            nameSpan.style.fontWeight = '500';
+            nameSpan.style.color = '#0f172a';
+            nameSpan.style.fontSize = '0.875rem';
+            nameSpan.textContent = item.nombre;
+            row.appendChild(nameSpan);
+
+            if (item.ruc) {
+                var rucSpan = document.createElement('span');
+                rucSpan.style.fontSize = '0.75rem';
+                rucSpan.style.color = '#64748b';
+                rucSpan.style.fontFamily = 'monospace';
+                rucSpan.textContent = 'RUC: ' + item.ruc;
+                row.appendChild(rucSpan);
+            }
+
+            row.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                seleccionarCliente(item);
+            });
+
+            dropdownList.appendChild(row);
+        });
+    }
+
+    function seleccionarCliente(item) {
+        clienteInput.value = item.nombre;
+        if (item.ruc && rucInput) {
+            rucInput.value = item.ruc;
+        }
+        cerrarDropdown();
+        actualizarBadge();
+    }
+
+    function abrirDropdown() {
+        renderDropdown(clienteInput.value);
+        dropdown.style.display = 'block';
+    }
+
+    function cerrarDropdown() {
+        dropdown.style.display = 'none';
+    }
+
+    function actualizarBadge() {
+        if (!badge) return;
+        var actual = clienteInput.value.trim().toLowerCase();
+        var match = clientesData.find(function(c) {
+            return c.nombre.toLowerCase() === actual;
+        });
+        if (match) {
+            badge.style.display = 'inline';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    clienteInput.addEventListener('focus', function() {
+        abrirDropdown();
+    });
+
+    clienteInput.addEventListener('input', function() {
+        renderDropdown(clienteInput.value);
+        dropdown.style.display = 'block';
+        actualizarBadge();
+    });
+
+    if (btnToggle) {
+        btnToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (dropdown.style.display === 'block') {
+                cerrarDropdown();
+            } else {
+                clienteInput.focus();
+                abrirDropdown();
+            }
+        });
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#clientes_dropdown') && !e.target.closest('.cliente-input-container')) {
+            cerrarDropdown();
+        }
+    });
+
+    actualizarBadge();
+
+    window.agregarClienteALista = function(nombre, ruc) {
+        if (!nombre || !nombre.trim()) return;
+        var cleanNombre = nombre.trim();
+        var cleanRuc = ruc ? ruc.trim() : null;
+        var idx = clientesData.findIndex(function(c) {
+            return c.nombre.toLowerCase() === cleanNombre.toLowerCase();
+        });
+        if (idx >= 0) {
+            if (cleanRuc) clientesData[idx].ruc = cleanRuc;
+        } else {
+            clientesData.unshift({ nombre: cleanNombre, ruc: cleanRuc });
+        }
+    };
+
+    window.resetClienteState = function() {
+        cerrarDropdown();
+        if (badge) badge.style.display = 'none';
+    };
+}
+
 // Inicializar al cargar
 document.addEventListener('DOMContentLoaded', function() {
     calcularTotal();
     actualizarOpcionesTipoDescarte();
+    inicializarSelectorClientes();
 
     // Inicializar listas desplegables controladas solo en elementos SELECT
     ['fundo_id', 'lote_id', 'motivo', 'tipo_descarte'].forEach(function(id) {

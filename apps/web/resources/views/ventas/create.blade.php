@@ -291,6 +291,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!payload.observacion) payload.observacion = null;
 
         function prepararSiguientePesaje() {
+            // Incorporar cliente registrado a la lista dinámica en memoria para el siguiente ticket
+            if (payload && payload.cliente && window.agregarClienteALista) {
+                window.agregarClienteALista(payload.cliente, payload.ruc);
+            }
+
             // 1. Limpiar Lote
             var loteSelect = document.getElementById('lote_id');
             if (loteSelect) {
@@ -334,6 +339,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 var el = document.getElementById(fieldId);
                 if (el) el.value = '';
             });
+            if (window.resetClienteState) {
+                window.resetClienteState();
+            }
             var optDetails = document.querySelector('.optional-details');
             if (optDetails) optDetails.open = false;
 
