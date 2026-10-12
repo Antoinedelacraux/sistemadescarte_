@@ -40,7 +40,7 @@
                 <input
                     type="search"
                     id="client-matrix-search"
-                    placeholder="Buscar cliente por nombre o RUC..."
+                    placeholder="Buscar cliente por nombre..."
                     oninput="filtrarMatricesClientes()"
                     aria-label="Buscar cliente"
                 >
@@ -94,9 +94,6 @@
                             <tr class="matrix-client-row" data-client-name="{{ strtolower($c['cliente']) }}" data-ruc="{{ $c['ruc'] ?? '' }}">
                                 <td class="matrix-td-client">
                                     <strong style="color: var(--txt-primary);">{{ $c['cliente'] }}</strong>
-                                    @if(!empty($c['ruc']) && !str_contains($c['cliente'], $c['ruc']))
-                                        <span class="matrix-client-ruc">RUC: {{ $c['ruc'] }}</span>
-                                    @endif
                                 </td>
                                 {{-- Campo --}}
                                 @php $kgCampoGranos = $c['kg']['Campo']['Granos'] ?? 0; @endphp
@@ -199,9 +196,6 @@
                             <tr class="matrix-client-row" data-client-name="{{ strtolower($c['cliente']) }}" data-ruc="{{ $c['ruc'] ?? '' }}">
                                 <td class="matrix-td-client">
                                     <strong style="color: var(--txt-primary);">{{ $c['cliente'] }}</strong>
-                                    @if(!empty($c['ruc']) && !str_contains($c['cliente'], $c['ruc']))
-                                        <span class="matrix-client-ruc">RUC: {{ $c['ruc'] }}</span>
-                                    @endif
                                 </td>
                                 {{-- Campo --}}
                                 @php $montoCampoGranos = $c['monto']['Campo']['Granos'] ?? 0; @endphp

@@ -427,9 +427,6 @@ class ExcelExporter
         // Ajustar ancho de CLIENTE si hay nombres más largos
         foreach ($matrizClientes as $c) {
             $cName = (string) ($c['cliente'] ?? '');
-            if (!empty($c['ruc']) && !str_contains($cName, (string) $c['ruc'])) {
-                $cName .= ' - RUC: ' . $c['ruc'];
-            }
             $len = mb_strlen($cName, 'UTF-8');
             if ($len + 4 > $colWidths[1]) {
                 $colWidths[1] = min(50, $len + 4);
@@ -511,9 +508,6 @@ class ExcelExporter
         } else {
             foreach ($matrizClientes as $c) {
                 $cName = (string) ($c['cliente'] ?? '');
-                if (!empty($c['ruc']) && !str_contains($cName, (string) $c['ruc'])) {
-                    $cName .= ' - RUC: ' . $c['ruc'];
-                }
 
                 $sheetXml .= '<row r="' . $r . '" ht="20" customHeight="1">';
                 $sheetXml .= '<c r="A' . $r . '" s="11" t="inlineStr"><is><t>' . htmlspecialchars($cName, ENT_XML1, 'UTF-8') . '</t></is></c>';
@@ -595,9 +589,6 @@ class ExcelExporter
         } else {
             foreach ($matrizClientes as $c) {
                 $cName = (string) ($c['cliente'] ?? '');
-                if (!empty($c['ruc']) && !str_contains($cName, (string) $c['ruc'])) {
-                    $cName .= ' - RUC: ' . $c['ruc'];
-                }
 
                 $sheetXml .= '<row r="' . $r . '" ht="20" customHeight="1">';
                 $sheetXml .= '<c r="A' . $r . '" s="11" t="inlineStr"><is><t>' . htmlspecialchars($cName, ENT_XML1, 'UTF-8') . '</t></is></c>';
