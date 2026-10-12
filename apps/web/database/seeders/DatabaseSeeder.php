@@ -87,6 +87,18 @@ class DatabaseSeeder extends Seeder
         );
         $individualProcom->fundos()->syncWithoutDetaching([$fundoProcom->id]);
 
+        $generalElNegro = User::firstOrCreate(
+            ['email' => 'general.elnegro@fundo.test'],
+            ['name' => 'Jefe Fundo El Negro', 'password' => $defaultPassword, 'role_id' => $roleGeneral->id, 'is_active' => true]
+        );
+        $generalElNegro->fundos()->syncWithoutDetaching([$fundoElNegro->id]);
+
+        $individualElNegro = User::firstOrCreate(
+            ['email' => 'individual.elnegro@fundo.test'],
+            ['name' => 'Registrador El Negro', 'password' => $defaultPassword, 'role_id' => $roleIndividual->id, 'is_active' => true]
+        );
+        $individualElNegro->fundos()->syncWithoutDetaching([$fundoElNegro->id]);
+
         $analista = User::firstOrCreate(
             ['email' => 'analista@fundo.test'],
             ['name' => 'Analista Central', 'password' => $defaultPassword, 'role_id' => $roleAnalista->id, 'is_active' => true]
