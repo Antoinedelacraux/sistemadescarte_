@@ -166,43 +166,6 @@ class AdminController extends Controller implements HasMiddleware
     }
 
     /**
-     * Agregar cuartel(es) a un lote específico.
-     */
-    public function storeCuartel(Request $request, Lote $lote): RedirectResponse
-    {
-        $request->validate([
-            'nombre' => ['required', 'string'],
-        ], [
-            'nombre.required' => 'Ingresa el nombre del cuartel.',
-        ]);
-
-        $rawCuarteles = preg_split('/[\r\n,]+/', (string) $request->input('nombre'));
-        $creados = 0;
-        foreach ($rawCuarteles as $cName) {
-            $cName = trim($cName);
-            if ($cName !== '') {
-                $lote->cuarteles()->firstOrCreate(['nombre' => $cName]);
-                $creados++;
-            }
-        }
-
-        return redirect()->route('admin.fundos')
-            ->with('success', "Se agregaron {$creados} cuartel(es) al lote '{$lote->nombre}'.");
-    }
-
-    /**
-     * Eliminar un cuartel.
-     */
-    public function destroyCuartel(Cuartel $cuartel): RedirectResponse
-    {
-        $nombre = $cuartel->nombre;
-        $cuartel->delete();
-
-        return redirect()->route('admin.fundos')
-            ->with('success', "Cuartel '{$nombre}' eliminado.");
-    }
-
-    /**
      * Cambiar estado activo/inactivo (anular o reactivar) de un fundo.
      */
     public function toggleFundo(Fundo $fundo): RedirectResponse

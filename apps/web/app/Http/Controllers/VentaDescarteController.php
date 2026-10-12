@@ -273,6 +273,14 @@ class VentaDescarteController extends Controller
     {
         $user = Auth::user();
 
+        // Compatibilidad hacia atrás: resolver texto si proviene cuartel_id desde integraciones previas
+        if (!$request->filled('cuartel_manual') && $request->filled('cuartel_id')) {
+            $cuartelModel = Cuartel::find($request->input('cuartel_id'));
+            if ($cuartelModel) {
+                $request->merge(['cuartel_manual' => $cuartelModel->nombre]);
+            }
+        }
+
         // 1. Validar fondos accesibles
         $fundosAccesibles = ($user->isAdmin() || $user->isAnalista())
             ? Fundo::pluck('id')->toArray()
@@ -301,9 +309,9 @@ class VentaDescarteController extends Controller
                     return $query->where('fundo_id', $request->input('fundo_id'));
                 }),
             ],
-            'cuartel_id' => ['nullable', 'integer', 'exists:cuarteles,id'],
+            'cuartel_id' => ['nullable'],
             'cuartel_manual' => [
-                Rule::requiredIf(fn () => $request->input('motivo') === 'Cosecha Nacional' && empty($request->input('cuartel_id'))),
+                Rule::requiredIf(fn () => $request->input('motivo') === 'Cosecha Nacional'),
                 'nullable',
                 'string',
                 'max:100',
@@ -331,31 +339,10 @@ class VentaDescarteController extends Controller
         // Cálculo exacto del valor total (precio * kilogramos)
         $valorVenta = round((float) $validated['precio'] * (float) $validated['kilogramos'], 2);
 
-        // Reconocimiento y guardado automático de cuartel en el catálogo del lote
+        // Cuartel como campo de texto libre (sin inserción en catálogo de cuarteles)
         $cuartelNombre = trim((string) ($request->input('cuartel_manual') ?? ''));
-        if ($cuartelNombre === '' && !empty($validated['cuartel_id'])) {
-            $cuartelObj = Cuartel::find($validated['cuartel_id']);
-            $cuartelNombre = $cuartelObj?->nombre ?? '';
-        }
-
-        if ($cuartelNombre !== '' && !empty($validated['lote_id'])) {
-            $cuartelRecord = Cuartel::where('lote_id', $validated['lote_id'])
-                ->whereRaw('LOWER(TRIM(nombre)) = ?', [strtolower($cuartelNombre)])
-                ->first();
-
-            if (!$cuartelRecord) {
-                $cuartelRecord = Cuartel::create([
-                    'lote_id' => $validated['lote_id'],
-                    'nombre' => $cuartelNombre,
-                ]);
-            }
-
-            $validated['cuartel_id'] = $cuartelRecord->id;
-            $validated['cuartel_manual'] = $cuartelRecord->nombre;
-        } else {
-            $validated['cuartel_id'] = null;
-            $validated['cuartel_manual'] = null;
-        }
+        $validated['cuartel_manual'] = $cuartelNombre !== '' ? $cuartelNombre : null;
+        $validated['cuartel_id'] = null;
 
         $validated['valor_venta'] = $valorVenta;
         $validated['created_by'] = $user->id;
@@ -403,6 +390,14 @@ class VentaDescarteController extends Controller
     {
         $user = Auth::user();
 
+        // Compatibilidad hacia atrás: resolver texto si proviene cuartel_id desde integraciones previas
+        if (!$request->filled('cuartel_manual') && $request->filled('cuartel_id')) {
+            $cuartelModel = Cuartel::find($request->input('cuartel_id'));
+            if ($cuartelModel) {
+                $request->merge(['cuartel_manual' => $cuartelModel->nombre]);
+            }
+        }
+
         $fundosAccesibles = ($user->isAdmin() || $user->isAnalista())
             ? Fundo::pluck('id')->toArray()
             : $user->fundos()->pluck('fundos.id')->toArray();
@@ -429,9 +424,9 @@ class VentaDescarteController extends Controller
                     return $query->where('fundo_id', $request->input('fundo_id'));
                 }),
             ],
-            'cuartel_id' => ['nullable', 'integer', 'exists:cuarteles,id'],
+            'cuartel_id' => ['nullable'],
             'cuartel_manual' => [
-                Rule::requiredIf(fn () => $request->input('motivo') === 'Cosecha Nacional' && empty($request->input('cuartel_id'))),
+                Rule::requiredIf(fn () => $request->input('motivo') === 'Cosecha Nacional'),
                 'nullable',
                 'string',
                 'max:100',
@@ -451,31 +446,10 @@ class VentaDescarteController extends Controller
 
         $valorVenta = round((float) $validated['precio'] * (float) $validated['kilogramos'], 2);
 
-        // Reconocimiento y guardado automático de cuartel en el catálogo del lote
+        // Cuartel como campo de texto libre (sin inserción en catálogo de cuarteles)
         $cuartelNombre = trim((string) ($request->input('cuartel_manual') ?? ''));
-        if ($cuartelNombre === '' && !empty($validated['cuartel_id'])) {
-            $cuartelObj = Cuartel::find($validated['cuartel_id']);
-            $cuartelNombre = $cuartelObj?->nombre ?? '';
-        }
-
-        if ($cuartelNombre !== '' && !empty($validated['lote_id'])) {
-            $cuartelRecord = Cuartel::where('lote_id', $validated['lote_id'])
-                ->whereRaw('LOWER(TRIM(nombre)) = ?', [strtolower($cuartelNombre)])
-                ->first();
-
-            if (!$cuartelRecord) {
-                $cuartelRecord = Cuartel::create([
-                    'lote_id' => $validated['lote_id'],
-                    'nombre' => $cuartelNombre,
-                ]);
-            }
-
-            $validated['cuartel_id'] = $cuartelRecord->id;
-            $validated['cuartel_manual'] = $cuartelRecord->nombre;
-        } else {
-            $validated['cuartel_id'] = null;
-            $validated['cuartel_manual'] = null;
-        }
+        $validated['cuartel_manual'] = $cuartelNombre !== '' ? $cuartelNombre : null;
+        $validated['cuartel_id'] = null;
 
         $validated['valor_venta'] = $valorVenta;
         $validated['updated_by'] = $user->id;

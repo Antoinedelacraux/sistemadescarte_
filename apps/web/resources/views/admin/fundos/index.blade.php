@@ -279,7 +279,7 @@
                                 {{-- Gestionar Lotes y Cuarteles --}}
                                 <button type="button"
                                         class="btn-action-icon btn-action-view"
-                                        title="Gestionar Lotes y Cuarteles"
+                                        title="Gestionar Lotes"
                                         aria-label="Gestionar Lotes de {{ $fundo->name }}"
                                         onclick="abrirModalGestionLotes({{ $fundo->id }})">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -470,53 +470,11 @@
                 delForm.method = 'POST';
                 delForm.action = '{{ url("/administracion/lotes") }}/' + lote.id;
                 delForm.style.display = 'inline';
-                delForm.onsubmit = function() { return confirm('¿Eliminar el lote ' + lote.nombre + ' y sus cuarteles?'); };
+                delForm.onsubmit = function() { return confirm('¿Eliminar el lote ' + lote.nombre + '?'); };
                 delForm.innerHTML = '@csrf @method("DELETE")<button type="submit" class="btn btn-ghost btn-sm" style="color: var(--clr-danger); padding: 0.2rem 0.4rem; font-size: 0.6875rem;" title="Eliminar Lote">Eliminar Lote</button>';
                 headerDiv.appendChild(delForm);
                 loteCard.appendChild(headerDiv);
 
-                // Cuarteles del Lote
-                var cuartelesSection = document.createElement('div');
-                cuartelesSection.style.cssText = 'padding: 0.5rem; background: var(--clr-surface-50); border-radius: var(--radius-sm); margin-top: 0.35rem;';
-
-                var cuartelesTitle = document.createElement('div');
-                cuartelesTitle.style.cssText = 'font-size: 0.6875rem; font-weight: 700; color: var(--txt-muted); text-transform: uppercase; margin-bottom: 0.35rem;';
-                cuartelesTitle.textContent = 'Cuarteles registrados (' + ((lote.cuarteles || []).length) + '):';
-                cuartelesSection.appendChild(cuartelesTitle);
-
-                var cuartelesWrap = document.createElement('div');
-                cuartelesWrap.style.cssText = 'display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; margin-bottom: 0.5rem;';
-
-                if (!lote.cuarteles || lote.cuarteles.length === 0) {
-                    cuartelesWrap.innerHTML = '<span style="font-size: 0.72rem; color: var(--txt-muted); font-style: italic;">Sin cuarteles registrados aún. (Se agregarán automáticamente cuando los pesadores los registren en ventas o puedes agregarlos aquí).</span>';
-                } else {
-                    lote.cuarteles.forEach(function(c) {
-                        var cChip = document.createElement('span');
-                        cChip.style.cssText = 'display: inline-flex; align-items: center; gap: 0.3rem; background: white; border: 1px solid var(--brd-base); padding: 0.15rem 0.45rem; border-radius: var(--radius-sm); font-size: 0.72rem; font-weight: 600; color: var(--txt-primary);';
-                        cChip.textContent = c.nombre;
-
-                        var cDelForm = document.createElement('form');
-                        cDelForm.method = 'POST';
-                        cDelForm.action = '{{ url("/administracion/cuarteles") }}/' + c.id;
-                        cDelForm.style.display = 'inline';
-                        cDelForm.onsubmit = function() { return confirm('¿Eliminar cuartel ' + c.nombre + '?'); };
-                        cDelForm.innerHTML = '@csrf @method("DELETE")<button type="submit" style="background:none; border:none; color:var(--txt-muted); cursor:pointer; font-size:0.8rem; line-height:1; padding:0;" title="Quitar cuartel">&times;</button>';
-                        cChip.appendChild(cDelForm);
-
-                        cuartelesWrap.appendChild(cChip);
-                    });
-                }
-                cuartelesSection.appendChild(cuartelesWrap);
-
-                // Formulario inline para agregar cuartel al lote
-                var addCuartelForm = document.createElement('form');
-                addCuartelForm.method = 'POST';
-                addCuartelForm.action = '{{ url("/administracion/lotes") }}/' + lote.id + '/cuarteles';
-                addCuartelForm.style.cssText = 'display: flex; gap: 0.35rem; align-items: center;';
-                addCuartelForm.innerHTML = '@csrf<input type="text" name="nombre" placeholder="+ Nuevo cuartel (ej. C01, Cuartel 1)" required style="height: 28px; font-size: 0.72rem; padding: 0 0.5rem; border: 1px solid var(--brd-base); border-radius: var(--radius-sm); flex: 1; max-width: 220px;"><button type="submit" class="btn btn-secondary btn-sm" style="height: 28px; width: 28px; padding: 0; font-size: 0.875rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;" title="Agregar cuartel" aria-label="Agregar cuartel">+</button>';
-                cuartelesSection.appendChild(addCuartelForm);
-
-                loteCard.appendChild(cuartelesSection);
                 listaLotes.appendChild(loteCard);
             });
         }

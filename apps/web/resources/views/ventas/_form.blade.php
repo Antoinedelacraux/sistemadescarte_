@@ -50,7 +50,7 @@
         <label for="lote_id" class="form-label">
             Lote <span class="required">*</span>
         </label>
-        <select name="lote_id" id="lote_id" class="form-control" required data-custom-select="true" onchange="actualizarCuarteles(this.value)">
+        <select name="lote_id" id="lote_id" class="form-control" required data-custom-select="true">
             <option value="">-- Seleccionar Lote --</option>
             @foreach($lotes as $lote)
                 <option value="{{ $lote->id }}" {{ old('lote_id', $venta?->lote_id) == $lote->id ? 'selected' : '' }}>
@@ -66,19 +66,14 @@
             Cuartel <span id="cuartel-required-star" class="required" style="display: none;">*</span>
             <small id="cuartel-hint" class="text-muted">(Obligatorio en Cosecha Nacional)</small>
         </label>
-        <div class="cuartel-input-group">
-            <select id="cuartel_select" class="form-control" data-custom-select="true" onchange="seleccionarCuartel(this.value)">
-                <option value="">-- Cuartel de catálogo --</option>
-            </select>
-            <input
-                type="text"
-                name="cuartel_manual"
-                id="cuartel_manual"
-                class="form-control"
-                placeholder="O escribe el cuartel"
-                value="{{ old('cuartel_manual', $venta?->cuartel_manual) }}"
-            >
-        </div>
+        <input
+            type="text"
+            name="cuartel_manual"
+            id="cuartel_manual"
+            class="form-control"
+            placeholder="Escribe el cuartel (Ej. C-01, Cuartel 4)"
+            value="{{ old('cuartel_manual', $venta?->cuartel_manual) }}"
+        >
         <input type="hidden" name="cuartel_id" id="cuartel_id" value="{{ old('cuartel_id', $venta?->cuartel_id) }}">
     </div>
 </div>
@@ -287,44 +282,6 @@ function actualizarOpcionesTipoDescarte() {
     }
 }
 
-function actualizarCuarteles(loteId) {
-    var selectCuartel = document.getElementById('cuartel_select');
-    selectCuartel.innerHTML = '<option value="">-- Cuartel de catálogo --</option>';
-
-    if (!loteId) {
-        if (selectCuartel.refreshCustomSelect) selectCuartel.refreshCustomSelect();
-        return;
-    }
-
-    var lote = lotesCache.find(function(l) { return l.id == loteId; });
-    if (lote && lote.cuarteles) {
-        lote.cuarteles.forEach(function(c) {
-            var opt = document.createElement('option');
-            opt.value = c.id;
-            opt.textContent = c.nombre;
-            selectCuartel.appendChild(opt);
-        });
-    }
-
-    if (selectCuartel.refreshCustomSelect) {
-        selectCuartel.refreshCustomSelect();
-    }
-}
-
-function seleccionarCuartel(cuartelId) {
-    var cuartelInput = document.getElementById('cuartel_manual');
-    var cuartelHidden = document.getElementById('cuartel_id');
-    var selectCuartel = document.getElementById('cuartel_select');
-
-    if (cuartelId) {
-        var texto = selectCuartel.options[selectCuartel.selectedIndex].text;
-        cuartelInput.value = texto;
-        cuartelHidden.value = cuartelId;
-    } else {
-        cuartelHidden.value = '';
-    }
-}
-
 function renderLotesEnSelect(lotesList) {
     lotesCache = lotesList;
     var selectLote = document.getElementById('lote_id');
@@ -339,7 +296,6 @@ function renderLotesEnSelect(lotesList) {
     if (selectLote.refreshCustomSelect) {
         selectLote.refreshCustomSelect();
     }
-    actualizarCuarteles('');
 }
 
 function cargarLotesPorFundo(fundoId) {
@@ -371,13 +327,9 @@ function cargarLotesPorFundo(fundoId) {
 document.addEventListener('DOMContentLoaded', function() {
     calcularTotal();
     actualizarOpcionesTipoDescarte();
-    var loteInicial = document.getElementById('lote_id').value;
-    if (loteInicial) {
-        actualizarCuarteles(loteInicial);
-    }
 
     // Inicializar listas desplegables controladas solo en elementos SELECT
-    ['fundo_id', 'lote_id', 'cuartel_select', 'motivo', 'tipo_descarte'].forEach(function(id) {
+    ['fundo_id', 'lote_id', 'motivo', 'tipo_descarte'].forEach(function(id) {
         var el = document.getElementById(id);
         if (el && el.tagName === 'SELECT' && window.initCustomSelect) {
             window.initCustomSelect(el);

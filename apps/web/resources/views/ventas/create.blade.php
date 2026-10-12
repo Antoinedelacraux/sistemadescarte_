@@ -291,10 +291,64 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!payload.observacion) payload.observacion = null;
 
         function prepararSiguientePesaje() {
-            kgInput.value = '';
-            precioInput.value = '';
-            document.getElementById('total-display').textContent = 'S/ 0.00';
-            kgInput.focus();
+            // 1. Limpiar Lote
+            var loteSelect = document.getElementById('lote_id');
+            if (loteSelect) {
+                loteSelect.value = '';
+                if (loteSelect.refreshCustomSelect) {
+                    loteSelect.refreshCustomSelect();
+                }
+            }
+
+            // 2. Limpiar Cuartel
+            var cuartelManualInput = document.getElementById('cuartel_manual');
+            if (cuartelManualInput) cuartelManualInput.value = '';
+            var cuartelHiddenInput = document.getElementById('cuartel_id');
+            if (cuartelHiddenInput) cuartelHiddenInput.value = '';
+
+            // 3. Limpiar y resetear Clasificación del Descarte (Motivo y Tipo de Descarte)
+            var motivoSelect = document.getElementById('motivo');
+            if (motivoSelect) {
+                motivoSelect.value = 'Campo';
+                if (motivoSelect.refreshCustomSelect) {
+                    motivoSelect.refreshCustomSelect();
+                }
+                actualizarOpcionesTipoDescarte();
+            }
+            var tipoDescarteSelect = document.getElementById('tipo_descarte');
+            if (tipoDescarteSelect) {
+                tipoDescarteSelect.value = 'Racimos';
+                if (tipoDescarteSelect.refreshCustomSelect) {
+                    tipoDescarteSelect.refreshCustomSelect();
+                }
+            }
+
+            // 4. Limpiar Pesaje y Precios
+            if (kgInput) kgInput.value = '';
+            if (precioInput) precioInput.value = '';
+            var totalDisplay = document.getElementById('total-display');
+            if (totalDisplay) totalDisplay.textContent = 'S/ 0.00';
+
+            // 5. Limpiar Datos de Trazabilidad, Cliente y Transporte
+            ['cliente', 'ruc', 'jabas', 'peso_jaba', 'placa', 'conductor', 'brevete', 'viaje', 'observacion'].forEach(function(fieldId) {
+                var el = document.getElementById(fieldId);
+                if (el) el.value = '';
+            });
+            var optDetails = document.querySelector('.optional-details');
+            if (optDetails) optDetails.open = false;
+
+            // 6. Retornar foco al Lote para el siguiente ticket
+            if (loteSelect) {
+                var trigger = loteSelect.closest('.custom-select-wrap')?.querySelector('.custom-select-trigger');
+                if (trigger) {
+                    trigger.focus();
+                } else {
+                    loteSelect.focus();
+                }
+            } else if (kgInput) {
+                kgInput.focus();
+            }
+
             if (btnSubmit) {
                 btnSubmit.disabled = false;
                 btnSubmit.textContent = originalBtnText;

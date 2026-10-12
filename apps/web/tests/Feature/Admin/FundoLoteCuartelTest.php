@@ -101,17 +101,7 @@ class FundoLoteCuartelTest extends TestCase
         $this->assertTrue($this->fundoProcom->lotes()->where('nombre', 'H99')->exists());
     }
 
-    public function test_admin_can_add_cuarteles_to_lote(): void
-    {
-        $response = $this->actingAs($this->admin)->post(route('admin.lotes.cuarteles.store', $this->loteH01), [
-            'nombre' => 'Cuartel 1A, Cuartel 1B',
-        ]);
-
-        $response->assertRedirect(route('admin.fundos'));
-        $this->assertEquals(2, $this->loteH01->cuarteles()->count());
-    }
-
-    public function test_venta_store_auto_creates_cuartel_for_lote(): void
+    public function test_venta_store_saves_cuartel_as_free_text_without_creating_cuartel_model(): void
     {
         $this->assertEquals(0, $this->loteH01->cuarteles()->count());
 
@@ -121,7 +111,7 @@ class FundoLoteCuartelTest extends TestCase
             'motivo' => 'Campo',
             'tipo_descarte' => 'Racimos',
             'lote_id' => $this->loteH01->id,
-            'cuartel_manual' => 'Cuartel Nuevo Auto',
+            'cuartel_manual' => 'Cuartel Libre 01',
             'precio' => 1.50,
             'kilogramos' => 100,
         ];
@@ -131,17 +121,13 @@ class FundoLoteCuartelTest extends TestCase
         $response->assertRedirect(route('ventas.index'));
         $response->assertSessionHas('success');
 
-        // Comprobar que el cuartel fue creado en la tabla cuarteles para ese lote
-        $cuartel = Cuartel::where('lote_id', $this->loteH01->id)
-            ->where('nombre', 'Cuartel Nuevo Auto')
-            ->first();
+        // Comprobar que NO se crean registros en la tabla cuarteles
+        $this->assertEquals(0, Cuartel::count());
 
-        $this->assertNotNull($cuartel);
-
-        // Y la venta tiene asociado el id del cuartel recién creado
+        // Y la venta guarda el texto en cuartel_manual
         $venta = VentaDescarte::withoutGlobalScopes()->latest('created_at')->first();
-        $this->assertEquals($cuartel->id, $venta->cuartel_id);
-        $this->assertEquals('Cuartel Nuevo Auto', $venta->cuartel_manual);
+        $this->assertNull($venta->cuartel_id);
+        $this->assertEquals('Cuartel Libre 01', $venta->cuartel_manual);
     }
 
     public function test_cuartel_is_optional_in_campo_and_packing_but_required_in_cosecha_nacional(): void
