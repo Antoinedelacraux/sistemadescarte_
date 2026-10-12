@@ -128,6 +128,24 @@ class ExportarExcelCompletoTest extends TestCase
         $this->assertStringStartsWith("PK\x03\x04", $binary);
     }
 
+    public function test_ventas_historial_excel_no_incluye_fila_total_general(): void
+    {
+        $response = $this->actingAs($this->adminUser)->get(route('ventas.exportar'));
+        $response->assertStatus(200);
+
+        $binary = $response->getContent();
+        $tmpFile = tempnam(sys_get_temp_dir(), 'xlsx_');
+        file_put_contents($tmpFile, $binary);
+
+        $zip = new \ZipArchive();
+        $this->assertTrue($zip->open($tmpFile) === true);
+        $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $zip->close();
+        @unlink($tmpFile);
+
+        $this->assertStringNotContainsString('TOTAL GENERAL', $sheetXml);
+    }
+
     public function test_dashboard_exportar_clientes_xlsx(): void
     {
         $response = $this->actingAs($this->adminUser)->get(route('dashboard.exportar', [

@@ -18,7 +18,6 @@ class User extends Authenticatable
         'panel' => 'Panel de Control',
         'registro' => 'Registrar Venta',
         'historial' => 'Historial de Ventas',
-        'reportes' => 'Reportes y Exportación',
         'admin' => 'Administración',
     ];
 
@@ -117,7 +116,7 @@ class User extends Authenticatable
     public static function getModulosPorDefecto(?string $roleName): array
     {
         return match ($roleName) {
-            Role::ADMIN => ['panel', 'registro', 'historial', 'reportes', 'admin'],
+            Role::ADMIN => ['panel', 'registro', 'historial', 'admin'],
             Role::JEFE_FUNDO, 'general' => ['panel', 'historial'],
             Role::REGISTRADOR, 'individual' => ['registro', 'historial'],
             Role::ANALISTA => ['historial'],

@@ -42,12 +42,6 @@ Route::middleware('auth')->group(function () {
     // Endpoint dinámico para carga de catálogos
     Route::get('/api/catalogo/lotes', [VentaDescarteController::class, 'getLotesPorFundo'])->name('api.lotes');
 
-    // Módulo Reportes: Análisis y exportación consolidada
-    Route::middleware('modulo:reportes')->group(function () {
-        Route::get('/reportes', [\App\Http\Controllers\ReporteController::class, 'index'])->name('reportes.index');
-        Route::get('/reportes/exportar', [\App\Http\Controllers\ReporteController::class, 'exportar'])->name('reportes.exportar');
-    });
-
     // Módulo Administración: Solo usuarios con permiso de módulo admin
     Route::middleware('modulo:admin')->group(function () {
         Route::get('/administracion/fundos', [\App\Http\Controllers\AdminController::class, 'fundos'])->name('admin.fundos');

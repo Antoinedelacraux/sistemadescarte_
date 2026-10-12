@@ -6,7 +6,6 @@ const PRECACHE_ASSETS = [
     '/',
     '/ventas/registrar',
     '/ventas',
-    '/reportes',
     '/manifest.json',
     '/offline.html',
     '/apple-touch-icon.png',

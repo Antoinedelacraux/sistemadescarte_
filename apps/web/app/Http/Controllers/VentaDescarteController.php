@@ -146,39 +146,9 @@ class VentaDescarteController extends Controller
             ];
         }
 
-        $totalKilos = (float) $ventas->sum('kilogramos');
-        $totalVentas = (float) $ventas->sum('valor_venta');
-        $precioPromedio = $totalKilos > 0 ? (float) round($totalVentas / $totalKilos, 2) : 0.00;
-        $totalJabas = (int) $ventas->sum('jabas');
-
-        $totalRow = [
-            'TOTAL GENERAL (' . $ventas->count() . ' registros)',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            $totalKilos,
-            $precioPromedio,
-            $totalVentas,
-            $totalJabas > 0 ? $totalJabas : '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-        ];
-
         $filename = 'ventas_historial_' . date('Y-m-d_His') . '.xlsx';
         $xlsxBinary = ExcelExporter::generate($headers, $dataRows, 'Historial Ventas', [
             'columnTypes' => $columnTypes,
-            'totalRow' => $totalRow,
         ]);
 
         return response($xlsxBinary, 200, [

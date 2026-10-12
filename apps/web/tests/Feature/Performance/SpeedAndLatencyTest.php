@@ -148,17 +148,17 @@ class SpeedAndLatencyTest extends TestCase
     }
 
     /**
-     * Prueba que el módulo de reportes carga velozmente.
+     * Prueba que el módulo de administración carga velozmente.
      */
-    public function test_reportes_index_loads_quickly(): void
+    public function test_admin_fundos_loads_quickly(): void
     {
         $start = microtime(true);
-        $response = $this->actingAs($this->adminUser)->get(route('reportes.index'));
+        $response = $this->actingAs($this->adminUser)->get(route('admin.fundos'));
         $elapsedMs = (microtime(true) - $start) * 1000;
 
         $response->assertStatus(200);
-        $response->assertSee('Reportes y Exportación');
-        $this->assertLessThan(350, $elapsedMs, "El módulo de reportes tardó {$elapsedMs}ms, excediendo el límite de 350ms.");
+        $response->assertSee('Administración de Fundos');
+        $this->assertLessThan(350, $elapsedMs, "El módulo de fundos tardó {$elapsedMs}ms, excediendo el límite de 350ms.");
     }
 
     /**
@@ -181,7 +181,6 @@ class SpeedAndLatencyTest extends TestCase
         $this->assertStringContainsString('fundo-pwa-v6', $swContent);
         $this->assertStringContainsString('/ventas/registrar', $swContent);
         $this->assertStringContainsString('/ventas', $swContent);
-        $this->assertStringContainsString('/reportes', $swContent);
     }
 
     /**

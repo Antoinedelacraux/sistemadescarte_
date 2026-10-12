@@ -68,9 +68,8 @@ class RolesAndModulesAccessTest extends TestCase
         $this->get(route('dashboard'))->assertStatus(200);
         $this->get(route('ventas.index'))->assertStatus(200);
 
-        // No puede acceder a REGISTRO, REPORTES ni ADMIN
+        // No puede acceder a REGISTRO ni ADMIN
         $this->get(route('ventas.create'))->assertStatus(403);
-        $this->get(route('reportes.index'))->assertStatus(403);
         $this->get(route('admin.fundos'))->assertStatus(403);
         $this->get(route('admin.usuarios'))->assertStatus(403);
     }
@@ -98,8 +97,7 @@ class RolesAndModulesAccessTest extends TestCase
         // Intento directo al módulo PANEL da 403
         $this->get(route('dashboard.exportar'))->assertStatus(403);
 
-        // No puede acceder a REPORTES ni ADMIN
-        $this->get(route('reportes.index'))->assertStatus(403);
+        // No puede acceder a ADMIN
         $this->get(route('admin.fundos'))->assertStatus(403);
     }
 
@@ -167,7 +165,6 @@ class RolesAndModulesAccessTest extends TestCase
         $this->get(route('dashboard'))->assertStatus(200);
         $this->get(route('ventas.create'))->assertStatus(200);
         $this->get(route('ventas.index'))->assertStatus(200);
-        $this->get(route('reportes.index'))->assertStatus(200);
         $this->get(route('admin.fundos'))->assertStatus(200);
         $this->get(route('admin.usuarios'))->assertStatus(200);
     }
@@ -193,23 +190,24 @@ class RolesAndModulesAccessTest extends TestCase
         $this->get(route('ventas.index'))->assertStatus(200);
     }
 
-    public function test_custom_module_override_enables_reportes_for_analista(): void
+    public function test_custom_module_override_enables_registro_for_analista(): void
     {
-        // Caso excepcional: A un analista se le concede acceso a REPORTES
-        $analistaConReportes = User::create([
+        // Caso excepcional: A un analista se le concede acceso a REGISTRO
+        $analistaConRegistro = User::create([
             'name' => 'Analista Senior',
             'email' => 'analista.sr@test.com',
             'password' => Hash::make('secret'),
             'role_id' => $this->roleAnalista->id,
             'is_active' => true,
-            'modulos_personalizados' => ['historial', 'reportes'],
+            'modulos_personalizados' => ['historial', 'registro'],
         ]);
+        $analistaConRegistro->fundos()->attach($this->fundo->id);
 
-        $this->actingAs($analistaConReportes);
+        $this->actingAs($analistaConRegistro);
 
         $this->get(route('ventas.index'))->assertStatus(200);
-        $this->get(route('reportes.index'))->assertStatus(200);
-        $this->get(route('ventas.create'))->assertStatus(403);
+        $this->get(route('ventas.create'))->assertStatus(200);
+        $this->get(route('admin.fundos'))->assertStatus(403);
     }
 
     public function test_admin_can_create_user_with_custom_module_overrides(): void
@@ -230,7 +228,7 @@ class RolesAndModulesAccessTest extends TestCase
             'password' => 'secret123',
             'role_id' => $this->roleVentas->id,
             'usar_modulos_personalizados' => '1',
-            'modulos' => ['historial', 'reportes'],
+            'modulos' => ['historial', 'panel'],
         ];
 
         $response = $this->post(route('admin.usuarios.store'), $payload);
@@ -240,7 +238,7 @@ class RolesAndModulesAccessTest extends TestCase
         $this->assertNotNull($user);
         $this->assertTrue($user->hasCustomModules());
         $this->assertTrue($user->canAccessModule('historial'));
-        $this->assertTrue($user->canAccessModule('reportes'));
+        $this->assertTrue($user->canAccessModule('panel'));
         $this->assertFalse($user->canAccessModule('registro'));
     }
 

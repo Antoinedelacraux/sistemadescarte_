@@ -492,7 +492,7 @@
 
     // Mapeo oficial de módulos predeterminados por rol
     var roleDefaultModulos = {
-        'admin': ['panel', 'registro', 'historial', 'reportes', 'admin'],
+        'admin': ['panel', 'registro', 'historial', 'admin'],
         'jefe_fundo': ['panel', 'historial'],
         'registrador': ['registro', 'historial'],
         'analista': ['historial'],
