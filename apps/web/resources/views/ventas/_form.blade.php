@@ -245,7 +245,7 @@
 {{-- BOTÓN SUBMIT --}}
 <div style="margin-top: 1.75rem;">
     <button type="submit" class="btn-submit-sale" id="btn-submit">
-        {{ $isEdit ? 'Guardar Cambios de la Venta' : 'Guardar Venta de Descarte' }}
+        {{ $isEdit ? 'Guardar Cambios de la Venta' : 'Guardar registro' }}
     </button>
 </div>
 

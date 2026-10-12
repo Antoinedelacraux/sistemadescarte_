@@ -273,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         var btnSubmit = document.getElementById('btn-submit');
-        var originalBtnText = btnSubmit ? btnSubmit.textContent : 'Guardar Venta de Descarte';
+        var originalBtnText = btnSubmit ? btnSubmit.textContent : 'Guardar registro';
         if (btnSubmit) {
             btnSubmit.disabled = true;
             btnSubmit.textContent = 'Guardando registro...';
