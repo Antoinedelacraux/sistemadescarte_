@@ -360,6 +360,7 @@ function inicializarSelectorClientes() {
     function renderDropdown(filtro) {
         var query = (filtro || '').trim().toLowerCase();
         dropdownList.innerHTML = '';
+        var valorActual = clienteInput.value.trim().toLowerCase();
 
         var items = clientesData.filter(function(item) {
             if (!query) return true;
@@ -387,27 +388,32 @@ function inicializarSelectorClientes() {
             row.style.borderBottom = '1px solid #f1f5f9';
             row.style.transition = 'background-color 0.12s ease';
 
+            var esSeleccionado = (item.nombre.trim().toLowerCase() === valorActual);
+            if (esSeleccionado) {
+                row.style.backgroundColor = '#f0fdf4';
+            }
+
             row.addEventListener('mouseenter', function() {
                 row.style.backgroundColor = '#f0fdf4';
             });
             row.addEventListener('mouseleave', function() {
-                row.style.backgroundColor = 'transparent';
+                row.style.backgroundColor = esSeleccionado ? '#f0fdf4' : 'transparent';
             });
 
             var nameSpan = document.createElement('span');
-            nameSpan.style.fontWeight = '500';
+            nameSpan.style.fontWeight = esSeleccionado ? '600' : '500';
             nameSpan.style.color = '#0f172a';
             nameSpan.style.fontSize = '0.875rem';
             nameSpan.textContent = item.nombre;
             row.appendChild(nameSpan);
 
-            if (item.ruc) {
-                var rucSpan = document.createElement('span');
-                rucSpan.style.fontSize = '0.75rem';
-                rucSpan.style.color = '#64748b';
-                rucSpan.style.fontFamily = 'monospace';
-                rucSpan.textContent = 'RUC: ' + item.ruc;
-                row.appendChild(rucSpan);
+            if (esSeleccionado) {
+                var checkSpan = document.createElement('span');
+                checkSpan.style.fontSize = '0.8125rem';
+                checkSpan.style.color = '#16a34a';
+                checkSpan.style.fontWeight = 'bold';
+                checkSpan.textContent = '✓';
+                row.appendChild(checkSpan);
             }
 
             row.addEventListener('mousedown', function(e) {
@@ -428,8 +434,12 @@ function inicializarSelectorClientes() {
         actualizarBadge();
     }
 
-    function abrirDropdown() {
-        renderDropdown(clienteInput.value);
+    function abrirDropdown(mostrarTodos) {
+        if (mostrarTodos) {
+            renderDropdown('');
+        } else {
+            renderDropdown(clienteInput.value);
+        }
         dropdown.style.display = 'block';
     }
 
@@ -451,7 +461,11 @@ function inicializarSelectorClientes() {
     }
 
     clienteInput.addEventListener('focus', function() {
-        abrirDropdown();
+        abrirDropdown(true);
+    });
+
+    clienteInput.addEventListener('click', function() {
+        abrirDropdown(true);
     });
 
     clienteInput.addEventListener('input', function() {
@@ -463,11 +477,12 @@ function inicializarSelectorClientes() {
     if (btnToggle) {
         btnToggle.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             if (dropdown.style.display === 'block') {
                 cerrarDropdown();
             } else {
                 clienteInput.focus();
-                abrirDropdown();
+                abrirDropdown(true);
             }
         });
     }
