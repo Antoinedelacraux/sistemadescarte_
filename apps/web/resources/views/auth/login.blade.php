@@ -22,6 +22,11 @@
         ? asset('images/logo.webp')
         : (file_exists(public_path('images/logo.png')) ? asset('images/logo.png') : asset('icons/icon-192.webp'));
 
+    // LOGO BLANCO PARA HERO (Sobre fondo fotográfico panorámico)
+    $loginLogoFullWhite = file_exists(public_path('images/logo-white.webp'))
+        ? asset('images/logo-white.webp')
+        : (file_exists(public_path('images/logo-white.png')) ? asset('images/logo-white.png') : $loginLogoFull);
+
     // 3. LOGO DE LA EMPRESA / EMBLEMA (Transparente, sin fondo)
     $loginLogoEmblem = file_exists(public_path('images/logo-emblem.webp'))
         ? asset('images/logo-emblem.webp')
@@ -39,7 +44,7 @@
     $heroStat1Value = '3';
     $heroStat1Label = 'Fundos oficiales';
 
-    $heroStat2Value = '4';
+    $heroStat2Value = '5';
     $heroStat2Label = 'Roles de acceso';
 
     $heroStat3Value = 'PWA';
@@ -118,7 +123,7 @@
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
-        filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 18px rgba(255, 255, 255, 0.45));
+        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.45));
     }
 
     .hero-brand-divider {
@@ -480,9 +485,9 @@
         <div class="hero-orb hero-orb-1"></div>
         <div class="hero-orb hero-orb-2"></div>
 
-        {{-- Logo Desktop Hero (Sin fondo) --}}
+        {{-- Logo Desktop Hero (Blanco sin fondo sobre foto panorámica) --}}
         <div class="hero-logo">
-            <img src="{{ $loginLogoFull }}" alt="TALSA Grape Farms" class="hero-logo-img">
+            <img src="{{ $loginLogoFullWhite }}" alt="TALSA Grape Farms" class="hero-logo-img">
             <div class="hero-brand-divider"></div>
             <div class="hero-logo-text">
                 <strong>{{ $brandName }}</strong>

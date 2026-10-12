@@ -6,7 +6,7 @@
     {{-- Brand (Emblema transparente de la empresa) --}}
     <a href="{{ route('dashboard') }}" class="sidebar-brand" aria-label="Inicio — TALSA Grape Farms">
         <div class="sidebar-brand-icon" aria-hidden="true">
-            <img src="/images/logo-emblem.webp" alt="TALSA" width="36" height="36" class="sidebar-brand-img">
+            <img src="/images/logo-emblem-white.webp" alt="TALSA" width="36" height="36" class="sidebar-brand-img">
         </div>
         <div class="sidebar-brand-text">
             <strong>TALSA Grape Farms</strong>
