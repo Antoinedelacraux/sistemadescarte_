@@ -114,4 +114,27 @@ class LoginTest extends TestCase
         $response->assertSessionHasErrors('email');
         $this->assertTrue(session()->get('errors')->first('email') !== 'Las credenciales proporcionadas no son válidas o la cuenta está desactivada.');
     }
+
+    public function test_demo_accounts_section_is_hidden_in_production(): void
+    {
+        $this->app['env'] = 'production';
+
+        $response = $this->get('/login');
+
+        $response->assertStatus(200);
+        $response->assertDontSee('Cuentas de demostración');
+        $response->assertDontSee('password123');
+        $response->assertDontSee('general.agritac@fundo.test');
+    }
+
+    public function test_demo_accounts_section_is_visible_in_local(): void
+    {
+        $this->app['env'] = 'local';
+
+        $response = $this->get('/login');
+
+        $response->assertStatus(200);
+        $response->assertSee('Cuentas de demostración');
+        $response->assertSee('password123');
+    }
 }

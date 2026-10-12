@@ -54,10 +54,10 @@ class DatabaseSeeder extends Seeder
             ['name' => 'EL NEGRO', 'nombre_completo' => 'TALSA GRAPE FARMS', 'is_active' => true]
         );
 
-        // 3. Usuarios de prueba con datos ficticios
         // 3. Administrador del Sistema (personalizable vía .env o con credenciales iniciales)
+        $defaultPassword = Hash::make('password123');
         $adminEmail = env('ADMIN_EMAIL', 'admin@fundo.test');
-        $adminPassword = Hash::make(env('ADMIN_PASSWORD', 'password123'));
+        $adminPassword = env('ADMIN_PASSWORD') ? Hash::make(env('ADMIN_PASSWORD')) : $defaultPassword;
         $adminName = env('ADMIN_NAME', 'Administrador General');
 
         $admin = User::firstOrCreate(
@@ -66,47 +66,51 @@ class DatabaseSeeder extends Seeder
         );
         $admin->fundos()->syncWithoutDetaching([$fundoAgritac->id, $fundoProcom->id, $fundoElNegro->id]);
 
-        $generalSofia = User::firstOrCreate(
-            ['email' => 'general.agritac@fundo.test'],
-            ['name' => 'Jefe Fundo Agritac', 'password' => $defaultPassword, 'role_id' => $roleGeneral->id, 'is_active' => true]
-        );
-        $generalSofia->fundos()->syncWithoutDetaching([$fundoAgritac->id]);
+        // Cuentas de demostración adicionales: ÚNICAMENTE en desarrollo/staging/pruebas
+        // En producción el Administrador creará los usuarios reales desde el módulo /admin/usuarios
+        if (!app()->environment('production')) {
+            $generalSofia = User::firstOrCreate(
+                ['email' => 'general.agritac@fundo.test'],
+                ['name' => 'Jefe Fundo Agritac', 'password' => $defaultPassword, 'role_id' => $roleGeneral->id, 'is_active' => true]
+            );
+            $generalSofia->fundos()->syncWithoutDetaching([$fundoAgritac->id]);
 
-        $generalElena = User::firstOrCreate(
-            ['email' => 'general.procom@fundo.test'],
-            ['name' => 'Jefe Fundo Procom', 'password' => $defaultPassword, 'role_id' => $roleGeneral->id, 'is_active' => true]
-        );
-        $generalElena->fundos()->syncWithoutDetaching([$fundoProcom->id]);
+            $generalElena = User::firstOrCreate(
+                ['email' => 'general.procom@fundo.test'],
+                ['name' => 'Jefe Fundo Procom', 'password' => $defaultPassword, 'role_id' => $roleGeneral->id, 'is_active' => true]
+            );
+            $generalElena->fundos()->syncWithoutDetaching([$fundoProcom->id]);
 
-        $individualSofia = User::firstOrCreate(
-            ['email' => 'individual.agritac@fundo.test'],
-            ['name' => 'Registrador Agritac', 'password' => $defaultPassword, 'role_id' => $roleIndividual->id, 'is_active' => true]
-        );
-        $individualSofia->fundos()->syncWithoutDetaching([$fundoAgritac->id]);
+            $individualSofia = User::firstOrCreate(
+                ['email' => 'individual.agritac@fundo.test'],
+                ['name' => 'Registrador Agritac', 'password' => $defaultPassword, 'role_id' => $roleIndividual->id, 'is_active' => true]
+            );
+            $individualSofia->fundos()->syncWithoutDetaching([$fundoAgritac->id]);
 
-        $individualProcom = User::firstOrCreate(
-            ['email' => 'individual.procom@fundo.test'],
-            ['name' => 'Registrador Procom', 'password' => $defaultPassword, 'role_id' => $roleIndividual->id, 'is_active' => true]
-        );
-        $individualProcom->fundos()->syncWithoutDetaching([$fundoProcom->id]);
+            $individualProcom = User::firstOrCreate(
+                ['email' => 'individual.procom@fundo.test'],
+                ['name' => 'Registrador Procom', 'password' => $defaultPassword, 'role_id' => $roleIndividual->id, 'is_active' => true]
+            );
+            $individualProcom->fundos()->syncWithoutDetaching([$fundoProcom->id]);
 
-        $generalElNegro = User::firstOrCreate(
-            ['email' => 'general.elnegro@fundo.test'],
-            ['name' => 'Jefe Fundo El Negro', 'password' => $defaultPassword, 'role_id' => $roleGeneral->id, 'is_active' => true]
-        );
-        $generalElNegro->fundos()->syncWithoutDetaching([$fundoElNegro->id]);
+            $generalElNegro = User::firstOrCreate(
+                ['email' => 'general.elnegro@fundo.test'],
+                ['name' => 'Jefe Fundo El Negro', 'password' => $defaultPassword, 'role_id' => $roleGeneral->id, 'is_active' => true]
+            );
+            $generalElNegro->fundos()->syncWithoutDetaching([$fundoElNegro->id]);
 
-        $individualElNegro = User::firstOrCreate(
-            ['email' => 'individual.elnegro@fundo.test'],
-            ['name' => 'Registrador El Negro', 'password' => $defaultPassword, 'role_id' => $roleIndividual->id, 'is_active' => true]
-        );
-        $individualElNegro->fundos()->syncWithoutDetaching([$fundoElNegro->id]);
+            $individualElNegro = User::firstOrCreate(
+                ['email' => 'individual.elnegro@fundo.test'],
+                ['name' => 'Registrador El Negro', 'password' => $defaultPassword, 'role_id' => $roleIndividual->id, 'is_active' => true]
+            );
+            $individualElNegro->fundos()->syncWithoutDetaching([$fundoElNegro->id]);
 
-        $analista = User::firstOrCreate(
-            ['email' => 'analista@fundo.test'],
-            ['name' => 'Analista Central', 'password' => $defaultPassword, 'role_id' => $roleAnalista->id, 'is_active' => true]
-        );
-        $analista->fundos()->syncWithoutDetaching([$fundoAgritac->id, $fundoProcom->id, $fundoElNegro->id]);
+            $analista = User::firstOrCreate(
+                ['email' => 'analista@fundo.test'],
+                ['name' => 'Analista Central', 'password' => $defaultPassword, 'role_id' => $roleAnalista->id, 'is_active' => true]
+            );
+            $analista->fundos()->syncWithoutDetaching([$fundoAgritac->id, $fundoProcom->id, $fundoElNegro->id]);
+        }
 
         // 4. Catálogos: Lotes exactos por Fundo
         $lotesAgritac = [

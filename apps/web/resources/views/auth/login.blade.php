@@ -604,7 +604,8 @@
             </button>
         </form>
 
-        {{-- Cuentas demo --}}
+        {{-- Cuentas demo: Se muestran ÚNICAMENTE en local/staging/pruebas. En producción (APP_ENV=production) se ocultan automáticamente. --}}
+        @unless(app()->environment('production'))
         <div class="demo-section" aria-label="Cuentas de prueba para demostración">
             <div class="demo-header">
                 <span aria-hidden="true">🧪</span>
@@ -664,9 +665,11 @@
                 </table>
             </div>
         </div>
+        @endunless
     </div>
 </div>
 
+@unless(app()->environment('production'))
 <script>
 function fillLogin(email) {
     var emailField    = document.getElementById('email');
@@ -676,4 +679,5 @@ function fillLogin(email) {
     if (emailField)    { emailField.focus(); }
 }
 </script>
+@endunless
 @endsection
