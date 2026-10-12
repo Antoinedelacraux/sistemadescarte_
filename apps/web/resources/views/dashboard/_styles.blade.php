@@ -301,6 +301,27 @@
         color: var(--txt-secondary);
     }
 
+    .table-view-fundo-filter {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    @media (max-width: 640px) {
+        .table-view-control-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.75rem;
+        }
+        .table-view-fundo-filter {
+            margin-left: 0 !important;
+            width: 100%;
+            justify-content: space-between;
+        }
+        .table-view-fundo-filter select {
+            flex: 1;
+        }
+    }
+
     .section-header-box {
         display: flex;
         align-items: center;

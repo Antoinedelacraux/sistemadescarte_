@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Fundo;
 use App\Models\VentaDescarte;
 use App\Services\ExcelExporter;
 use Illuminate\Http\Request;
@@ -17,11 +18,21 @@ class DashboardController extends Controller
     {
         $user = $request->user()->load(['role', 'fundos']);
 
+        $totalFundosActivos = Fundo::where('is_active', true)->count();
+        $tieneAccesoATodos = $user->isAdmin() || $user->isAnalista() || ($totalFundosActivos > 0 && $user->fundos->count() >= $totalFundosActivos);
+        $fundosFiltro = $tieneAccesoATodos ? Fundo::where('is_active', true)->orderBy('name')->get() : collect();
+        $fundoSeleccionadoId = $request->input('fundo_id', '');
+
         // FundoScope aplica automáticamente el aislamiento de fundos para roles 'general' e 'individual'
-        $ventas = VentaDescarte::with(['fundo', 'creator'])
+        $ventasQuery = VentaDescarte::with(['fundo', 'creator'])
             ->activos()
-            ->latest('fecha_produccion')
-            ->get();
+            ->latest('fecha_produccion');
+
+        if ($tieneAccesoATodos && !empty($fundoSeleccionadoId) && $fundoSeleccionadoId !== 'todos') {
+            $ventasQuery->where('fundo_id', $fundoSeleccionadoId);
+        }
+
+        $ventas = $ventasQuery->get();
 
         $totalGeneralKg = (float) $ventas->sum('kilogramos');
         $totalGeneralVenta = (float) $ventas->sum('valor_venta');
@@ -172,6 +183,9 @@ class DashboardController extends Controller
             'user' => $user,
             'role' => $user->role,
             'fundos' => $user->fundos,
+            'tieneAccesoATodos' => $tieneAccesoATodos,
+            'fundosFiltro' => $fundosFiltro,
+            'fundoSeleccionadoId' => $fundoSeleccionadoId,
             'ventas' => $ventas,
             'segregacionMotivos' => $segregacionMotivos,
             'clientesAgrupados' => $clientesAgrupados,

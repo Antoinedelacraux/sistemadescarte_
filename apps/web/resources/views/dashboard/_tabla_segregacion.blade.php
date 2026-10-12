@@ -12,7 +12,7 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <a href="{{ route('dashboard.exportar', ['tabla' => 'motivos']) }}" class="btn btn-secondary btn-sm" title="Descargar este resumen por tipo y descarte a Excel (.xlsx)">
+                    <a href="{{ route('dashboard.exportar', array_filter(['tabla' => 'motivos', 'fundo_id' => $fundoSeleccionadoId ?? null])) }}" class="btn btn-secondary btn-sm" title="Descargar este resumen por tipo y descarte a Excel (.xlsx)">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         Exportar Excel
                     </a>
@@ -25,7 +25,6 @@
                 <thead>
                     <tr>
                         <th scope="col" style="min-width: 180px;">Origen / Tipo</th>
-                        <th scope="col" class="text-center" style="width: 90px;">Envíos</th>
                         <th scope="col" class="text-right" style="width: 140px;">Kilogramos (kg)</th>
                         <th scope="col" style="width: 130px;">% Volumen</th>
                         <th scope="col" class="text-right" style="width: 130px;">Precio Prom.</th>
@@ -38,7 +37,7 @@
 
                         {{-- Fila agrupada de cabecera --}}
                         <tr style="background: #f8fafc; font-weight: 700;">
-                            <td colspan="6" style="padding-top: 0.75rem; padding-bottom: 0.4rem;">
+                            <td colspan="5" style="padding-top: 0.75rem; padding-bottom: 0.4rem;">
                                 <span class="motivo-pill motivo-pill-{{ $meta['badge'] }}">
                                     <span>{{ $meta['titulo'] }}</span>
                                 </span>
@@ -52,9 +51,6 @@
                                 <span style="color: var(--txt-primary); font-weight: 500;">
                                     &bull; {{ $tipoRow['tipo_descarte'] }}
                                 </span>
-                            </td>
-                            <td class="text-center" style="color: var(--txt-muted);">
-                                {{ $tipoRow['count'] }}
                             </td>
                             <td class="text-right" style="font-weight: 600; font-family: monospace;">
                                 {{ number_format($tipoRow['kilogramos'], 2) }}
@@ -79,7 +75,6 @@
                             <td style="padding-left: 1.5rem;">
                                 <strong>Subtotal {{ $meta['titulo'] }}</strong>
                             </td>
-                            <td class="text-center"><strong>{{ $mInfo['count'] }}</strong></td>
                             <td class="text-right" style="font-family: monospace;">
                                 <strong>{{ number_format($mInfo['total_kg'], 2) }}</strong>
                             </td>
@@ -98,7 +93,6 @@
                     {{-- Total General --}}
                     <tr class="row-grand-total">
                         <td>TOTAL GENERAL</td>
-                        <td class="text-center">{{ $ventas->count() }}</td>
                         <td class="text-right" style="font-family: monospace;">{{ number_format($totalGeneralKg, 2) }} kg</td>
                         <td>100.00%</td>
                         <td class="text-right" style="font-family: monospace;">

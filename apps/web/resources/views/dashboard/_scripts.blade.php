@@ -133,12 +133,27 @@ function filtrarTablaClientes() {
     }
 }
 
+function filtrarDashboardPorFundo(fundoId) {
+    var url = new URL(window.location.href);
+    if (fundoId) {
+        url.searchParams.set('fundo_id', fundoId);
+    } else {
+        url.searchParams.delete('fundo_id');
+    }
+    window.location.href = url.toString();
+}
+
 function exportarClientesExcel() {
     var q = (document.getElementById('client-search-input')?.value || '').trim();
     var motivo = typeof filtroMotivoActual !== 'undefined' ? filtroMotivoActual : 'todos';
+    var fundoSelect = document.getElementById('fundo_filter_select');
+    var fundoId = fundoSelect ? fundoSelect.value : '{{ $fundoSeleccionadoId ?? "" }}';
     var url = "{{ route('dashboard.exportar') }}?tabla=clientes";
     if (motivo && motivo !== 'todos') {
         url += '&motivo=' + encodeURIComponent(motivo);
+    }
+    if (fundoId) {
+        url += '&fundo_id=' + encodeURIComponent(fundoId);
     }
     if (q !== '') {
         url += '&buscar=' + encodeURIComponent(q);
@@ -160,22 +175,15 @@ function cambiarVistaTabla(vista, btn) {
     var secClientes = document.getElementById('sec-clientes-container');
     var secRecientes = document.getElementById('sec-recientes-container');
 
-    if (vista === 'all') {
-        if (secMotivos) secMotivos.style.display = '';
-        if (secClientes) secClientes.style.display = '';
-        if (secRecientes) secRecientes.style.display = '';
-    } else if (vista === 'motivos') {
-        if (secMotivos) secMotivos.style.display = '';
-        if (secClientes) secClientes.style.display = 'none';
-        if (secRecientes) secRecientes.style.display = 'none';
-    } else if (vista === 'clientes') {
+    if (vista === 'clientes') {
         if (secMotivos) secMotivos.style.display = 'none';
         if (secClientes) secClientes.style.display = '';
         if (secRecientes) secRecientes.style.display = 'none';
-    } else if (vista === 'recientes') {
-        if (secMotivos) secMotivos.style.display = 'none';
+    } else {
+        // Por defecto: 'motivos' (Por Tipo y Descarte)
+        if (secMotivos) secMotivos.style.display = '';
         if (secClientes) secClientes.style.display = 'none';
-        if (secRecientes) secRecientes.style.display = '';
+        if (secRecientes) secRecientes.style.display = 'none';
     }
 
     try {
@@ -183,13 +191,19 @@ function cambiarVistaTabla(vista, btn) {
     } catch(e) {}
 }
 
-// Restaurar preferencia previa de visualización
+// Restaurar preferencia previa de visualización (solo 'motivos' o 'clientes')
 (function() {
     try {
-        var guardada = localStorage.getItem('fundo_dashboard_tab_view') || 'all';
+        var guardada = localStorage.getItem('fundo_dashboard_tab_view') || 'motivos';
+        if (guardada !== 'motivos' && guardada !== 'clientes') {
+            guardada = 'motivos';
+        }
         var targetBtn = document.querySelector('.view-pill[data-view="' + guardada + '"]');
         if (targetBtn) {
             cambiarVistaTabla(guardada, targetBtn);
+        } else {
+            var defaultBtn = document.querySelector('.view-pill[data-view="motivos"]');
+            if (defaultBtn) cambiarVistaTabla('motivos', defaultBtn);
         }
     } catch(e) {}
 })();

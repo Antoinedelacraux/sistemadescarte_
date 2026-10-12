@@ -143,4 +143,45 @@ class ResponsiveYCustomSelectTest extends TestCase
         // El motor initCustomSelect debe tener salvaguarda estricta de tagName === "SELECT"
         $response->assertSee("nativeSelect.tagName !== 'SELECT'", false);
     }
+
+    public function test_dashboard_renders_only_motivos_and_clientes_in_table_switcher(): void
+    {
+        $response = $this->actingAs($this->adminUser)->get(route('dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Por Tipo y Descarte');
+        $response->assertSee('Por Cliente');
+        $response->assertDontSee('Todas las Tablas');
+        $response->assertDontSee('data-view="recientes"', false);
+        $response->assertDontSee('data-view="all"', false);
+    }
+
+    public function test_dashboard_tabla_segregacion_does_not_contain_envios_column(): void
+    {
+        $response = $this->actingAs($this->adminUser)->get(route('dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertDontSee('<th scope="col" class="text-center" style="width: 90px;">Envíos</th>', false);
+    }
+
+    public function test_dashboard_renders_fundo_filter_when_user_has_all_fundos_access(): void
+    {
+        $fundoProcom = Fundo::where('code', 'PROCOM')->first();
+        if (!$fundoProcom) {
+            $fundoProcom = Fundo::create([
+                'name' => 'PROCOM',
+                'nombre_completo' => 'AGRICOLA PROCOM SAC',
+                'code' => 'PROCOM',
+                'is_active' => true,
+            ]);
+        }
+
+        $response = $this->actingAs($this->adminUser)->get(route('dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertSee('id="fundo_filter_select"', false);
+        $response->assertSee('Todos los Fundos');
+        $response->assertSee($this->fundo->name);
+        $response->assertSee($fundoProcom->name);
+    }
 }
