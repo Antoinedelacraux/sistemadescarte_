@@ -241,6 +241,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!fundoId || !fechaProduccion || !loteId || !motivo || !tipoDescarte) {
             window.FundoOffline.showToast('Por favor completa todos los campos requeridos (*).', 'danger');
+            if (!loteId) {
+                var lTrigger = document.getElementById('lote_id')?.closest('.custom-select-wrap')?.querySelector('.custom-select-trigger');
+                if (lTrigger) lTrigger.focus();
+            } else if (!motivo) {
+                var mTrigger = document.getElementById('motivo')?.closest('.custom-select-wrap')?.querySelector('.custom-select-trigger');
+                if (mTrigger) mTrigger.focus();
+            } else if (!tipoDescarte) {
+                var tTrigger = document.getElementById('tipo_descarte')?.closest('.custom-select-wrap')?.querySelector('.custom-select-trigger');
+                if (tTrigger) tTrigger.focus();
+            }
             return;
         }
 
@@ -314,7 +324,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // 3. Limpiar y resetear Clasificación del Descarte (Motivo y Tipo de Descarte)
             var motivoSelect = document.getElementById('motivo');
             if (motivoSelect) {
-                motivoSelect.value = 'Campo';
+                motivoSelect.value = '';
                 if (motivoSelect.refreshCustomSelect) {
                     motivoSelect.refreshCustomSelect();
                 }
@@ -322,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             var tipoDescarteSelect = document.getElementById('tipo_descarte');
             if (tipoDescarteSelect) {
-                tipoDescarteSelect.value = 'Racimos';
+                tipoDescarteSelect.value = '';
                 if (tipoDescarteSelect.refreshCustomSelect) {
                     tipoDescarteSelect.refreshCustomSelect();
                 }

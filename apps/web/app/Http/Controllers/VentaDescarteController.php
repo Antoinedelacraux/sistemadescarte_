@@ -426,6 +426,8 @@ class VentaDescarteController extends Controller
             'fundo_id.in' => 'No tienes permisos para registrar en el fundo seleccionado.',
             'lote_id.required' => 'El lote es obligatorio.',
             'lote_id.exists' => 'El lote seleccionado no pertenece al fundo indicado.',
+            'motivo.required' => 'El motivo de descarte es obligatorio.',
+            'tipo_descarte.required' => 'El tipo de descarte es obligatorio.',
             'cuartel_manual.required' => 'El cuartel es obligatorio cuando el motivo es Cosecha Nacional.',
             'precio.required' => 'El precio por kilogramo es obligatorio.',
             'kilogramos.required' => 'Los kilogramos totales son obligatorios.',

@@ -90,7 +90,8 @@
             Motivo <span class="required">*</span>
         </label>
         <select name="motivo" id="motivo" class="form-control" required data-custom-select="true" onchange="actualizarOpcionesTipoDescarte()">
-            <option value="Campo" {{ old('motivo', $venta?->motivo ?? 'Campo') == 'Campo' ? 'selected' : '' }}>Campo</option>
+            <option value="">-- Seleccionar Motivo --</option>
+            <option value="Campo" {{ old('motivo', $venta?->motivo) == 'Campo' ? 'selected' : '' }}>Campo</option>
             <option value="Packing" {{ old('motivo', $venta?->motivo) == 'Packing' ? 'selected' : '' }}>Packing</option>
             <option value="Cosecha Nacional" {{ old('motivo', $venta?->motivo) == 'Cosecha Nacional' ? 'selected' : '' }}>Cosecha Nacional</option>
         </select>
@@ -102,7 +103,8 @@
             Tipo de Descarte <span class="required">*</span>
         </label>
         <select name="tipo_descarte" id="tipo_descarte" class="form-control" required data-custom-select="true">
-            <option value="Racimos" {{ old('tipo_descarte', $venta?->tipo_descarte ?? 'Racimos') == 'Racimos' ? 'selected' : '' }}>Racimos</option>
+            <option value="">-- Seleccionar Tipo de Descarte --</option>
+            <option value="Racimos" {{ old('tipo_descarte', $venta?->tipo_descarte) == 'Racimos' ? 'selected' : '' }}>Racimos</option>
             <option value="Racimos con plaga" {{ old('tipo_descarte', $venta?->tipo_descarte) == 'Racimos con plaga' ? 'selected' : '' }}>Racimos con plaga</option>
             <option value="Granos" {{ old('tipo_descarte', $venta?->tipo_descarte) == 'Granos' ? 'selected' : '' }}>Granos</option>
         </select>
@@ -280,11 +282,11 @@ function actualizarOpcionesTipoDescarte() {
         cuartelInput.removeAttribute('required');
     }
 
-    selectTipo.innerHTML = '';
+    selectTipo.innerHTML = '<option value="">-- Seleccionar Tipo de Descarte --</option>';
     var opciones = [];
     if (motivo === 'Packing' || motivo === 'Cosecha Nacional') {
         opciones = ['Racimos', 'Granos'];
-    } else {
+    } else if (motivo === 'Campo') {
         opciones = ['Racimos', 'Racimos con plaga', 'Granos'];
     }
 
