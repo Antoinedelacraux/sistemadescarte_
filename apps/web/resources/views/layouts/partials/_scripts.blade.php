@@ -431,6 +431,25 @@
         deferredPrompt = null;
     });
 
+    // Limpieza de páginas HTML en caché al cerrar sesión para garantizar que el siguiente usuario
+    // vea su rol y módulos de forma instantánea y real sin arrastrar vistas de la sesión anterior
+    document.addEventListener('submit', function(e) {
+        var form = e.target;
+        if (form && form.action && form.action.includes('/logout')) {
+            if ('caches' in window) {
+                caches.keys().then(function(keys) {
+                    keys.forEach(function(key) {
+                        caches.open(key).then(function(c) {
+                            c.delete('/');
+                            c.delete('/ventas/registrar');
+                            c.delete('/ventas');
+                        });
+                    });
+                });
+            }
+        }
+    });
+
     /* ============================================================
      * MOTOR DE LISTAS DESPLEGABLES CONTROLADAS (CUSTOM SELECT)
      * Control estricto de altura (max-height: 200px) y scroll fluido

@@ -1,11 +1,8 @@
-// Service Worker — Sistema Fundo PWA (v8)
+// Service Worker — Sistema Fundo PWA (v9)
 // Soporte offline-first, alta velocidad de navegación y sincronización de ventas
-const CACHE_NAME = 'fundo-pwa-v8';
+const CACHE_NAME = 'fundo-pwa-v9';
 
 const PRECACHE_ASSETS = [
-    '/',
-    '/ventas/registrar',
-    '/ventas',
     '/manifest.json',
     '/offline.html',
     '/apple-touch-icon.png',
@@ -68,25 +65,10 @@ self.addEventListener('fetch', (event) => {
     }
 
     // 1. Peticiones de Navegación (Páginas HTML completas)
+    // Estrategia: Network-First con Fallback a Cache Offline
+    // Garantiza que al cambiar de cuenta o rol el usuario SIEMPRE vea su vista real y fresca al instante.
+    // Solo si el dispositivo no tiene red (offline en campo) recurre a la versión almacenada en caché.
     if (req.mode === 'navigate') {
-        // En la pantalla crítica de registro en campo: Cache-First instantáneo + actualización en segundo plano
-        if (url.pathname === '/ventas/registrar') {
-            event.respondWith(
-                caches.match('/ventas/registrar').then((cached) => {
-                    const networkFetch = fetch(req).then((networkResponse) => {
-                        if (networkResponse && networkResponse.status === 200) {
-                            const copy = networkResponse.clone();
-                            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-                        }
-                        return networkResponse;
-                    }).catch(() => null);
-
-                    return cached || networkFetch;
-                })
-            );
-            return;
-        }
-
         event.respondWith(
             fetch(req)
                 .then((networkResponse) => {
@@ -97,15 +79,20 @@ self.addEventListener('fetch', (event) => {
                     return networkResponse;
                 })
                 .catch(async () => {
-                    // Si no hay red, buscar la página solicitada en caché
+                    // Si no hay red (offline en campo), buscar la página solicitada en caché
                     const cachedPage = await caches.match(req);
                     if (cachedPage) {
                         return cachedPage;
                     }
-                    // Si el usuario intentaba ir a registrar venta, servir el formulario precacheado
+                    // Si el usuario intentaba ir a registrar venta offline, servir el formulario en caché
                     if (url.pathname.includes('/ventas/registrar')) {
                         const cachedForm = await caches.match('/ventas/registrar');
                         if (cachedForm) return cachedForm;
+                    }
+                    // Si intentaba ver el historial offline
+                    if (url.pathname.includes('/ventas')) {
+                        const cachedList = await caches.match('/ventas');
+                        if (cachedList) return cachedList;
                     }
                     // Si no estaba en caché, mostrar la pantalla de contingencia offline institucional
                     const offlinePage = await caches.match('/offline.html');
