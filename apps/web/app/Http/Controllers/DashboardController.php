@@ -283,27 +283,9 @@ class DashboardController extends Controller
             ];
         }
 
-        $totalKg = (float) $ventas->sum('kilogramos');
-        $totalVenta = (float) $ventas->sum('valor_venta');
-        $precioProm = $totalKg > 0 ? round($totalVenta / $totalKg, 2) : 0.0;
-
-        $totalRow = [
-            'TOTAL GENERAL (' . $ventas->count() . ' envíos)',
-            '',
-            '',
-            '',
-            '',
-            '',
-            $precioProm,
-            $totalKg,
-            $totalVenta,
-            '',
-        ];
-
         $filename = 'ultimos_envios_' . date('Y-m-d_His') . '.xlsx';
         $xlsxBinary = ExcelExporter::generate($headers, $dataRows, 'Envíos Registrados', [
             'columnTypes' => $columnTypes,
-            'totalRow' => $totalRow,
         ]);
 
         return response($xlsxBinary, 200, [
@@ -372,30 +354,9 @@ class DashboardController extends Controller
             ];
         }
 
-        $totalKg = (float) $ventas->sum('kilogramos');
-        $totalVenta = (float) $ventas->sum('valor_venta');
-        $precioProm = $totalKg > 0 ? round($totalVenta / $totalKg, 2) : 0.0;
-
-        $totalRow = [
-            'TOTAL GENERAL (' . $ventas->count() . ' registros)',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            $totalKg,
-            $precioProm,
-            $totalVenta,
-            (int) $ventas->sum('jabas'),
-            '',
-        ];
-
         $filename = 'panel_control_completo_' . date('Y-m-d_His') . '.xlsx';
         $xlsxBinary = ExcelExporter::generate($headers, $dataRows, 'Resumen General', [
             'columnTypes' => $columnTypes,
-            'totalRow' => $totalRow,
         ]);
 
         return response($xlsxBinary, 200, [
