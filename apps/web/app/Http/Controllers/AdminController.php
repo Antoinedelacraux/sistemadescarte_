@@ -206,8 +206,9 @@ class AdminController extends Controller implements HasMiddleware
         $usuarios = User::with(['role', 'fundos'])->orderBy('name')->paginate(15)->withQueryString();
         $roles = Role::all();
         $fundos = Fundo::where('is_active', true)->get();
+        $modulos = User::MODULOS;
 
-        return view('admin.usuarios.index', compact('usuarios', 'roles', 'fundos'));
+        return view('admin.usuarios.index', compact('usuarios', 'roles', 'fundos', 'modulos'));
     }
 
     /**
@@ -222,6 +223,9 @@ class AdminController extends Controller implements HasMiddleware
             'role_id' => ['required', 'exists:roles,id'],
             'fundos' => ['nullable', 'array'],
             'fundos.*' => ['exists:fundos,id'],
+            'usar_modulos_personalizados' => ['nullable', 'boolean'],
+            'modulos' => ['nullable', 'array'],
+            'modulos.*' => ['string', Rule::in(array_keys(User::MODULOS))],
         ], [
             'name.required' => 'El nombre completo es obligatorio.',
             'email.required' => 'El correo electrónico es obligatorio.',
@@ -231,12 +235,19 @@ class AdminController extends Controller implements HasMiddleware
             'role_id.required' => 'Debes asignar un rol al usuario.',
         ]);
 
+        $role = Role::find($validated['role_id']);
+        $modulosPersonalizados = null;
+        if ($request->boolean('usar_modulos_personalizados')) {
+            $modulosPersonalizados = $request->input('modulos', []);
+        }
+
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role_id' => $validated['role_id'],
             'is_active' => true,
+            'modulos_personalizados' => $modulosPersonalizados,
         ]);
 
         if (!empty($validated['fundos'])) {
@@ -269,6 +280,9 @@ class AdminController extends Controller implements HasMiddleware
             'password' => ['nullable', 'string', 'min:6'],
             'fundos' => ['nullable', 'array'],
             'fundos.*' => ['exists:fundos,id'],
+            'usar_modulos_personalizados' => ['nullable', 'boolean'],
+            'modulos' => ['nullable', 'array'],
+            'modulos.*' => ['string', Rule::in(array_keys(User::MODULOS))],
         ], [
             'name.required' => 'El nombre completo es obligatorio.',
             'email.required' => 'El correo electrónico es obligatorio.',
@@ -280,6 +294,12 @@ class AdminController extends Controller implements HasMiddleware
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->role_id = $validated['role_id'];
+
+        if ($request->boolean('usar_modulos_personalizados')) {
+            $user->modulos_personalizados = $request->input('modulos', []);
+        } else {
+            $user->modulos_personalizados = null;
+        }
 
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);

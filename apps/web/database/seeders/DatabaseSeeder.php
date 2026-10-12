@@ -17,25 +17,30 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Roles del sistema
+        // 1. Roles del sistema (5 roles oficiales)
         $roleAdmin = Role::firstOrCreate(
             ['name' => Role::ADMIN],
             ['display_name' => 'Administrador', 'description' => 'Acceso total y configuración del sistema']
         );
 
-        $roleGeneral = Role::firstOrCreate(
-            ['name' => Role::GENERAL],
-            ['display_name' => 'General (Jefe de Fundo)', 'description' => 'Visualización de todos los registros de su fundo asignado']
+        $roleJefeFundo = Role::firstOrCreate(
+            ['name' => Role::JEFE_FUNDO],
+            ['display_name' => 'Jefe de fundo', 'description' => 'Visualización de información de todos los fundos (Panel e Historial)']
         );
 
-        $roleIndividual = Role::firstOrCreate(
-            ['name' => Role::INDIVIDUAL],
-            ['display_name' => 'Individual (Pesador / Registrador)', 'description' => 'Registro y visualización en su fundo asignado']
+        $roleRegistrador = Role::firstOrCreate(
+            ['name' => Role::REGISTRADOR],
+            ['display_name' => 'Registrador', 'description' => 'Registro de ventas e historial en sus fundos asignados']
         );
 
         $roleAnalista = Role::firstOrCreate(
             ['name' => Role::ANALISTA],
-            ['display_name' => 'Analista', 'description' => 'Visualización y exportación de datos de todos los fundos']
+            ['display_name' => 'Analista', 'description' => 'Visualización de información de todos los fundos (Historial)']
+        );
+
+        $roleVentas = Role::firstOrCreate(
+            ['name' => Role::VENTAS],
+            ['display_name' => 'Ventas', 'description' => 'Visualización de información de todos los fundos (Historial)']
         );
 
         // 2. Fundos Reales del Sistema
@@ -54,7 +59,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'EL NEGRO', 'nombre_completo' => 'TALSA GRAPE FARMS', 'is_active' => true]
         );
 
-        // 3. Administrador del Sistema (personalizable vía .env o con credenciales iniciales)
+        // 3. Administrador del Sistema
         $defaultPassword = Hash::make('password123');
         $adminEmail = env('ADMIN_EMAIL', 'admin@fundo.test');
         $adminPassword = env('ADMIN_PASSWORD') ? Hash::make(env('ADMIN_PASSWORD')) : $defaultPassword;
@@ -66,50 +71,32 @@ class DatabaseSeeder extends Seeder
         );
         $admin->fundos()->syncWithoutDetaching([$fundoAgritac->id, $fundoProcom->id, $fundoElNegro->id]);
 
-        // Cuentas de demostración adicionales: ÚNICAMENTE en desarrollo/staging/pruebas
-        // En producción el Administrador creará los usuarios reales desde el módulo /admin/usuarios
+        // Cuentas limpias por rol para entorno de pruebas/desarrollo
         if (!app()->environment('production')) {
-            $generalSofia = User::firstOrCreate(
-                ['email' => 'general.agritac@fundo.test'],
-                ['name' => 'Jefe Fundo Agritac', 'password' => $defaultPassword, 'role_id' => $roleGeneral->id, 'is_active' => true]
+            // Cuenta Jefe de Fundo
+            User::firstOrCreate(
+                ['email' => 'jefe@fundo.test'],
+                ['name' => 'Jefe de Fundo Central', 'password' => $defaultPassword, 'role_id' => $roleJefeFundo->id, 'is_active' => true]
             );
-            $generalSofia->fundos()->syncWithoutDetaching([$fundoAgritac->id]);
 
-            $generalElena = User::firstOrCreate(
-                ['email' => 'general.procom@fundo.test'],
-                ['name' => 'Jefe Fundo Procom', 'password' => $defaultPassword, 'role_id' => $roleGeneral->id, 'is_active' => true]
+            // Cuenta Registrador (asignado al fundo AGRITAC y PROCOM)
+            $registrador = User::firstOrCreate(
+                ['email' => 'registrador@fundo.test'],
+                ['name' => 'Registrador Agritac', 'password' => $defaultPassword, 'role_id' => $roleRegistrador->id, 'is_active' => true]
             );
-            $generalElena->fundos()->syncWithoutDetaching([$fundoProcom->id]);
+            $registrador->fundos()->syncWithoutDetaching([$fundoAgritac->id, $fundoProcom->id]);
 
-            $individualSofia = User::firstOrCreate(
-                ['email' => 'individual.agritac@fundo.test'],
-                ['name' => 'Registrador Agritac', 'password' => $defaultPassword, 'role_id' => $roleIndividual->id, 'is_active' => true]
-            );
-            $individualSofia->fundos()->syncWithoutDetaching([$fundoAgritac->id]);
-
-            $individualProcom = User::firstOrCreate(
-                ['email' => 'individual.procom@fundo.test'],
-                ['name' => 'Registrador Procom', 'password' => $defaultPassword, 'role_id' => $roleIndividual->id, 'is_active' => true]
-            );
-            $individualProcom->fundos()->syncWithoutDetaching([$fundoProcom->id]);
-
-            $generalElNegro = User::firstOrCreate(
-                ['email' => 'general.elnegro@fundo.test'],
-                ['name' => 'Jefe Fundo El Negro', 'password' => $defaultPassword, 'role_id' => $roleGeneral->id, 'is_active' => true]
-            );
-            $generalElNegro->fundos()->syncWithoutDetaching([$fundoElNegro->id]);
-
-            $individualElNegro = User::firstOrCreate(
-                ['email' => 'individual.elnegro@fundo.test'],
-                ['name' => 'Registrador El Negro', 'password' => $defaultPassword, 'role_id' => $roleIndividual->id, 'is_active' => true]
-            );
-            $individualElNegro->fundos()->syncWithoutDetaching([$fundoElNegro->id]);
-
-            $analista = User::firstOrCreate(
+            // Cuenta Analista
+            User::firstOrCreate(
                 ['email' => 'analista@fundo.test'],
                 ['name' => 'Analista Central', 'password' => $defaultPassword, 'role_id' => $roleAnalista->id, 'is_active' => true]
             );
-            $analista->fundos()->syncWithoutDetaching([$fundoAgritac->id, $fundoProcom->id, $fundoElNegro->id]);
+
+            // Cuenta Ventas
+            User::firstOrCreate(
+                ['email' => 'ventas@fundo.test'],
+                ['name' => 'Ventas Comercial', 'password' => $defaultPassword, 'role_id' => $roleVentas->id, 'is_active' => true]
+            );
         }
 
         // 4. Catálogos: Lotes exactos por Fundo
@@ -141,9 +128,9 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // 5. Inyectar ventas de prueba coherentes (SOLO en desarrollo y pruebas, nunca en producción)
-        if (!app()->environment('production')) {
-            $this->call(Inyectar50VentasHipoteticasSeeder::class);
-        }
+        // 5. Inyectar ventas de prueba coherentes (desactivado: el usuario solicitó ventas en cero)
+        // if (!app()->environment('production')) {
+        //     $this->call(Inyectar50VentasHipoteticasSeeder::class);
+        // }
     }
 }

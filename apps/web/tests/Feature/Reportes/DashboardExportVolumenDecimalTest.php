@@ -23,8 +23,8 @@ class DashboardExportVolumenDecimalTest extends TestCase
         parent::setUp();
 
         $role = Role::firstOrCreate(
-            ['name' => Role::ANALISTA],
-            ['display_name' => 'Analista']
+            ['name' => Role::JEFE_FUNDO],
+            ['display_name' => 'Jefe de fundo']
         );
 
         $this->fundo = Fundo::where('code', 'AGRITAC')->first() ?? Fundo::create([

@@ -226,7 +226,7 @@
             <a href="{{ route('ventas.index') }}" class="btn btn-secondary btn-sm">
                 &larr; Volver al Historial
             </a>
-            @if(Auth::user()->isAdmin() || Auth::user()->isGeneral() || Auth::user()->isIndividual())
+            @if(Auth::user()->canAccessModule('registro') || Auth::user()->isAdmin())
                 <a href="{{ route('ventas.edit', $venta) }}" class="btn btn-primary btn-sm">
                     ✏️ Editar Registro
                 </a>

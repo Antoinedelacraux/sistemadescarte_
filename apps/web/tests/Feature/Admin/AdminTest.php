@@ -20,15 +20,15 @@ class AdminTest extends TestCase
     {
         parent::setUp();
 
-        $roleAdmin = Role::create([
-            'name' => Role::ADMIN,
-            'display_name' => 'Administrador',
-        ]);
+        $roleAdmin = Role::firstOrCreate(
+            ['name' => Role::ADMIN],
+            ['display_name' => 'Administrador']
+        );
 
-        $roleIndividual = Role::create([
-            'name' => Role::INDIVIDUAL,
-            'display_name' => 'Individual',
-        ]);
+        $roleIndividual = Role::firstOrCreate(
+            ['name' => Role::REGISTRADOR],
+            ['display_name' => 'Registrador']
+        );
 
         $this->adminUser = User::create([
             'name' => 'Admin Test',
@@ -94,7 +94,7 @@ class AdminTest extends TestCase
             'name' => 'Nuevo Operador',
             'email' => 'operador.nuevo@fundo.test',
             'password' => 'secret123',
-            'role_id' => Role::where('name', Role::INDIVIDUAL)->first()->id,
+            'role_id' => Role::where('name', Role::REGISTRADOR)->first()->id,
             'fundos' => [$fundo->id],
         ];
 

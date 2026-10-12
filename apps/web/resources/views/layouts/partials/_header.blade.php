@@ -61,7 +61,7 @@
         {{-- Chip de fundo activo --}}
         @php
             $fundosHeader = Auth::user()->fundos;
-            $isGlobal = Auth::user()->isAdmin() || Auth::user()->isAnalista();
+            $isGlobal = Auth::user()->hasAccessToAllFundos();
         @endphp
         @if($isGlobal)
             <div class="fundo-chip" title="Acceso a todos los fundos">

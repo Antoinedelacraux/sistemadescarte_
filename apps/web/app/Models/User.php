@@ -14,12 +14,21 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    public const MODULOS = [
+        'panel' => 'Panel de Control',
+        'registro' => 'Registrar Venta',
+        'historial' => 'Historial de Ventas',
+        'reportes' => 'Reportes y Exportación',
+        'admin' => 'Administración',
+    ];
+
     protected $fillable = [
         'name',
         'email',
         'password',
         'role_id',
         'is_active',
+        'modulos_personalizados',
     ];
 
     protected $hidden = [
@@ -33,6 +42,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'modulos_personalizados' => 'array',
         ];
     }
 
@@ -51,14 +61,14 @@ class User extends Authenticatable
         return $this->role?->name === Role::ADMIN;
     }
 
-    public function isGeneral(): bool
+    public function isJefeFundo(): bool
     {
-        return $this->role?->name === Role::GENERAL;
+        return in_array($this->role?->name, [Role::JEFE_FUNDO, 'general'], true);
     }
 
-    public function isIndividual(): bool
+    public function isRegistrador(): bool
     {
-        return $this->role?->name === Role::INDIVIDUAL;
+        return in_array($this->role?->name, [Role::REGISTRADOR, 'individual'], true);
     }
 
     public function isAnalista(): bool
@@ -66,12 +76,83 @@ class User extends Authenticatable
         return $this->role?->name === Role::ANALISTA;
     }
 
+    public function isVentas(): bool
+    {
+        return $this->role?->name === Role::VENTAS;
+    }
+
+    // Métodos alias para retrocompatibilidad
+    public function isGeneral(): bool
+    {
+        return $this->isJefeFundo();
+    }
+
+    public function isIndividual(): bool
+    {
+        return $this->isRegistrador();
+    }
+
+    /**
+     * Determina si el usuario tiene acceso irrestricto a todos los fundos del sistema.
+     * Roles con acceso a todos los fundos: Administrador, Jefe de fundo, Analista, Ventas.
+     * El Registrador está restringido a sus fundos asignados.
+     */
+    public function hasAccessToAllFundos(): bool
+    {
+        return $this->isAdmin() || $this->isJefeFundo() || $this->isAnalista() || $this->isVentas();
+    }
+
     public function hasFundoAccess(int $fundoId): bool
     {
-        if ($this->isAdmin() || $this->isAnalista()) {
+        if ($this->hasAccessToAllFundos()) {
             return true;
         }
 
         return $this->fundos()->where('fundos.id', $fundoId)->exists();
+    }
+
+    /**
+     * Módulos predeterminados asignados a cada rol por defecto.
+     */
+    public static function getModulosPorDefecto(?string $roleName): array
+    {
+        return match ($roleName) {
+            Role::ADMIN => ['panel', 'registro', 'historial', 'reportes', 'admin'],
+            Role::JEFE_FUNDO, 'general' => ['panel', 'historial'],
+            Role::REGISTRADOR, 'individual' => ['registro', 'historial'],
+            Role::ANALISTA => ['historial'],
+            Role::VENTAS => ['historial'],
+            default => [],
+        };
+    }
+
+    /**
+     * Retorna la lista de módulos habilitados para este usuario concreto.
+     * Si el usuario tiene una configuración personalizada (caso excepcional), se usa esa.
+     * De lo contrario, se aplican los módulos por defecto de su rol.
+     */
+    public function getModulosHabilitados(): array
+    {
+        if (is_array($this->modulos_personalizados)) {
+            return $this->modulos_personalizados;
+        }
+
+        return self::getModulosPorDefecto($this->role?->name);
+    }
+
+    /**
+     * Verifica si el usuario tiene acceso a un módulo específico.
+     */
+    public function canAccessModule(string $modulo): bool
+    {
+        return in_array($modulo, $this->getModulosHabilitados(), true);
+    }
+
+    /**
+     * Indica si el usuario cuenta con una excepción personalizada en sus módulos.
+     */
+    public function hasCustomModules(): bool
+    {
+        return is_array($this->modulos_personalizados);
     }
 }

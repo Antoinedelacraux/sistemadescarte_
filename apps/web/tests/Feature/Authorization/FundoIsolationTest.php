@@ -29,11 +29,12 @@ class FundoIsolationTest extends TestCase
     {
         parent::setUp();
 
-        // 1. Crear Roles
-        $roleAdmin = Role::create(['name' => Role::ADMIN, 'display_name' => 'Admin']);
-        $roleGeneral = Role::create(['name' => Role::GENERAL, 'display_name' => 'General']);
-        $roleIndividual = Role::create(['name' => Role::INDIVIDUAL, 'display_name' => 'Individual']);
-        $roleAnalista = Role::create(['name' => Role::ANALISTA, 'display_name' => 'Analista']);
+        // 1. Crear Roles Oficiales
+        $roleAdmin = Role::firstOrCreate(['name' => Role::ADMIN], ['display_name' => 'Administrador']);
+        $roleJefeFundo = Role::firstOrCreate(['name' => Role::JEFE_FUNDO], ['display_name' => 'Jefe de fundo']);
+        $roleRegistrador = Role::firstOrCreate(['name' => Role::REGISTRADOR], ['display_name' => 'Registrador']);
+        $roleAnalista = Role::firstOrCreate(['name' => Role::ANALISTA], ['display_name' => 'Analista']);
+        $roleVentas = Role::firstOrCreate(['name' => Role::VENTAS], ['display_name' => 'Ventas']);
 
         // 2. Crear Fundos
         $this->fundoA = Fundo::create(['name' => 'Fundo Santa Sofía', 'code' => 'FSOFIA', 'is_active' => true]);
@@ -43,15 +44,14 @@ class FundoIsolationTest extends TestCase
         $pass = Hash::make('secret');
         $this->admin = User::create(['name' => 'Admin', 'email' => 'admin@test.com', 'password' => $pass, 'role_id' => $roleAdmin->id, 'is_active' => true]);
         $this->analista = User::create(['name' => 'Analista', 'email' => 'analista@test.com', 'password' => $pass, 'role_id' => $roleAnalista->id, 'is_active' => true]);
+        $this->ventas = User::create(['name' => 'Ventas', 'email' => 'ventas@test.com', 'password' => $pass, 'role_id' => $roleVentas->id, 'is_active' => true]);
 
-        $this->generalA = User::create(['name' => 'Jefe A', 'email' => 'generalA@test.com', 'password' => $pass, 'role_id' => $roleGeneral->id, 'is_active' => true]);
-        $this->generalA->fundos()->attach($this->fundoA->id);
+        // Jefe de fundo puede ver información de todos los fundos
+        $this->jefeFundo = User::create(['name' => 'Jefe Fundo', 'email' => 'jefe@test.com', 'password' => $pass, 'role_id' => $roleJefeFundo->id, 'is_active' => true]);
 
-        $this->generalB = User::create(['name' => 'Jefe B', 'email' => 'generalB@test.com', 'password' => $pass, 'role_id' => $roleGeneral->id, 'is_active' => true]);
-        $this->generalB->fundos()->attach($this->fundoB->id);
-
-        $this->individualA = User::create(['name' => 'Operador A', 'email' => 'indA@test.com', 'password' => $pass, 'role_id' => $roleIndividual->id, 'is_active' => true]);
-        $this->individualA->fundos()->attach($this->fundoA->id);
+        // Registrador se le asigna fundo específico
+        $this->registradorA = User::create(['name' => 'Registrador A', 'email' => 'regA@test.com', 'password' => $pass, 'role_id' => $roleRegistrador->id, 'is_active' => true]);
+        $this->registradorA->fundos()->attach($this->fundoA->id);
 
         // 4. Crear Registros en cada fundo
         $this->ventaA = VentaDescarte::withoutGlobalScopes()->create([
@@ -63,7 +63,7 @@ class FundoIsolationTest extends TestCase
             'precio' => 1.50,
             'kilogramos' => 100.00,
             'valor_venta' => 150.00,
-            'created_by' => $this->individualA->id,
+            'created_by' => $this->registradorA->id,
         ]);
 
         $this->ventaB = VentaDescarte::withoutGlobalScopes()->create([
@@ -75,7 +75,7 @@ class FundoIsolationTest extends TestCase
             'precio' => 2.00,
             'kilogramos' => 50.00,
             'valor_venta' => 100.00,
-            'created_by' => $this->generalB->id,
+            'created_by' => $this->admin->id,
         ]);
     }
 
@@ -101,10 +101,32 @@ class FundoIsolationTest extends TestCase
         $this->assertTrue($records->contains('id', $this->ventaB->id));
     }
 
-    public function test_general_user_can_only_access_records_from_assigned_fundo(): void
+    public function test_ventas_can_access_records_from_all_fundos(): void
     {
-        // Jefe de Fundo A
-        $this->actingAs($this->generalA);
+        $this->actingAs($this->ventas);
+
+        $records = VentaDescarte::all();
+
+        $this->assertCount(2, $records);
+        $this->assertTrue($records->contains('id', $this->ventaA->id));
+        $this->assertTrue($records->contains('id', $this->ventaB->id));
+    }
+
+    public function test_jefe_fundo_can_access_records_from_all_fundos(): void
+    {
+        $this->actingAs($this->jefeFundo);
+
+        $records = VentaDescarte::all();
+
+        $this->assertCount(2, $records);
+        $this->assertTrue($records->contains('id', $this->ventaA->id));
+        $this->assertTrue($records->contains('id', $this->ventaB->id));
+    }
+
+    public function test_registrador_user_can_only_access_records_from_assigned_fundo(): void
+    {
+        // Registrador asignado a Fundo A
+        $this->actingAs($this->registradorA);
 
         $records = VentaDescarte::all();
 
@@ -117,45 +139,21 @@ class FundoIsolationTest extends TestCase
         $this->assertNull($foreignRecord);
     }
 
-    public function test_individual_user_can_only_access_records_from_assigned_fundo(): void
-    {
-        // Operador de Fundo A
-        $this->actingAs($this->individualA);
-
-        $records = VentaDescarte::all();
-
-        $this->assertCount(1, $records);
-        $this->assertTrue($records->contains('id', $this->ventaA->id));
-        $this->assertFalse($records->contains('id', $this->ventaB->id));
-
-        // Intento directo de buscar por ID de Fundo B devuelve null
-        $foreignRecord = VentaDescarte::find($this->ventaB->id);
-        $this->assertNull($foreignRecord);
-    }
-
-    public function test_dashboard_renders_only_authorized_fundo_records(): void
-    {
-        $this->actingAs($this->generalA);
-
-        $response = $this->get('/');
-
-        $response->assertStatus(200);
-        $response->assertSee('Fundo Santa Sofía');
-        $response->assertDontSee('Fundo Santa Elena');
-    }
-
     public function test_user_has_fundo_access_helper_method(): void
     {
         $this->assertTrue($this->admin->hasFundoAccess($this->fundoA->id));
         $this->assertTrue($this->admin->hasFundoAccess($this->fundoB->id));
 
+        $this->assertTrue($this->jefeFundo->hasFundoAccess($this->fundoA->id));
+        $this->assertTrue($this->jefeFundo->hasFundoAccess($this->fundoB->id));
+
         $this->assertTrue($this->analista->hasFundoAccess($this->fundoA->id));
         $this->assertTrue($this->analista->hasFundoAccess($this->fundoB->id));
 
-        $this->assertTrue($this->generalA->hasFundoAccess($this->fundoA->id));
-        $this->assertFalse($this->generalA->hasFundoAccess($this->fundoB->id));
+        $this->assertTrue($this->ventas->hasFundoAccess($this->fundoA->id));
+        $this->assertTrue($this->ventas->hasFundoAccess($this->fundoB->id));
 
-        $this->assertTrue($this->individualA->hasFundoAccess($this->fundoA->id));
-        $this->assertFalse($this->individualA->hasFundoAccess($this->fundoB->id));
+        $this->assertTrue($this->registradorA->hasFundoAccess($this->fundoA->id));
+        $this->assertFalse($this->registradorA->hasFundoAccess($this->fundoB->id));
     }
 }

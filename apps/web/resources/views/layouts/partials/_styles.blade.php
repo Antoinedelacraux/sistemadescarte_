@@ -652,10 +652,13 @@
             border-radius: var(--radius-full);
         }
 
-        .role-badge-admin      { background: #fee2e2; color: #991b1b; }
-        .role-badge-general    { background: #dbeafe; color: #1e40af; }
-        .role-badge-individual { background: #d1fae5; color: #065f46; }
-        .role-badge-analista   { background: #fef3c7; color: #92400e; }
+        .role-badge-admin       { background: #fee2e2; color: #991b1b; }
+        .role-badge-jefe_fundo   { background: #dbeafe; color: #1e40af; }
+        .role-badge-registrador  { background: #d1fae5; color: #065f46; }
+        .role-badge-analista    { background: #fef3c7; color: #92400e; }
+        .role-badge-ventas      { background: #f3e8ff; color: #6b21a8; }
+        .role-badge-general     { background: #dbeafe; color: #1e40af; }
+        .role-badge-individual  { background: #d1fae5; color: #065f46; }
 
         /* Dropdown menú usuario */
         .user-dropdown {

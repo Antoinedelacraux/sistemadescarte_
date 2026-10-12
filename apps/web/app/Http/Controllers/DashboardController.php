@@ -14,12 +14,29 @@ class DashboardController extends Controller
     /**
      * Show the application dashboard with segregated tables by motive and by client.
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|\Illuminate\Http\RedirectResponse
     {
         $user = $request->user()->load(['role', 'fundos']);
 
+        // Si el usuario no tiene acceso al módulo panel, redirigir a su primer módulo habilitado
+        if (!$user->canAccessModule('panel')) {
+            if ($user->canAccessModule('registro')) {
+                return redirect()->route('ventas.create');
+            }
+            if ($user->canAccessModule('historial')) {
+                return redirect()->route('ventas.index');
+            }
+            if ($user->canAccessModule('reportes')) {
+                return redirect()->route('reportes.index');
+            }
+            if ($user->canAccessModule('admin')) {
+                return redirect()->route('admin.fundos');
+            }
+            abort(403, 'No tienes autorización para acceder a los módulos del sistema.');
+        }
+
         $totalFundosActivos = Fundo::where('is_active', true)->count();
-        $tieneAccesoATodos = $user->isAdmin() || $user->isAnalista() || ($totalFundosActivos > 0 && $user->fundos->count() >= $totalFundosActivos);
+        $tieneAccesoATodos = $user->hasAccessToAllFundos() || ($totalFundosActivos > 0 && $user->fundos->count() >= $totalFundosActivos);
         $fundosFiltro = $tieneAccesoATodos ? Fundo::where('is_active', true)->orderBy('name')->get() : collect();
         $fundoSeleccionadoId = $request->input('fundo_id', '');
 

@@ -29,15 +29,15 @@ class VentaDescarteTest extends TestCase
     {
         parent::setUp();
 
-        $roleIndividual = Role::create([
-            'name' => Role::INDIVIDUAL,
-            'display_name' => 'Individual',
-        ]);
+        $roleIndividual = Role::firstOrCreate(
+            ['name' => Role::INDIVIDUAL],
+            ['display_name' => 'Individual']
+        );
 
-        $roleGeneral = Role::create([
-            'name' => Role::GENERAL,
-            'display_name' => 'General',
-        ]);
+        $roleGeneral = Role::firstOrCreate(
+            ['name' => Role::GENERAL],
+            ['display_name' => 'General']
+        );
 
         $this->fundoSofia = Fundo::create([
             'name' => 'Fundo Santa Sofía',
@@ -74,7 +74,7 @@ class VentaDescarteTest extends TestCase
             'name' => 'Jefe Elena',
             'email' => 'jefe.elena@fundo.test',
             'password' => Hash::make('password123'),
-            'role_id' => $roleGeneral->id,
+            'role_id' => $roleIndividual->id,
             'is_active' => true,
         ]);
         $this->generalElenaUser->fundos()->attach([$this->fundoElena->id]);

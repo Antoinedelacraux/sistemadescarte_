@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
 @section('title', 'Administración de Usuarios')
-@section('page-title', 'Administración de Usuarios y Roles')
+@section('page-title', 'Administración de Usuarios, Roles y Permisos')
 
 @section('styles')
 <style>
-    .fundos-checklist {
+    .fundos-checklist, .modulos-checklist {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
         gap: 0.75rem;
@@ -13,6 +13,35 @@
         background: var(--clr-surface-50);
         border-radius: var(--radius-md);
         border: 1px solid var(--brd-base);
+    }
+
+    .modulos-checklist {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        background: #ffffff;
+    }
+
+    .badge-modulo {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.7rem;
+        font-weight: 600;
+        border-radius: 4px;
+        background: #f1f5f9;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+    }
+
+    .badge-excepcion {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.68rem;
+        font-weight: 700;
+        border-radius: 4px;
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fde68a;
     }
 
     .user-submit-btn {
@@ -130,7 +159,7 @@
     .modal-sheet {
         background: #ffffff;
         border-radius: var(--radius-xl);
-        max-width: 560px;
+        max-width: 620px;
         width: 100%;
         max-height: 90vh;
         display: flex;
@@ -180,13 +209,13 @@
 <div>
     <div style="margin-bottom: 1.5rem;">
         <h1 style="font-size: clamp(1.2rem, 5vw, 1.5rem); font-weight: 700; color: var(--txt-primary);">Usuarios del Sistema</h1>
-        <p style="font-size: clamp(0.75rem, 2.8vw, 0.875rem); color: var(--txt-muted);">Creación de cuentas, asignación de roles (Administrador, General, Individual, Analista) y control de fundos</p>
+        <p style="font-size: clamp(0.75rem, 2.8vw, 0.875rem); color: var(--txt-muted);">Gestión de cuentas, roles oficiales (Jefe de fundo, Registrador, Analista, Ventas, Administrador) y habilitación/deshabilitación modular por usuario</p>
     </div>
 
     {{-- Formulario para registrar usuario --}}
     <details class="card" style="margin-bottom: 1.5rem;" {{ $errors->any() ? 'open' : '' }}>
         <summary style="font-size: var(--text-sm); font-weight: 700; color: var(--txt-primary); cursor: pointer; padding: 0.25rem 0;">
-            Crear Nuevo Usuario
+            ➕ Crear Nuevo Usuario
         </summary>
 
         <form action="{{ route('admin.usuarios.store') }}" method="POST" style="margin-top: 1.25rem; border-top: 1px solid var(--brd-base); padding-top: 1.25rem;">
@@ -194,26 +223,26 @@
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
                 <div class="form-group">
-                    <label for="name" class="form-label text-xs">Nombre Completo <span class="required">*</span></label>
-                    <input type="text" name="name" id="name" class="form-control" placeholder="Ej. Pedro Morales" required value="{{ old('name') }}">
+                    <label for="create_name" class="form-label text-xs">Nombre Completo <span class="required">*</span></label>
+                    <input type="text" name="name" id="create_name" class="form-control" placeholder="Ej. Pedro Morales" required value="{{ old('name') }}">
                 </div>
 
                 <div class="form-group">
-                    <label for="email" class="form-label text-xs">Correo Electrónico <span class="required">*</span></label>
-                    <input type="email" name="email" id="email" class="form-control" placeholder="pedro@fundo.test" required value="{{ old('email') }}">
+                    <label for="create_email" class="form-label text-xs">Correo Electrónico <span class="required">*</span></label>
+                    <input type="email" name="email" id="create_email" class="form-control" placeholder="pedro@fundo.test" required value="{{ old('email') }}">
                 </div>
 
                 <div class="form-group">
-                    <label for="password" class="form-label text-xs">Contraseña Inicial <span class="required">*</span></label>
-                    <input type="password" name="password" id="password" class="form-control" placeholder="Mínimo 6 caracteres" required>
+                    <label for="create_password" class="form-label text-xs">Contraseña Inicial <span class="required">*</span></label>
+                    <input type="password" name="password" id="create_password" class="form-control" placeholder="Mínimo 6 caracteres" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="role_id" class="form-label text-xs">Rol de Acceso <span class="required">*</span></label>
-                    <select name="role_id" id="role_id" class="form-control" required>
+                    <label for="create_role_id" class="form-label text-xs">Rol de Acceso <span class="required">*</span></label>
+                    <select name="role_id" id="create_role_id" class="form-control" required onchange="onRoleChangedCreate()">
                         <option value="">-- Seleccionar Rol --</option>
                         @foreach($roles as $role)
-                            <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
+                            <option value="{{ $role->id }}" data-role-name="{{ $role->name }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
                                 {{ $role->display_name }}
                             </option>
                         @endforeach
@@ -223,12 +252,40 @@
 
             {{-- Asignación de Fundos --}}
             <div style="margin-top: 0.5rem;">
-                <label class="form-label text-xs" style="font-weight: 700;">Fundos asignados a este usuario:</label>
+                <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.35rem;">
+                    <label class="form-label text-xs" style="font-weight: 700; margin: 0;">Fundos Asignados:</label>
+                    <span style="font-size: 0.72rem; color: var(--txt-muted);">(Los roles Administrador, Jefe de fundo, Analista y Ventas tienen acceso total a todos los fundos automáticamente)</span>
+                </div>
                 <div class="fundos-checklist">
                     @foreach($fundos as $fundo)
                         <label style="display: flex; align-items: center; gap: 0.5rem; font-size: var(--text-sm); cursor: pointer;">
                             <input type="checkbox" name="fundos[]" value="{{ $fundo->id }}" style="width: 16px; height: 16px; accent-color: var(--clr-primary-600);">
                             <span>{{ $fundo->name }}</span>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Personalización de Módulos (Casos Excepcionales) --}}
+            <div style="margin-top: 1rem; padding: 1rem; background: var(--clr-surface-50); border: 1px solid var(--brd-base); border-radius: var(--radius-md);">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+                    <div>
+                        <strong style="font-size: var(--text-sm); color: var(--txt-primary);">Módulos de Acceso Habilitados</strong>
+                        <p style="font-size: 0.75rem; color: var(--txt-muted); margin: 0.2rem 0 0;">
+                            Los módulos se configuran por defecto según el rol. Active la opción para habilitar o deshabilitar módulos en casos excepcionales.
+                        </p>
+                    </div>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: var(--text-xs); font-weight: 600; cursor: pointer; background: white; padding: 0.35rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--brd-base);">
+                        <input type="checkbox" name="usar_modulos_personalizados" id="create_usar_modulos_personalizados" value="1" onchange="togglePersonalizacionModulos('create')">
+                        <span>Habilitar configuración excepcional</span>
+                    </label>
+                </div>
+
+                <div id="create_modulos_container" class="modulos-checklist" style="opacity: 0.85;">
+                    @foreach($modulos as $modKey => $modLabel)
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: var(--text-sm); cursor: pointer;">
+                            <input type="checkbox" name="modulos[]" value="{{ $modKey }}" class="create-modulo-cb" style="width: 16px; height: 16px; accent-color: var(--clr-primary-600);">
+                            <span>{{ $modLabel }}</span>
                         </label>
                     @endforeach
                 </div>
@@ -245,13 +302,14 @@
     {{-- Tabla de usuarios --}}
     <div class="card" style="padding: 0; overflow: hidden;">
         <div class="table-wrapper" style="border: none; border-radius: 0;">
-            <table class="data-table" style="min-width: 620px;">
+            <table class="data-table" style="min-width: 780px;">
                 <thead>
                     <tr>
                         <th>Nombre</th>
                         <th>Correo</th>
                         <th>Rol</th>
                         <th>Fundos Asignados</th>
+                        <th>Módulos Habilitados</th>
                         <th style="text-align: center;">Estado</th>
                         <th style="text-align: center;">Acciones</th>
                     </tr>
@@ -267,7 +325,7 @@
                             </span>
                         </td>
                         <td>
-                            @if($user->isAdmin() || $user->isAnalista())
+                            @if($user->hasAccessToAllFundos())
                                 <span class="text-xs" style="color: var(--clr-primary-700); font-weight: 600;">Todos los fundos</span>
                             @elseif($user->fundos->isEmpty())
                                 <span class="text-xs text-muted">Ningún fundo asignado</span>
@@ -277,9 +335,19 @@
                                 @endforeach
                             @endif
                         </td>
+                        <td>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center;">
+                                @foreach($user->getModulosHabilitados() as $mKey)
+                                    <span class="badge-modulo">{{ \App\Models\User::MODULOS[$mKey] ?? $mKey }}</span>
+                                @endforeach
+                                @if($user->hasCustomModules())
+                                    <span class="badge-excepcion" title="Usuario con permisos personalizados para casos excepcionales">⚙️ Excepción</span>
+                                @endif
+                            </div>
+                        </td>
                         <td style="text-align: center;">
                             @if($user->is_active)
-                                <span class="role-badge role-badge-individual">Activo</span>
+                                <span class="role-badge role-badge-registrador">Activo</span>
                             @else
                                 <span class="role-badge role-badge-admin">Inactivo</span>
                             @endif
@@ -291,7 +359,7 @@
                                         class="btn-action-icon btn-action-edit" 
                                         title="Editar Usuario" 
                                         aria-label="Editar {{ $user->name }}"
-                                        onclick='abrirModalEditarUsuario({{ $user->id }}, @json($user->name), @json($user->email), {{ $user->role_id }}, @json($user->fundos->pluck("id")) )'>
+                                        onclick='abrirModalEditarUsuario({{ $user->id }}, @json($user->name), @json($user->email), {{ $user->role_id }}, @json($user->fundos->pluck("id")), {{ $user->hasCustomModules() ? "true" : "false" }}, @json($user->getModulosHabilitados()) )'>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
 
@@ -361,9 +429,9 @@
 
                     <div class="form-group">
                         <label for="edit_user_role_id" class="form-label text-xs">Rol de Acceso <span class="required">*</span></label>
-                        <select name="role_id" id="edit_user_role_id" class="form-control" required>
+                        <select name="role_id" id="edit_user_role_id" class="form-control" required onchange="onRoleChangedEdit()">
                             @foreach($roles as $role)
-                                <option value="{{ $role->id }}">{{ $role->display_name }}</option>
+                                <option value="{{ $role->id }}" data-role-name="{{ $role->name }}">{{ $role->display_name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -373,13 +441,37 @@
                         <input type="password" name="password" id="edit_user_password" class="form-control" placeholder="Dejar en blanco para conservar la actual">
                     </div>
 
-                    <div class="form-group" style="margin-bottom: 0;">
+                    {{-- Fundos asignados --}}
+                    <div class="form-group" style="margin-bottom: 1rem;">
                         <label class="form-label text-xs" style="font-weight: 700;">Fundos Asignados:</label>
                         <div class="fundos-checklist">
                             @foreach($fundos as $fundo)
                                 <label style="display: flex; align-items: center; gap: 0.5rem; font-size: var(--text-sm); cursor: pointer;">
                                     <input type="checkbox" name="fundos[]" value="{{ $fundo->id }}" class="edit-fundo-checkbox" style="width: 16px; height: 16px; accent-color: var(--clr-primary-600);">
                                     <span>{{ $fundo->name }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Personalización de Módulos (Casos Excepcionales) en Modal --}}
+                    <div style="padding: 0.85rem; background: var(--clr-surface-50); border: 1px solid var(--brd-base); border-radius: var(--radius-md);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.65rem;">
+                            <div>
+                                <strong style="font-size: var(--text-xs); color: var(--txt-primary);">Módulos Habilitados</strong>
+                                <div style="font-size: 0.72rem; color: var(--txt-muted);">Excepciones específicas para este usuario</div>
+                            </div>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: var(--text-xs); font-weight: 600; cursor: pointer; background: white; padding: 0.25rem 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--brd-base);">
+                                <input type="checkbox" name="usar_modulos_personalizados" id="edit_usar_modulos_personalizados" value="1" onchange="togglePersonalizacionModulos('edit')">
+                                <span>Personalizar (Excepción)</span>
+                            </label>
+                        </div>
+
+                        <div id="edit_modulos_container" class="modulos-checklist">
+                            @foreach($modulos as $modKey => $modLabel)
+                                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: var(--text-xs); cursor: pointer;">
+                                    <input type="checkbox" name="modulos[]" value="{{ $modKey }}" class="edit-modulo-cb" style="width: 16px; height: 16px; accent-color: var(--clr-primary-600);">
+                                    <span>{{ $modLabel }}</span>
                                 </label>
                             @endforeach
                         </div>
@@ -404,19 +496,99 @@
     var inputEmail = document.getElementById('edit_user_email');
     var selectRole = document.getElementById('edit_user_role_id');
     var inputPassword = document.getElementById('edit_user_password');
-    var checkboxes = document.querySelectorAll('.edit-fundo-checkbox');
+    var checkboxesFundos = document.querySelectorAll('.edit-fundo-checkbox');
 
-    window.abrirModalEditarUsuario = function(id, name, email, roleId, fundosIds) {
+    // Mapeo oficial de módulos predeterminados por rol
+    var roleDefaultModulos = {
+        'admin': ['panel', 'registro', 'historial', 'reportes', 'admin'],
+        'jefe_fundo': ['panel', 'historial'],
+        'registrador': ['registro', 'historial'],
+        'analista': ['historial'],
+        'ventas': ['historial'],
+        'general': ['panel', 'historial'],
+        'individual': ['registro', 'historial']
+    };
+
+    function getSelectedRoleName(selectElem) {
+        if (!selectElem || selectElem.selectedIndex < 0) return '';
+        var option = selectElem.options[selectElem.selectedIndex];
+        return option ? (option.getAttribute('data-role-name') || '') : '';
+    }
+
+    function aplicarModulosPorDefecto(context, roleName) {
+        var defaults = roleDefaultModulos[roleName] || [];
+        var selector = context === 'create' ? '.create-modulo-cb' : '.edit-modulo-cb';
+        var cbs = document.querySelectorAll(selector);
+        cbs.forEach(function(cb) {
+            cb.checked = defaults.indexOf(cb.value) !== -1;
+        });
+    }
+
+    window.togglePersonalizacionModulos = function(context) {
+        var toggleId = context === 'create' ? 'create_usar_modulos_personalizados' : 'edit_usar_modulos_personalizados';
+        var containerId = context === 'create' ? 'create_modulos_container' : 'edit_modulos_container';
+        var selectId = context === 'create' ? 'create_role_id' : 'edit_user_role_id';
+
+        var toggle = document.getElementById(toggleId);
+        var container = document.getElementById(containerId);
+        var selectElem = document.getElementById(selectId);
+
+        if (!toggle.checked) {
+            // Si desactiva personalización, restablecer a los módulos por defecto del rol seleccionado
+            var roleName = getSelectedRoleName(selectElem);
+            aplicarModulosPorDefecto(context, roleName);
+            container.style.pointerEvents = 'none';
+            container.style.opacity = '0.7';
+        } else {
+            container.style.pointerEvents = 'auto';
+            container.style.opacity = '1';
+        }
+    };
+
+    window.onRoleChangedCreate = function() {
+        var selectElem = document.getElementById('create_role_id');
+        var toggle = document.getElementById('create_usar_modulos_personalizados');
+        var roleName = getSelectedRoleName(selectElem);
+
+        if (!toggle.checked) {
+            aplicarModulosPorDefecto('create', roleName);
+        }
+    };
+
+    window.onRoleChangedEdit = function() {
+        var selectElem = document.getElementById('edit_user_role_id');
+        var toggle = document.getElementById('edit_usar_modulos_personalizados');
+        var roleName = getSelectedRoleName(selectElem);
+
+        if (!toggle.checked) {
+            aplicarModulosPorDefecto('edit', roleName);
+        }
+    };
+
+    window.abrirModalEditarUsuario = function(id, name, email, roleId, fundosIds, hasCustom, modulosActivos) {
         form.action = '{{ url("/administracion/usuarios") }}/' + id;
         inputName.value = name;
         inputEmail.value = email;
         selectRole.value = roleId;
         inputPassword.value = '';
 
+        // Sincronizar fundos
         var assigned = Array.isArray(fundosIds) ? fundosIds : [];
-        checkboxes.forEach(function(cb) {
+        checkboxesFundos.forEach(function(cb) {
             cb.checked = assigned.indexOf(parseInt(cb.value, 10)) !== -1;
         });
+
+        // Sincronizar módulos
+        var toggle = document.getElementById('edit_usar_modulos_personalizados');
+        toggle.checked = !!hasCustom;
+
+        var activeMods = Array.isArray(modulosActivos) ? modulosActivos : [];
+        var cbsModulos = document.querySelectorAll('.edit-modulo-cb');
+        cbsModulos.forEach(function(cb) {
+            cb.checked = activeMods.indexOf(cb.value) !== -1;
+        });
+
+        window.togglePersonalizacionModulos('edit');
 
         modal.classList.add('is-open');
     };
@@ -430,6 +602,9 @@
             cerrarModalEditarUsuario();
         }
     };
+
+    // Inicializar estado create
+    window.togglePersonalizacionModulos('create');
 })();
 </script>
 @endsection

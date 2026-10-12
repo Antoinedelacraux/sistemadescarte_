@@ -2,7 +2,7 @@
 <form method="GET" action="{{ route('ventas.index') }}" class="filter-card" role="search" aria-label="Filtros de historial">
     <div class="filter-grid">
         {{-- Filtro por Fundo --}}
-        @if(Auth::user()->isAdmin() || Auth::user()->isAnalista() || $fundos->count() > 1)
+        @if(Auth::user()->hasAccessToAllFundos() || $fundos->count() > 1)
         <div class="form-group" style="margin-bottom: 0;">
             <label for="fundo_id" class="form-label text-xs">Fundo</label>
             <select name="fundo_id" id="fundo_id" class="form-control" style="height: 38px;">

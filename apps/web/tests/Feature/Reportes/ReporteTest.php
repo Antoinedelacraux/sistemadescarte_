@@ -22,10 +22,10 @@ class ReporteTest extends TestCase
     {
         parent::setUp();
 
-        $roleAnalista = Role::create([
-            'name' => Role::ANALISTA,
-            'display_name' => 'Analista',
-        ]);
+        $roleAnalista = Role::firstOrCreate(
+            ['name' => Role::ANALISTA],
+            ['display_name' => 'Analista']
+        );
 
         $this->fundoSofia = Fundo::create([
             'name' => 'Fundo Santa Sofía',
@@ -39,6 +39,7 @@ class ReporteTest extends TestCase
             'password' => Hash::make('password123'),
             'role_id' => $roleAnalista->id,
             'is_active' => true,
+            'modulos_personalizados' => ['historial', 'reportes'],
         ]);
         $this->analistaUser->fundos()->attach([$this->fundoSofia->id]);
 

@@ -18,10 +18,10 @@ class LoginTest extends TestCase
     {
         parent::setUp();
 
-        $role = Role::create([
-            'name' => Role::INDIVIDUAL,
-            'display_name' => 'Individual',
-        ]);
+        $role = Role::firstOrCreate(
+            ['name' => Role::INDIVIDUAL],
+            ['display_name' => 'Individual']
+        );
 
         $this->user = User::create([
             'name' => 'Usuario Prueba',

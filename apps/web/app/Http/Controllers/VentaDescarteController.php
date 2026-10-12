@@ -234,7 +234,7 @@ class VentaDescarteController extends Controller
         $ventas = $query->paginate(15)->withQueryString();
 
         // Fundos disponibles para el selector de filtros
-        $fundos = $user->isAdmin() || $user->isAnalista()
+        $fundos = $user->hasAccessToAllFundos()
             ? Fundo::where('is_active', true)->get()
             : $user->fundos()->where('is_active', true)->get();
 
@@ -257,7 +257,7 @@ class VentaDescarteController extends Controller
     {
         $user = Auth::user();
 
-        $fundos = $user->isAdmin() || $user->isAnalista()
+        $fundos = $user->hasAccessToAllFundos()
             ? Fundo::where('is_active', true)->with('lotes.cuarteles')->get()
             : $user->fundos()->where('is_active', true)->with('lotes.cuarteles')->get();
 
@@ -284,7 +284,7 @@ class VentaDescarteController extends Controller
         }
 
         // 1. Validar fondos accesibles
-        $fundosAccesibles = ($user->isAdmin() || $user->isAnalista())
+        $fundosAccesibles = $user->hasAccessToAllFundos()
             ? Fundo::pluck('id')->toArray()
             : $user->fundos()->pluck('fundos.id')->toArray();
 
@@ -390,7 +390,7 @@ class VentaDescarteController extends Controller
     {
         $user = Auth::user();
 
-        $fundos = $user->isAdmin() || $user->isAnalista()
+        $fundos = $user->hasAccessToAllFundos()
             ? Fundo::where('is_active', true)->with('lotes.cuarteles')->get()
             : $user->fundos()->where('is_active', true)->with('lotes.cuarteles')->get();
 
@@ -415,7 +415,7 @@ class VentaDescarteController extends Controller
             }
         }
 
-        $fundosAccesibles = ($user->isAdmin() || $user->isAnalista())
+        $fundosAccesibles = $user->hasAccessToAllFundos()
             ? Fundo::pluck('id')->toArray()
             : $user->fundos()->pluck('fundos.id')->toArray();
 
@@ -498,7 +498,7 @@ class VentaDescarteController extends Controller
         $user = Auth::user();
 
         // Validar acceso al fundo
-        if (!$user->isAdmin() && !$user->isAnalista()) {
+        if (!$user->hasAccessToAllFundos()) {
             if (!$user->fundos()->where('fundos.id', $fundoId)->exists()) {
                 return response()->json(['error' => 'No autorizado'], 403);
             }
@@ -518,7 +518,7 @@ class VentaDescarteController extends Controller
     public function anular(Request $request, VentaDescarte $venta): RedirectResponse
     {
         $user = Auth::user();
-        if (!$user->isAdmin() && !$user->isGeneral() && !$user->isIndividual()) {
+        if (!$user->canAccessModule('registro') && !$user->isAdmin()) {
             abort(403, 'No tienes permisos para anular registros de venta.');
         }
 
@@ -542,7 +542,7 @@ class VentaDescarteController extends Controller
     public function reactivar(VentaDescarte $venta): RedirectResponse
     {
         $user = Auth::user();
-        if (!$user->isAdmin() && !$user->isGeneral() && !$user->isIndividual()) {
+        if (!$user->canAccessModule('registro') && !$user->isAdmin()) {
             abort(403, 'No tienes permisos para reactivar registros.');
         }
 
@@ -564,7 +564,7 @@ class VentaDescarteController extends Controller
     public function destroy(VentaDescarte $venta): RedirectResponse
     {
         $user = Auth::user();
-        if (!$user->isAdmin() && !$user->isGeneral() && !$user->isIndividual()) {
+        if (!$user->canAccessModule('registro') && !$user->isAdmin()) {
             abort(403, 'No tienes permisos para eliminar registros.');
         }
 

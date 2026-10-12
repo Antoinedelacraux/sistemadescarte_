@@ -22,8 +22,8 @@ class FundoScope implements Scope
         /** @var User $user */
         $user = Auth::user();
 
-        // Admin y Analista tienen acceso a todos los fundos sin restricción
-        if ($user->isAdmin() || $user->isAnalista()) {
+        // Administrador, Jefe de fundo, Analista y Ventas tienen acceso a todos los fundos sin restricción
+        if ($user->hasAccessToAllFundos()) {
             return;
         }
 

@@ -16,8 +16,9 @@
 
     {{-- Navegación --}}
     <nav class="sidebar-nav" aria-label="Navegación principal">
-        <div class="nav-section-label" aria-hidden="true">Principal</div>
+        <div class="nav-section-label" aria-hidden="true">Operación</div>
 
+        @if(Auth::user()->canAccessModule('panel'))
         <a href="{{ route('dashboard') }}"
            class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}"
            aria-current="{{ request()->routeIs('dashboard') ? 'page' : 'false' }}">
@@ -26,8 +27,9 @@
             </span>
             <span class="nav-item-label">Panel de Control</span>
         </a>
+        @endif
 
-        @if(Auth::user()->isAdmin() || Auth::user()->isGeneral() || Auth::user()->isIndividual())
+        @if(Auth::user()->canAccessModule('registro'))
         <a href="{{ route('ventas.create') }}"
            class="nav-item {{ request()->routeIs('ventas.create') ? 'active' : '' }}"
            aria-current="{{ request()->routeIs('ventas.create') ? 'page' : 'false' }}">
@@ -38,6 +40,7 @@
         </a>
         @endif
 
+        @if(Auth::user()->canAccessModule('historial'))
         <a href="{{ route('ventas.index') }}"
            class="nav-item {{ request()->routeIs('ventas.index') || request()->routeIs('ventas.edit') ? 'active' : '' }}"
            aria-current="{{ request()->routeIs('ventas.index') ? 'page' : 'false' }}">
@@ -46,8 +49,9 @@
             </span>
             <span class="nav-item-label">Historial de Ventas</span>
         </a>
+        @endif
 
-        @if(Auth::user()->isAdmin() || Auth::user()->isAnalista() || Auth::user()->isGeneral())
+        @if(Auth::user()->canAccessModule('reportes'))
         <div class="nav-section-label" aria-hidden="true">Análisis</div>
         <a href="{{ route('reportes.index') }}"
            class="nav-item {{ request()->routeIs('reportes.*') ? 'active' : '' }}"
@@ -59,7 +63,7 @@
         </a>
         @endif
 
-        @if(Auth::user()->isAdmin())
+        @if(Auth::user()->canAccessModule('admin'))
         <div class="nav-section-label" aria-hidden="true">Administración</div>
         <a href="{{ route('admin.fundos') }}"
            class="nav-item {{ request()->routeIs('admin.fundos*') ? 'active' : '' }}"

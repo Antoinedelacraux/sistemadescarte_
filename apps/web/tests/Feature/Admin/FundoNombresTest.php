@@ -97,6 +97,9 @@ class FundoNombresTest extends TestCase
 
     public function test_welcome_card_displays_full_name_without_parenthesis(): void
     {
+        $this->registrador->modulos_personalizados = ['panel', 'registro', 'historial'];
+        $this->registrador->save();
+
         $response = $this->actingAs($this->registrador)->get(route('dashboard'));
 
         $response->assertOk();
@@ -108,10 +111,10 @@ class FundoNombresTest extends TestCase
 
     public function test_headbar_chip_displays_short_name(): void
     {
-        $response = $this->actingAs($this->registrador)->get(route('dashboard'));
+        $response = $this->actingAs($this->registrador)->get(route('ventas.index'));
 
         $response->assertOk();
-        // En el headbar debe verse el nombre corto
+        // En el headbar debe verse el nombre corto del fundo asignado
         $response->assertSee('🏡 AGRITAC', false);
     }
 

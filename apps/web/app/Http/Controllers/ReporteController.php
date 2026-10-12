@@ -87,7 +87,7 @@ class ReporteController extends Controller
             ];
         });
 
-        $fundos = $user->isAdmin() || $user->isAnalista()
+        $fundos = $user->hasAccessToAllFundos()
             ? Fundo::where('is_active', true)->get()
             : $user->fundos()->where('is_active', true)->get();
 

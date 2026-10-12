@@ -11,9 +11,14 @@ class Role extends Model
     use HasFactory;
 
     public const ADMIN = 'admin';
-    public const GENERAL = 'general';
-    public const INDIVIDUAL = 'individual';
+    public const JEFE_FUNDO = 'jefe_fundo';
+    public const REGISTRADOR = 'registrador';
     public const ANALISTA = 'analista';
+    public const VENTAS = 'ventas';
+
+    // Constantes retrocompatibles
+    public const GENERAL = 'jefe_fundo';
+    public const INDIVIDUAL = 'registrador';
 
     protected $fillable = [
         'name',

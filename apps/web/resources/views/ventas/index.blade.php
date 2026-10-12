@@ -704,7 +704,7 @@
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Exportar Excel
             </a>
-            @if(Auth::user()->isAdmin() || Auth::user()->isGeneral() || Auth::user()->isIndividual())
+            @if(Auth::user()->canAccessModule('registro'))
             <a href="{{ route('ventas.create') }}" class="btn btn-primary" id="btn-nueva-venta">
                 Registrar Venta
             </a>
@@ -866,14 +866,14 @@
                                             data-actualizado-por="{{ $venta->updater?->name ?? '' }}"
                                             data-actualizado-at="{{ $venta->updated_at && $venta->updated_at != $venta->created_at ? $venta->updated_at->format('d/m/Y H:i') : '' }}"
                                             data-url-show="{{ route('ventas.show', $venta) }}"
-                                            @if(Auth::user()->isAdmin() || Auth::user()->isGeneral() || Auth::user()->isIndividual())
+                                            @if(Auth::user()->canAccessModule('registro') || Auth::user()->isAdmin())
                                             data-url-edit="{{ route('ventas.edit', $venta) }}"
                                             @endif
                                             onclick="abrirModalDetalle(this)">
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                     </button>
 
-                                    @if(Auth::user()->isAdmin() || Auth::user()->isGeneral() || Auth::user()->isIndividual())
+                                    @if(Auth::user()->canAccessModule('registro') || Auth::user()->isAdmin())
                                         @if($venta->isActivo())
                                             {{-- Editar (Solo activo) --}}
                                             <a href="{{ route('ventas.edit', $venta) }}" class="btn-action-icon btn-action-edit" title="Editar registro" aria-label="Editar venta del {{ $venta->fecha_produccion->format('d/m/Y') }}">
@@ -922,7 +922,7 @@
                                             Aún no se han ingresado pesajes de descarte. Comienza haciendo clic en "Registrar Venta".
                                         @endif
                                     </div>
-                                    @if(Auth::user()->isAdmin() || Auth::user()->isGeneral() || Auth::user()->isIndividual())
+                                    @if(Auth::user()->canAccessModule('registro'))
                                         <div style="margin-top: 1rem;">
                                             <a href="{{ route('ventas.create') }}" class="btn btn-primary btn-sm">
                                                 ➕ Registrar Primera Venta
