@@ -1718,7 +1718,7 @@
         }
 
         .btn-pwa-install svg {
-            color: var(--clr-primary-300);
+            color: #ffffff;
             flex-shrink: 0;
         }
 

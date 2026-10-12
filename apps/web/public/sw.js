@@ -1,6 +1,6 @@
-// Service Worker — Sistema Fundo PWA (v7)
+// Service Worker — Sistema Fundo PWA (v8)
 // Soporte offline-first, alta velocidad de navegación y sincronización de ventas
-const CACHE_NAME = 'fundo-pwa-v7';
+const CACHE_NAME = 'fundo-pwa-v8';
 
 const PRECACHE_ASSETS = [
     '/',
