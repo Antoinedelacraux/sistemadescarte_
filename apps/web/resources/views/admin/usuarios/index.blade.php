@@ -267,9 +267,9 @@
 
             {{-- Asignación de Fundos --}}
             <div style="margin-top: 0.5rem;">
-                <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.35rem;">
+                <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.35rem; flex-wrap: wrap;">
                     <label class="form-label text-xs" style="font-weight: 700; margin: 0;">Fundos Asignados:</label>
-                    <span style="font-size: 0.72rem; color: var(--txt-muted);">(Los roles Administrador, Jefe de fundo, Analista y Ventas tienen acceso total a todos los fundos automáticamente)</span>
+                    <span style="font-size: 0.72rem; color: var(--txt-muted);">(Los roles Administrador, Analista y Ventas tienen acceso total a todos los fundos automáticamente)</span>
                 </div>
                 <div class="fundos-checklist">
                     @foreach($fundos as $fundo)
@@ -457,7 +457,10 @@
 
                     {{-- Fundos asignados --}}
                     <div class="form-group" style="margin-bottom: 1rem;">
-                        <label class="form-label text-xs" style="font-weight: 700;">Fundos Asignados:</label>
+                        <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.35rem; flex-wrap: wrap;">
+                            <label class="form-label text-xs" style="font-weight: 700; margin: 0;">Fundos Asignados:</label>
+                            <span style="font-size: 0.72rem; color: var(--txt-muted);">(Los roles Administrador, Analista y Ventas tienen acceso total a todos los fundos automáticamente)</span>
+                        </div>
                         <div class="fundos-checklist">
                             @foreach($fundos as $fundo)
                                 <label style="display: flex; align-items: center; gap: 0.5rem; font-size: var(--text-sm); cursor: pointer;">
