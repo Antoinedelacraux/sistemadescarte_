@@ -18,6 +18,11 @@ class Inyectar50VentasHipoteticasSeeder extends Seeder
      */
     public function run(): void
     {
+        if (app()->environment('production')) {
+            $this->command?->warn("BLOQUEO DE SEGURIDAD: Inyectar50VentasHipoteticasSeeder no se ejecuta en PRODUCCIÓN.");
+            return;
+        }
+
         // 1. Obtener usuario creador por defecto
         $user = User::first();
         if (!$user) {

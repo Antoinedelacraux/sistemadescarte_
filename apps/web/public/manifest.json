@@ -2,7 +2,7 @@
   "name": "TALSA — Venta de Descarte (Gestión Agrícola)",
   "short_name": "TALSA Fundo",
   "description": "Sistema de registro, control y análisis de ventas de fruta de descarte en fundos agrícolas TALSA.",
-  "start_url": "/dashboard",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",

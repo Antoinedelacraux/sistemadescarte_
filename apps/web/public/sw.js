@@ -1,6 +1,6 @@
 // Service Worker — Sistema Fundo PWA (v3)
 // Estrategia híbrida optimizada para operaciones agrícolas en campo con conectividad intermitente
-const CACHE_NAME = 'fundo-pwa-v3';
+const CACHE_NAME = 'fundo-pwa-v4';
 
 const PRECACHE_ASSETS = [
     '/',
