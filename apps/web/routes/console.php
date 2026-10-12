@@ -51,6 +51,11 @@ Artisan::command('fundo:crear-admin {--email=} {--name=} {--password=}', functio
 })->purpose('Crea o actualiza interactivamente una cuenta Administrador para operar el sistema');
 
 Artisan::command('fundo:resetear-usuarios', function () {
+    if (app()->environment('production')) {
+        $this->error('BLOQUEO DE SEGURIDAD: Este comando destructivo está prohibido en entorno de PRODUCCIÓN.');
+        return 1;
+    }
+
     $this->info("Iniciando reseteo de cuentas a los 5 roles oficiales...");
 
     // 1. Roles oficiales
