@@ -55,11 +55,14 @@ class DatabaseSeeder extends Seeder
         );
 
         // 3. Usuarios de prueba con datos ficticios
-        $defaultPassword = Hash::make('password123');
+        // 3. Administrador del Sistema (personalizable vía .env o con credenciales iniciales)
+        $adminEmail = env('ADMIN_EMAIL', 'admin@fundo.test');
+        $adminPassword = Hash::make(env('ADMIN_PASSWORD', 'password123'));
+        $adminName = env('ADMIN_NAME', 'Administrador General');
 
         $admin = User::firstOrCreate(
-            ['email' => 'admin@fundo.test'],
-            ['name' => 'Administrador General', 'password' => $defaultPassword, 'role_id' => $roleAdmin->id, 'is_active' => true]
+            ['email' => $adminEmail],
+            ['name' => $adminName, 'password' => $adminPassword, 'role_id' => $roleAdmin->id, 'is_active' => true]
         );
         $admin->fundos()->syncWithoutDetaching([$fundoAgritac->id, $fundoProcom->id, $fundoElNegro->id]);
 
