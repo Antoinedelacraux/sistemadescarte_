@@ -210,14 +210,13 @@ class DashboardController extends Controller
             }
         }
 
-        $precioPromGeneral = $totalGeneralKg > 0 ? round($totalGeneralVenta / $totalGeneralKg, 2) : 0.0;
         $totalRow = [
             'TOTAL GENERAL',
             '',
             $ventas->count(),
             $totalGeneralKg,
             100.00,
-            $precioPromGeneral,
+            '',
             $totalGeneralVenta,
         ];
 
