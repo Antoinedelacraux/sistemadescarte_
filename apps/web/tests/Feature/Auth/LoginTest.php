@@ -124,7 +124,7 @@ class LoginTest extends TestCase
         $response->assertStatus(200);
         $response->assertDontSee('Cuentas de demostración');
         $response->assertDontSee('password123');
-        $response->assertDontSee('general.agritac@fundo.test');
+        $response->assertDontSee('jefe@fundo.test');
     }
 
     public function test_demo_accounts_section_is_visible_in_local(): void
@@ -136,5 +136,6 @@ class LoginTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Cuentas de demostración');
         $response->assertSee('password123');
+        $response->assertSee('jefe@fundo.test');
     }
 }

@@ -61,3 +61,4 @@ Route::middleware('auth')->group(function () {
         Route::delete('/administracion/usuarios/{user}', [\App\Http\Controllers\AdminController::class, 'destroyUsuario'])->name('admin.usuarios.destroy');
     });
 });
+

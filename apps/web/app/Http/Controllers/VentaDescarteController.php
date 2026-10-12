@@ -244,92 +244,24 @@ class VentaDescarteController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
+        $this->normalizarCuartelInput($request);
 
-        // Compatibilidad hacia atrás: resolver texto si proviene cuartel_id desde integraciones previas
-        if (!$request->filled('cuartel_manual') && $request->filled('cuartel_id')) {
-            $cuartelModel = Cuartel::find($request->input('cuartel_id'));
-            if ($cuartelModel) {
-                $request->merge(['cuartel_manual' => $cuartelModel->nombre]);
-            }
-        }
-
-        // 1. Validar fondos accesibles
         $fundosAccesibles = $user->hasAccessToAllFundos()
             ? Fundo::pluck('id')->toArray()
             : $user->fundos()->pluck('fundos.id')->toArray();
 
-        $validated = $request->validate([
-            'id' => ['nullable', 'string', 'max:50'],
-            'fundo_id' => ['required', 'integer', Rule::in($fundosAccesibles)],
-            'fecha_produccion' => ['required', 'date'],
-            'motivo' => ['required', 'string', Rule::in(['Campo', 'Packing', 'Cosecha Nacional'])],
-            'tipo_descarte' => [
-                'required',
-                'string',
-                Rule::in(['Racimos', 'Racimos con plaga', 'Granos']),
-                function ($attribute, $value, $fail) use ($request) {
-                    $motivo = $request->input('motivo');
-                    if (in_array($motivo, ['Cosecha Nacional', 'Packing']) && !in_array($value, ['Racimos', 'Granos'])) {
-                        $fail("Para {$motivo} únicamente se permiten dos tipos de descarte: Racimos y Granos.");
-                    }
-                },
-            ],
-            'lote_id' => [
-                'required',
-                'integer',
-                Rule::exists('lotes', 'id')->where(function ($query) use ($request) {
-                    return $query->where('fundo_id', $request->input('fundo_id'));
-                }),
-            ],
-            'cuartel_id' => ['nullable'],
-            'cuartel_manual' => [
-                Rule::requiredIf(fn () => $request->input('motivo') === 'Cosecha Nacional'),
-                'nullable',
-                'string',
-                'max:100',
-            ],
-            'precio' => ['required', 'numeric', 'min:0.01'],
-            'kilogramos' => ['required', 'numeric', 'min:0.01'],
-            'jabas' => ['nullable', 'integer', 'min:0'],
-            'peso_jaba' => ['nullable', 'numeric', 'min:0'],
-            'brevete' => ['nullable', 'string', 'max:50'],
-            'ruc' => ['nullable', 'string', 'max:20'],
-            'cliente' => ['nullable', 'string', 'max:150'],
-            'placa' => ['nullable', 'string', 'max:20'],
-            'conductor' => ['nullable', 'string', 'max:150'],
-            'viaje' => ['nullable', 'string', 'max:50'],
-            'observacion' => ['nullable', 'string', 'max:1000'],
-        ], [
-            'fundo_id.in' => 'No tienes permisos para registrar en el fundo seleccionado.',
-            'lote_id.required' => 'El lote es obligatorio.',
-            'lote_id.exists' => 'El lote seleccionado no pertenece al fundo indicado.',
-            'cuartel_manual.required' => 'El cuartel es obligatorio cuando el motivo es Cosecha Nacional.',
-            'precio.required' => 'El precio por kilogramo es obligatorio.',
-            'kilogramos.required' => 'Los kilogramos totales son obligatorios.',
-        ]);
+        $validated = $request->validate(
+            $this->getVentaValidationRules($request, $fundosAccesibles, true),
+            $this->getVentaValidationMessages()
+        );
 
-        // Cálculo exacto del valor total (precio * kilogramos)
-        $valorVenta = round((float) $validated['precio'] * (float) $validated['kilogramos'], 2);
-
-        // Cuartel como campo de texto libre (sin inserción en catálogo de cuarteles)
+        $validated['valor_venta'] = round((float) $validated['precio'] * (float) $validated['kilogramos'], 2);
         $cuartelNombre = trim((string) ($request->input('cuartel_manual') ?? ''));
         $validated['cuartel_manual'] = $cuartelNombre !== '' ? $cuartelNombre : null;
         $validated['cuartel_id'] = null;
-
-        $validated['valor_venta'] = $valorVenta;
         $validated['created_by'] = $user->id;
 
-        // Auto-guardado de cliente en catálogo de clientes para autocompletado futuro
-        if (!empty($validated['cliente'])) {
-            $clienteNombre = trim((string) $validated['cliente']);
-            if ($clienteNombre !== '') {
-                $clienteRuc = !empty($validated['ruc']) ? trim((string) $validated['ruc']) : null;
-                Cliente::updateOrCreate(
-                    ['nombre' => $clienteNombre],
-                    ['ruc' => $clienteRuc]
-                );
-            }
-        }
+        $this->syncClienteCatalogo($validated['cliente'] ?? null, $validated['ruc'] ?? null);
 
         // Idempotencia: Si viene con UUID desde la cola offline del cliente, usamos firstOrCreate
         $venta = !empty($validated['id'])
@@ -376,20 +308,67 @@ class VentaDescarteController extends Controller
     public function update(Request $request, VentaDescarte $venta): RedirectResponse
     {
         $user = Auth::user();
+        $this->normalizarCuartelInput($request);
 
-        // Compatibilidad hacia atrás: resolver texto si proviene cuartel_id desde integraciones previas
+        $fundosAccesibles = $user->hasAccessToAllFundos()
+            ? Fundo::pluck('id')->toArray()
+            : $user->fundos()->pluck('fundos.id')->toArray();
+
+        $validated = $request->validate(
+            $this->getVentaValidationRules($request, $fundosAccesibles, false),
+            $this->getVentaValidationMessages()
+        );
+
+        $validated['valor_venta'] = round((float) $validated['precio'] * (float) $validated['kilogramos'], 2);
+        $cuartelNombre = trim((string) ($request->input('cuartel_manual') ?? ''));
+        $validated['cuartel_manual'] = $cuartelNombre !== '' ? $cuartelNombre : null;
+        $validated['cuartel_id'] = null;
+        $validated['updated_by'] = $user->id;
+
+        $this->syncClienteCatalogo($validated['cliente'] ?? null, $validated['ruc'] ?? null);
+
+        $venta->update($validated);
+
+        return redirect()->route('ventas.index')
+            ->with('success', 'Registro de venta actualizado correctamente.');
+    }
+
+    /**
+     * Normaliza la entrada de cuartel para asegurar compatibilidad si proviene de integraciones previas.
+     */
+    private function normalizarCuartelInput(Request $request): void
+    {
         if (!$request->filled('cuartel_manual') && $request->filled('cuartel_id')) {
             $cuartelModel = Cuartel::find($request->input('cuartel_id'));
             if ($cuartelModel) {
                 $request->merge(['cuartel_manual' => $cuartelModel->nombre]);
             }
         }
+    }
 
-        $fundosAccesibles = $user->hasAccessToAllFundos()
-            ? Fundo::pluck('id')->toArray()
-            : $user->fundos()->pluck('fundos.id')->toArray();
+    /**
+     * Registra o actualiza el cliente en el catálogo para el autocompletado del sistema.
+     */
+    private function syncClienteCatalogo(?string $cliente, ?string $ruc): void
+    {
+        if (!empty($cliente)) {
+            $clienteNombre = trim($cliente);
+            if ($clienteNombre !== '') {
+                $clienteRuc = !empty($ruc) ? trim($ruc) : null;
+                Cliente::updateOrCreate(
+                    ['nombre' => $clienteNombre],
+                    ['ruc' => $clienteRuc]
+                );
+            }
+        }
+    }
 
-        $validated = $request->validate([
+    /**
+     * Reglas de validación centralizadas para registros y modificaciones de ventas.
+     */
+    private function getVentaValidationRules(Request $request, array $fundosAccesibles, bool $isCreate = false): array
+    {
+        $rules = [
             'fundo_id' => ['required', 'integer', Rule::in($fundosAccesibles)],
             'fecha_produccion' => ['required', 'date'],
             'motivo' => ['required', 'string', Rule::in(['Campo', 'Packing', 'Cosecha Nacional'])],
@@ -429,34 +408,28 @@ class VentaDescarteController extends Controller
             'conductor' => ['nullable', 'string', 'max:150'],
             'viaje' => ['nullable', 'string', 'max:50'],
             'observacion' => ['nullable', 'string', 'max:1000'],
-        ]);
+        ];
 
-        $valorVenta = round((float) $validated['precio'] * (float) $validated['kilogramos'], 2);
-
-        // Cuartel como campo de texto libre (sin inserción en catálogo de cuarteles)
-        $cuartelNombre = trim((string) ($request->input('cuartel_manual') ?? ''));
-        $validated['cuartel_manual'] = $cuartelNombre !== '' ? $cuartelNombre : null;
-        $validated['cuartel_id'] = null;
-
-        $validated['valor_venta'] = $valorVenta;
-        $validated['updated_by'] = $user->id;
-
-        // Auto-guardado de cliente en catálogo de clientes para autocompletado futuro
-        if (!empty($validated['cliente'])) {
-            $clienteNombre = trim((string) $validated['cliente']);
-            if ($clienteNombre !== '') {
-                $clienteRuc = !empty($validated['ruc']) ? trim((string) $validated['ruc']) : null;
-                Cliente::updateOrCreate(
-                    ['nombre' => $clienteNombre],
-                    ['ruc' => $clienteRuc]
-                );
-            }
+        if ($isCreate) {
+            $rules['id'] = ['nullable', 'string', 'max:50'];
         }
 
-        $venta->update($validated);
+        return $rules;
+    }
 
-        return redirect()->route('ventas.index')
-            ->with('success', 'Registro de venta actualizado correctamente.');
+    /**
+     * Mensajes descriptivos centralizados para validación de ventas.
+     */
+    private function getVentaValidationMessages(): array
+    {
+        return [
+            'fundo_id.in' => 'No tienes permisos para registrar en el fundo seleccionado.',
+            'lote_id.required' => 'El lote es obligatorio.',
+            'lote_id.exists' => 'El lote seleccionado no pertenece al fundo indicado.',
+            'cuartel_manual.required' => 'El cuartel es obligatorio cuando el motivo es Cosecha Nacional.',
+            'precio.required' => 'El precio por kilogramo es obligatorio.',
+            'kilogramos.required' => 'Los kilogramos totales son obligatorios.',
+        ];
     }
 
     /**

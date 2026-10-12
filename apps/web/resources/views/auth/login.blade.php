@@ -447,10 +447,13 @@
         text-transform: uppercase;
     }
 
-    .rpill-admin      { background: #fee2e2; color: #991b1b; }
-    .rpill-general    { background: #dbeafe; color: #1e40af; }
-    .rpill-individual { background: #d1fae5; color: #065f46; }
-    .rpill-analista   { background: #fef3c7; color: #92400e; }
+    .rpill-admin       { background: #fee2e2; color: #991b1b; }
+    .rpill-jefe        { background: #e0e7ff; color: #3730a3; }
+    .rpill-registrador { background: #d1fae5; color: #065f46; }
+    .rpill-analista    { background: #fef3c7; color: #92400e; }
+    .rpill-ventas      { background: #f3e8ff; color: #6b21a8; }
+    .rpill-general     { background: #dbeafe; color: #1e40af; }
+    .rpill-individual  { background: #d1fae5; color: #065f46; }
 
     /* Responsive */
     @media (min-width: 768px) {
@@ -638,32 +641,32 @@
                             <td>admin@fundo.test</td>
                             <td>Todos</td>
                         </tr>
-                        <tr onclick="fillLogin('general.agritac@fundo.test')" tabindex="0" role="row"
-                            onkeydown="if(event.key==='Enter')fillLogin('general.agritac@fundo.test')"
-                            aria-label="Autenticarse como General - AGRITAC">
-                            <td><span class="rpill rpill-general">General</span></td>
-                            <td>general.agritac@fundo.test</td>
-                            <td>AGRITAC</td>
+                        <tr onclick="fillLogin('jefe@fundo.test')" tabindex="0" role="row"
+                            onkeydown="if(event.key==='Enter')fillLogin('jefe@fundo.test')"
+                            aria-label="Autenticarse como Jefe de Fundo">
+                            <td><span class="rpill rpill-jefe">Jefe Fundo</span></td>
+                            <td>jefe@fundo.test</td>
+                            <td>Todos</td>
                         </tr>
-                        <tr onclick="fillLogin('general.procom@fundo.test')" tabindex="0" role="row"
-                            onkeydown="if(event.key==='Enter')fillLogin('general.procom@fundo.test')"
-                            aria-label="Autenticarse como General - PROCOM">
-                            <td><span class="rpill rpill-general">General</span></td>
-                            <td>general.procom@fundo.test</td>
-                            <td>PROCOM</td>
-                        </tr>
-                        <tr onclick="fillLogin('individual.agritac@fundo.test')" tabindex="0" role="row"
-                            onkeydown="if(event.key==='Enter')fillLogin('individual.agritac@fundo.test')"
-                            aria-label="Autenticarse como Individual - AGRITAC">
-                            <td><span class="rpill rpill-individual">Individual</span></td>
-                            <td>individual.agritac@fundo.test</td>
-                            <td>AGRITAC</td>
+                        <tr onclick="fillLogin('registrador@fundo.test')" tabindex="0" role="row"
+                            onkeydown="if(event.key==='Enter')fillLogin('registrador@fundo.test')"
+                            aria-label="Autenticarse como Registrador">
+                            <td><span class="rpill rpill-registrador">Registrador</span></td>
+                            <td>registrador@fundo.test</td>
+                            <td>Asignados</td>
                         </tr>
                         <tr onclick="fillLogin('analista@fundo.test')" tabindex="0" role="row"
                             onkeydown="if(event.key==='Enter')fillLogin('analista@fundo.test')"
                             aria-label="Autenticarse como Analista">
                             <td><span class="rpill rpill-analista">Analista</span></td>
                             <td>analista@fundo.test</td>
+                            <td>Todos</td>
+                        </tr>
+                        <tr onclick="fillLogin('ventas@fundo.test')" tabindex="0" role="row"
+                            onkeydown="if(event.key==='Enter')fillLogin('ventas@fundo.test')"
+                            aria-label="Autenticarse como Ventas">
+                            <td><span class="rpill rpill-ventas">Ventas</span></td>
+                            <td>ventas@fundo.test</td>
                             <td>Todos</td>
                         </tr>
                     </tbody>

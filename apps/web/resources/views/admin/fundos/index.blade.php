@@ -126,6 +126,9 @@
         border-radius: var(--radius-xl);
         max-width: 480px;
         width: 100%;
+        max-height: min(90vh, 720px);
+        display: flex;
+        flex-direction: column;
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
         border: 1px solid var(--brd-base);
         overflow: hidden;
@@ -137,9 +140,23 @@
         align-items: center;
         justify-content: space-between;
         background: var(--clr-surface-50);
+        flex-shrink: 0;
+    }
+    .modal-sheet form {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+        margin: 0;
     }
     .modal-body {
         padding: 1.25rem;
+        overflow-y: auto;
+        flex: 1 1 auto;
+        min-height: 0;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
     }
     .modal-footer {
         padding: 0.875rem 1.25rem;
@@ -147,7 +164,9 @@
         background: var(--clr-surface-50);
         display: flex;
         justify-content: flex-end;
+        align-items: center;
         gap: 0.5rem;
+        flex-shrink: 0;
     }
     .modal-close-btn {
         width: 32px;

@@ -591,4 +591,201 @@
         color: var(--txt-muted);
         font-size: 0.6875rem;
     }
+
+    /* ==========================================================================
+       TABLAS MATRICIALES POR CLIENTE (KILOGRAMOS Y MONTOS)
+       ========================================================================== */
+    .matrix-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 900px;
+        font-size: var(--text-xs);
+        border: 1px solid var(--brd-base);
+    }
+
+    /* Fila 1 de encabezados: Motivos */
+    .matrix-header-row-1 th {
+        padding: 0.65rem 0.5rem;
+        font-weight: 800;
+        text-align: center;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+    }
+
+    .matrix-th-client {
+        background: #bae6fd !important;
+        color: #0369a1 !important;
+        text-align: left !important;
+        padding-left: 1rem !important;
+        min-width: 200px;
+        width: 220px;
+        vertical-align: middle;
+        font-size: 0.75rem;
+    }
+
+    .matrix-th-motivo {
+        background: #ea580c !important;
+        color: #ffffff !important;
+        font-size: 0.75rem;
+    }
+    .matrix-th-campo {
+        background: #ea580c !important;
+    }
+    .matrix-th-packing {
+        background: #ea580c !important;
+    }
+    .matrix-th-nacional {
+        background: #ea580c !important;
+    }
+
+    .matrix-th-total {
+        background: #bae6fd !important;
+        color: #0369a1 !important;
+        text-align: right !important;
+        padding-right: 1rem !important;
+        min-width: 130px;
+        vertical-align: middle;
+        font-size: 0.75rem;
+    }
+
+    /* Fila 2 de encabezados: Tipos */
+    .matrix-header-row-2 th {
+        background: #e0f2fe;
+        color: #0369a1;
+        font-weight: 700;
+        font-size: 0.7rem;
+        padding: 0.5rem 0.4rem;
+        text-align: center;
+        border: 1px solid #cbd5e1;
+        white-space: nowrap;
+    }
+
+    /* Celdas del cuerpo */
+    .matrix-client-row {
+        transition: background 0.12s ease;
+    }
+    .matrix-client-row:nth-child(even) {
+        background: #fcfcfc;
+    }
+    .matrix-client-row:hover {
+        background: #f0fdf4 !important;
+    }
+
+    .matrix-td-client {
+        padding: 0.625rem 1rem;
+        border-right: 1px solid var(--brd-base);
+        border-bottom: 1px solid var(--brd-light);
+        vertical-align: middle;
+    }
+    .matrix-client-ruc {
+        display: block;
+        font-size: 0.6875rem;
+        color: var(--txt-muted);
+        font-weight: normal;
+        margin-top: 0.15rem;
+    }
+
+    .matrix-td-val {
+        padding: 0.625rem 0.6rem;
+        text-align: right;
+        font-family: var(--font-mono, monospace);
+        border-right: 1px solid var(--brd-light);
+        border-bottom: 1px solid var(--brd-light);
+        font-size: 0.8125rem;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+    .matrix-td-val.has-val {
+        color: var(--txt-primary);
+        font-weight: 600;
+    }
+    .matrix-td-val.empty-val {
+        color: #94a3b8;
+        font-weight: 400;
+    }
+
+    .matrix-td-total {
+        padding: 0.625rem 1rem;
+        text-align: right;
+        font-family: var(--font-mono, monospace);
+        border-bottom: 1px solid var(--brd-light);
+        font-size: 0.825rem;
+        background: #f8fafc;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    /* Fila de Totales Generales en pie */
+    .matrix-tfoot-row td {
+        background: #f1f5f9;
+        font-weight: 800;
+        border-top: 2px solid #cbd5e1;
+        border-bottom: 1px solid #cbd5e1;
+        border-right: 1px solid #cbd5e1;
+        vertical-align: middle;
+        padding: 0.75rem 0.6rem;
+    }
+    .matrix-tf-client {
+        padding-left: 1rem !important;
+        color: var(--txt-primary);
+        font-size: 0.75rem;
+        letter-spacing: 0.03em;
+    }
+    .matrix-tf-val {
+        text-align: right;
+        font-family: var(--font-mono, monospace);
+        font-size: 0.8125rem;
+        color: var(--txt-primary);
+    }
+    .matrix-tf-total {
+        padding-right: 1rem !important;
+        text-align: right;
+        font-family: var(--font-mono, monospace);
+        font-size: 0.85rem;
+        background: #e2e8f0 !important;
+        color: #0f172a;
+    }
+
+    @media (max-width: 640px) {
+        #container-matriz-kg,
+        #container-matriz-monto {
+            padding: 0.75rem 0.5rem 1rem 0.5rem !important;
+        }
+        .matrix-table {
+            min-width: 800px;
+        }
+        .matrix-header-row-1 th,
+        .matrix-header-row-2 th {
+            padding: 0.45rem 0.35rem;
+            font-size: 0.65rem;
+        }
+        .matrix-td-val,
+        .matrix-tf-val {
+            padding: 0.5rem 0.45rem;
+            font-size: 0.75rem;
+        }
+        .matrix-td-client,
+        .matrix-tf-client {
+            padding: 0.5rem 0.65rem !important;
+            font-size: 0.72rem;
+            min-width: 160px;
+            width: 170px;
+        }
+        .matrix-td-total,
+        .matrix-tf-total {
+            padding: 0.5rem 0.65rem !important;
+            font-size: 0.78rem;
+            min-width: 100px;
+        }
+        .view-toggle-btns {
+            width: 100%;
+        }
+        .view-toggle-btn {
+            flex: 1;
+            text-align: center;
+            padding: 0.4rem 0.25rem;
+            font-size: 0.68rem;
+        }
+    }
 </style>

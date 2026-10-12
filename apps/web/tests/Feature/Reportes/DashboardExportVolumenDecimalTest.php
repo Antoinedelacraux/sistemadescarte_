@@ -103,4 +103,49 @@ class DashboardExportVolumenDecimalTest extends TestCase
         $this->assertStringContainsString('attachment; filename="resumen_tipo_descarte_', (string) $response->headers->get('Content-Disposition'));
         $this->assertNotEmpty($response->getContent());
     }
+
+    public function test_dashboard_renders_cliente_matrices_for_kg_and_monto(): void
+    {
+        $response = $this->actingAs($this->analistaUser)->get(route('dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertSee('table-matrix-kg');
+        $response->assertSee('table-matrix-monto');
+        $response->assertSee('DESCARTE CAMPO');
+        $response->assertSee('DESCARTE PACKING');
+        $response->assertSee('COSECHA NACIONAL');
+        $response->assertSee('RACIMOS CON PLAGA');
+        $response->assertSee('TOTAL KG');
+        $response->assertSee('TOTAL S/');
+    }
+
+    public function test_dashboard_export_clientes_downloads_xlsx_with_stacked_matrices_without_total_general(): void
+    {
+        $response = $this->actingAs($this->analistaUser)->get(route('dashboard.exportar', ['tabla' => 'clientes']));
+
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $this->assertStringContainsString('attachment; filename="resumen_ventas_clientes_', (string) $response->headers->get('Content-Disposition'));
+        
+        $content = $response->getContent();
+        $this->assertNotEmpty($content);
+
+        // Validar contenido XML descomprimiendo el archivo .xlsx
+        $tempZip = tempnam(sys_get_temp_dir(), 'test_xlsx_');
+        file_put_contents($tempZip, $content);
+        $zip = new \ZipArchive();
+        $this->assertTrue($zip->open($tempZip));
+        $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $zip->close();
+        @unlink($tempZip);
+
+        $this->assertNotEmpty($sheetXml);
+        // Debe contener los dos títulos/matrices una debajo de la otra
+        $this->assertStringContainsString('1. DISTRIBUCIÓN POR VOLUMEN — KILOGRAMOS (KG)', $sheetXml);
+        $this->assertStringContainsString('2. DISTRIBUCIÓN ECONÓMICA — MONTOS (SOLES S/.)', $sheetXml);
+        $this->assertStringContainsString('TOTAL KG', $sheetXml);
+        $this->assertStringContainsString('TOTAL S/', $sheetXml);
+        // NO debe contener la fila de TOTAL GENERAL
+        $this->assertStringNotContainsString('TOTAL GENERAL', $sheetXml);
+    }
 }

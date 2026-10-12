@@ -178,7 +178,7 @@ class SpeedAndLatencyTest extends TestCase
         $this->assertFileExists($swPath);
         $swContent = file_get_contents($swPath);
 
-        $this->assertStringContainsString('fundo-pwa-v6', $swContent);
+        $this->assertStringContainsString('fundo-pwa-v7', $swContent);
         $this->assertStringContainsString('/ventas/registrar', $swContent);
         $this->assertStringContainsString('/ventas', $swContent);
     }

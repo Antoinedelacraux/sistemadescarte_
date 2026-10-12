@@ -64,54 +64,7 @@ class ExcelExporter
             '</workbook>';
 
         // 5. xl/styles.xml (Estilo corporativo verde agrícola, fuentes nítidas y formatos numéricos)
-        $stylesXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n" .
-            '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' .
-            '<numFmts count="2">' .
-            '<numFmt numFmtId="164" formatCode="#,##0.00"/>' .
-            '<numFmt numFmtId="165" formatCode="#,##0"/>' .
-            '</numFmts>' .
-            '<fonts count="4">' .
-            '<font><sz val="10"/><name val="Segoe UI"/><color rgb="FF1F2937"/></font>' . // 0: Normal texto
-            '<font><b/><sz val="10"/><name val="Segoe UI"/><color rgb="FFFFFFFF"/></font>' . // 1: Header blanco bold
-            '<font><b/><sz val="10"/><name val="Segoe UI"/><color rgb="FF0F2B1F"/></font>' . // 2: Bold verde oscuro
-            '<font><b/><sz val="11"/><name val="Segoe UI"/><color rgb="FF0F2B1F"/></font>' . // 3: Bold total
-            '</fonts>' .
-            '<fills count="5">' .
-            '<fill><patternFill patternType="none"/></fill>' . // 0
-            '<fill><patternFill patternType="gray125"/></fill>' . // 1
-            '<fill><patternFill patternType="solid"><fgColor rgb="FF166534"/></patternFill></fill>' . // 2: Verde fundo header
-            '<fill><patternFill patternType="solid"><fgColor rgb="FFF8FAFC"/></patternFill></fill>' . // 3: Zebra light
-            '<fill><patternFill patternType="solid"><fgColor rgb="FFEBF5EE"/></patternFill></fill>' . // 4: Verde muy suave para totales
-            '</fills>' .
-            '<borders count="3">' .
-            '<border><left/><right/><top/><bottom/></border>' . // 0: Sin bordes
-            '<border>' . // 1: Borde fino estándar
-            '<left style="thin"><color rgb="FFE2E8F0"/></left>' .
-            '<right style="thin"><color rgb="FFE2E8F0"/></right>' .
-            '<top style="thin"><color rgb="FFE2E8F0"/></top>' .
-            '<bottom style="thin"><color rgb="FFE2E8F0"/></bottom>' .
-            '</border>' .
-            '<border>' . // 2: Borde contable total (superior simple verde, inferior doble verde)
-            '<left style="thin"><color rgb="FFCBD5E1"/></left>' .
-            '<right style="thin"><color rgb="FFCBD5E1"/></right>' .
-            '<top style="thin"><color rgb="FF166534"/></top>' .
-            '<bottom style="double"><color rgb="FF166534"/></bottom>' .
-            '</border>' .
-            '</borders>' .
-            '<cellStyleXfs count="1">' .
-            '<xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>' .
-            '</cellStyleXfs>' .
-            '<cellXfs count="8">' .
-            '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0"/>' . // 0: Normal texto izquierda
-            '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>' . // 1: Header verde
-            '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>' . // 2: Decimal (123.45)
-            '<xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>' . // 3: Entero (123)
-            '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>' . // 4: Centrado (fechas, códigos)
-            '<xf numFmtId="0" fontId="2" fillId="4" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>' . // 5: Total texto
-            '<xf numFmtId="164" fontId="2" fillId="4" borderId="2" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>' . // 6: Total decimal
-            '<xf numFmtId="165" fontId="2" fillId="4" borderId="2" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>' . // 7: Total entero
-            '</cellXfs>' .
-            '</styleSheet>';
+        $stylesXml = self::getStylesXml();
 
         // 6. xl/worksheets/sheet1.xml
         $colCount = count($headers);
@@ -342,4 +295,348 @@ class ExcelExporter
 
         return $data . $cdir . $eocd;
     }
+
+    /**
+     * Retorna la definición XML de estilos estándar corporativos TALSA.
+     */
+    public static function getStylesXml(): string
+    {
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n" .
+            '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' .
+            '<numFmts count="2">' .
+            '<numFmt numFmtId="164" formatCode="#,##0.00"/>' .
+            '<numFmt numFmtId="165" formatCode="#,##0"/>' .
+            '</numFmts>' .
+            '<fonts count="6">' .
+            '<font><sz val="10"/><name val="Segoe UI"/><color rgb="FF1F2937"/></font>' . // 0: Normal texto
+            '<font><b/><sz val="10"/><name val="Segoe UI"/><color rgb="FFFFFFFF"/></font>' . // 1: Header blanco bold
+            '<font><b/><sz val="10"/><name val="Segoe UI"/><color rgb="FF0F2B1F"/></font>' . // 2: Bold verde oscuro
+            '<font><b/><sz val="11"/><name val="Segoe UI"/><color rgb="FFFFFFFF"/></font>' . // 3: Banner title white bold
+            '<font><b/><sz val="9.5"/><name val="Segoe UI"/><color rgb="FF0369A1"/></font>' . // 4: Subheader blue bold
+            '<font><b/><sz val="10"/><name val="Segoe UI"/><color rgb="FF166534"/></font>' . // 5: Total col bold verde
+            '</fonts>' .
+            '<fills count="8">' .
+            '<fill><patternFill patternType="none"/></fill>' . // 0
+            '<fill><patternFill patternType="gray125"/></fill>' . // 1
+            '<fill><patternFill patternType="solid"><fgColor rgb="FF166534"/></patternFill></fill>' . // 2: Verde fundo header
+            '<fill><patternFill patternType="solid"><fgColor rgb="FFF8FAFC"/></patternFill></fill>' . // 3: Zebra light
+            '<fill><patternFill patternType="solid"><fgColor rgb="FFEBF5EE"/></patternFill></fill>' . // 4: Verde muy suave para totales
+            '<fill><patternFill patternType="solid"><fgColor rgb="FF0F2B1F"/></patternFill></fill>' . // 5: Verde bosque TALSA banner
+            '<fill><patternFill patternType="solid"><fgColor rgb="FFE0F2FE"/></patternFill></fill>' . // 6: Azul cielo suave subheader
+            '<fill><patternFill patternType="solid"><fgColor rgb="FFF0FDF4"/></patternFill></fill>' . // 7: Verde menta suave
+            '</fills>' .
+            '<borders count="3">' .
+            '<border><left/><right/><top/><bottom/></border>' . // 0: Sin bordes
+            '<border>' . // 1: Borde fino estándar
+            '<left style="thin"><color rgb="FFE2E8F0"/></left>' .
+            '<right style="thin"><color rgb="FFE2E8F0"/></right>' .
+            '<top style="thin"><color rgb="FFE2E8F0"/></top>' .
+            '<bottom style="thin"><color rgb="FFE2E8F0"/></bottom>' .
+            '</border>' .
+            '<border>' . // 2: Borde contable total
+            '<left style="thin"><color rgb="FFCBD5E1"/></left>' .
+            '<right style="thin"><color rgb="FFCBD5E1"/></right>' .
+            '<top style="thin"><color rgb="FF166534"/></top>' .
+            '<bottom style="double"><color rgb="FF166534"/></bottom>' .
+            '</border>' .
+            '</borders>' .
+            '<cellStyleXfs count="1">' .
+            '<xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>' .
+            '</cellStyleXfs>' .
+            '<cellXfs count="12">' .
+            '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0"/>' . // 0: Normal texto izquierda
+            '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>' . // 1: Header verde
+            '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>' . // 2: Decimal (123.45)
+            '<xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>' . // 3: Entero (123)
+            '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>' . // 4: Centrado (fechas, códigos)
+            '<xf numFmtId="0" fontId="2" fillId="4" borderId="2" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>' . // 5: Total texto
+            '<xf numFmtId="164" fontId="2" fillId="4" borderId="2" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>' . // 6: Total decimal
+            '<xf numFmtId="165" fontId="2" fillId="4" borderId="2" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>' . // 7: Total entero
+            '<xf numFmtId="0" fontId="3" fillId="5" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>' . // 8: Banner Título
+            '<xf numFmtId="0" fontId="4" fillId="6" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>' . // 9: Subheader azul
+            '<xf numFmtId="164" fontId="5" fillId="7" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>' . // 10: Total Columna verde menta
+            '<xf numFmtId="0" fontId="2" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>' . // 11: Cliente nombre bold
+            '</cellXfs>' .
+            '</styleSheet>';
+    }
+
+    /**
+     * Genera un archivo Excel (.xlsx) con dos tablas matriciales cruzadas (Kilogramos y Montos)
+     * una debajo de la otra, con encabezados de doble nivel y sin fila de TOTAL GENERAL.
+     *
+     * @param array $matrizClientes Matriz de clientes calculada
+     * @param string $sheetTitle Título de la pestaña
+     * @return string Contenido binario del archivo .xlsx
+     */
+    public static function generateMatricesClientes(
+        array $matrizClientes,
+        string $sheetTitle = 'Ventas por Cliente'
+    ): string {
+        $sheetTitle = preg_replace('/[\\\\\\/*?\\[\\]:]/', '', substr($sheetTitle, 0, 31));
+        if (trim($sheetTitle) === '') {
+            $sheetTitle = 'Clientes';
+        }
+
+        // 1. [Content_Types].xml
+        $contentTypesXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n" .
+            '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' .
+            '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' .
+            '<Default Extension="xml" ContentType="application/xml"/>' .
+            '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' .
+            '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' .
+            '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' .
+            '</Types>';
+
+        // 2. _rels/.rels
+        $relsXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n" .
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' .
+            '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' .
+            '</Relationships>';
+
+        // 3. xl/_rels/workbook.xml.rels
+        $wbRelsXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n" .
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' .
+            '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' .
+            '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' .
+            '</Relationships>';
+
+        // 4. xl/workbook.xml
+        $wbXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n" .
+            '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' .
+            '<sheets>' .
+            '<sheet name="' . htmlspecialchars($sheetTitle, ENT_XML1, 'UTF-8') . '" sheetId="1" r:id="rId1"/>' .
+            '</sheets>' .
+            '</workbook>';
+
+        // 5. xl/styles.xml
+        $stylesXml = self::getStylesXml();
+
+        // 6. xl/worksheets/sheet1.xml
+        $colWidths = [
+            1 => 36, // CLIENTE
+            2 => 18, // CAMPO - GRANOS
+            3 => 18, // CAMPO - RACIMOS
+            4 => 22, // CAMPO - RACIMOS CON PLAGA
+            5 => 18, // PACKING - GRANOS
+            6 => 18, // PACKING - RACIMOS
+            7 => 18, // NACIONAL - GRANOS
+            8 => 18, // NACIONAL - RACIMOS
+            9 => 20, // TOTAL (KG o S/)
+        ];
+
+        // Ajustar ancho de CLIENTE si hay nombres más largos
+        foreach ($matrizClientes as $c) {
+            $cName = (string) ($c['cliente'] ?? '');
+            if (!empty($c['ruc']) && !str_contains($cName, (string) $c['ruc'])) {
+                $cName .= ' - RUC: ' . $c['ruc'];
+            }
+            $len = mb_strlen($cName, 'UTF-8');
+            if ($len + 4 > $colWidths[1]) {
+                $colWidths[1] = min(50, $len + 4);
+            }
+        }
+
+        $sheetXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n" .
+            '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' .
+            '<sheetViews><sheetView tabSelected="1" workbookViewId="0"/></sheetViews>' .
+            '<cols>';
+
+        for ($c = 1; $c <= 9; $c++) {
+            $w = $colWidths[$c] ?? 18;
+            $sheetXml .= '<col min="' . $c . '" max="' . $c . '" width="' . $w . '" customWidth="1"/>';
+        }
+        $sheetXml .= '</cols><sheetData>';
+
+        $merges = [];
+        $r = 1;
+
+        // -------------------------------------------------------------
+        // TABLA 1: DISTRIBUCIÓN POR VOLUMEN — KILOGRAMOS (KG)
+        // -------------------------------------------------------------
+        // Título Banner
+        $sheetXml .= '<row r="' . $r . '" ht="28" customHeight="1">';
+        $sheetXml .= '<c r="A' . $r . '" s="8" t="inlineStr"><is><t>1. DISTRIBUCIÓN POR VOLUMEN — KILOGRAMOS (KG)</t></is></c>';
+        for ($col = 1; $col < 9; $col++) {
+            $sheetXml .= '<c r="' . self::colToLetter($col) . $r . '" s="8"/>';
+        }
+        $sheetXml .= '</row>';
+        $merges[] = 'A' . $r . ':I' . $r;
+        $r++;
+
+        // Fila 1 de Cabecera (Tier 1: Motivos)
+        $rTier1 = $r;
+        $sheetXml .= '<row r="' . $rTier1 . '" ht="26" customHeight="1">';
+        $sheetXml .= '<c r="A' . $rTier1 . '" s="1" t="inlineStr"><is><t>CLIENTE</t></is></c>';
+        $sheetXml .= '<c r="B' . $rTier1 . '" s="1" t="inlineStr"><is><t>DESCARTE CAMPO</t></is></c>';
+        $sheetXml .= '<c r="C' . $rTier1 . '" s="1"/><c r="D' . $rTier1 . '" s="1"/>';
+        $sheetXml .= '<c r="E' . $rTier1 . '" s="1" t="inlineStr"><is><t>DESCARTE PACKING</t></is></c>';
+        $sheetXml .= '<c r="F' . $rTier1 . '" s="1"/>';
+        $sheetXml .= '<c r="G' . $rTier1 . '" s="1" t="inlineStr"><is><t>COSECHA NACIONAL</t></is></c>';
+        $sheetXml .= '<c r="H' . $rTier1 . '" s="1"/>';
+        $sheetXml .= '<c r="I' . $rTier1 . '" s="1" t="inlineStr"><is><t>TOTAL KG</t></is></c>';
+        $sheetXml .= '</row>';
+        $r++;
+
+        // Fila 2 de Cabecera (Tier 2: Tipos)
+        $rTier2 = $r;
+        $sheetXml .= '<row r="' . $rTier2 . '" ht="22" customHeight="1">';
+        $sheetXml .= '<c r="A' . $rTier2 . '" s="1"/>';
+        $sheetXml .= '<c r="B' . $rTier2 . '" s="9" t="inlineStr"><is><t>GRANOS</t></is></c>';
+        $sheetXml .= '<c r="C' . $rTier2 . '" s="9" t="inlineStr"><is><t>RACIMOS</t></is></c>';
+        $sheetXml .= '<c r="D' . $rTier2 . '" s="9" t="inlineStr"><is><t>RACIMOS CON PLAGA</t></is></c>';
+        $sheetXml .= '<c r="E' . $rTier2 . '" s="9" t="inlineStr"><is><t>GRANOS</t></is></c>';
+        $sheetXml .= '<c r="F' . $rTier2 . '" s="9" t="inlineStr"><is><t>RACIMOS</t></is></c>';
+        $sheetXml .= '<c r="G' . $rTier2 . '" s="9" t="inlineStr"><is><t>GRANOS</t></is></c>';
+        $sheetXml .= '<c r="H' . $rTier2 . '" s="9" t="inlineStr"><is><t>RACIMOS</t></is></c>';
+        $sheetXml .= '<c r="I' . $rTier2 . '" s="1"/>';
+        $sheetXml .= '</row>';
+
+        $merges[] = 'A' . $rTier1 . ':A' . $rTier2;
+        $merges[] = 'B' . $rTier1 . ':D' . $rTier1;
+        $merges[] = 'E' . $rTier1 . ':F' . $rTier1;
+        $merges[] = 'G' . $rTier1 . ':H' . $rTier1;
+        $merges[] = 'I' . $rTier1 . ':I' . $rTier2;
+        $r++;
+
+        // Filas de Datos (Kilogramos)
+        if (count($matrizClientes) === 0) {
+            $sheetXml .= '<row r="' . $r . '" ht="24" customHeight="1">';
+            $sheetXml .= '<c r="A' . $r . '" s="0" t="inlineStr"><is><t>No hay registros de ventas para clasificar por cliente.</t></is></c>';
+            for ($col = 1; $col < 9; $col++) {
+                $sheetXml .= '<c r="' . self::colToLetter($col) . $r . '" s="0"/>';
+            }
+            $sheetXml .= '</row>';
+            $merges[] = 'A' . $r . ':I' . $r;
+            $r++;
+        } else {
+            foreach ($matrizClientes as $c) {
+                $cName = (string) ($c['cliente'] ?? '');
+                if (!empty($c['ruc']) && !str_contains($cName, (string) $c['ruc'])) {
+                    $cName .= ' - RUC: ' . $c['ruc'];
+                }
+
+                $sheetXml .= '<row r="' . $r . '" ht="20" customHeight="1">';
+                $sheetXml .= '<c r="A' . $r . '" s="11" t="inlineStr"><is><t>' . htmlspecialchars($cName, ENT_XML1, 'UTF-8') . '</t></is></c>';
+                $sheetXml .= '<c r="B' . $r . '" s="2"><v>' . (float) ($c['kg']['Campo']['Granos'] ?? 0) . '</v></c>';
+                $sheetXml .= '<c r="C' . $r . '" s="2"><v>' . (float) ($c['kg']['Campo']['Racimos'] ?? 0) . '</v></c>';
+                $sheetXml .= '<c r="D' . $r . '" s="2"><v>' . (float) ($c['kg']['Campo']['Racimos con Plaga'] ?? 0) . '</v></c>';
+                $sheetXml .= '<c r="E' . $r . '" s="2"><v>' . (float) ($c['kg']['Packing']['Granos'] ?? 0) . '</v></c>';
+                $sheetXml .= '<c r="F' . $r . '" s="2"><v>' . (float) ($c['kg']['Packing']['Racimos'] ?? 0) . '</v></c>';
+                $sheetXml .= '<c r="G' . $r . '" s="2"><v>' . (float) ($c['kg']['Cosecha Nacional']['Granos'] ?? 0) . '</v></c>';
+                $sheetXml .= '<c r="H' . $r . '" s="2"><v>' . (float) ($c['kg']['Cosecha Nacional']['Racimos'] ?? 0) . '</v></c>';
+                $sheetXml .= '<c r="I' . $r . '" s="10"><v>' . (float) ($c['total_kg'] ?? 0) . '</v></c>';
+                $sheetXml .= '</row>';
+                $r++;
+            }
+        }
+
+        // Fila Separadora en blanco
+        $sheetXml .= '<row r="' . $r . '" ht="18" customHeight="1"/>';
+        $r++;
+
+        // -------------------------------------------------------------
+        // TABLA 2: DISTRIBUCIÓN ECONÓMICA — MONTOS (SOLES S/.)
+        // -------------------------------------------------------------
+        // Título Banner
+        $sheetXml .= '<row r="' . $r . '" ht="28" customHeight="1">';
+        $sheetXml .= '<c r="A' . $r . '" s="8" t="inlineStr"><is><t>2. DISTRIBUCIÓN ECONÓMICA — MONTOS (SOLES S/.)</t></is></c>';
+        for ($col = 1; $col < 9; $col++) {
+            $sheetXml .= '<c r="' . self::colToLetter($col) . $r . '" s="8"/>';
+        }
+        $sheetXml .= '</row>';
+        $merges[] = 'A' . $r . ':I' . $r;
+        $r++;
+
+        // Fila 1 de Cabecera (Tier 1: Motivos)
+        $rTier1M = $r;
+        $sheetXml .= '<row r="' . $rTier1M . '" ht="26" customHeight="1">';
+        $sheetXml .= '<c r="A' . $rTier1M . '" s="1" t="inlineStr"><is><t>CLIENTE</t></is></c>';
+        $sheetXml .= '<c r="B' . $rTier1M . '" s="1" t="inlineStr"><is><t>DESCARTE CAMPO</t></is></c>';
+        $sheetXml .= '<c r="C' . $rTier1M . '" s="1"/><c r="D' . $rTier1M . '" s="1"/>';
+        $sheetXml .= '<c r="E' . $rTier1M . '" s="1" t="inlineStr"><is><t>DESCARTE PACKING</t></is></c>';
+        $sheetXml .= '<c r="F' . $rTier1M . '" s="1"/>';
+        $sheetXml .= '<c r="G' . $rTier1M . '" s="1" t="inlineStr"><is><t>COSECHA NACIONAL</t></is></c>';
+        $sheetXml .= '<c r="H' . $rTier1M . '" s="1"/>';
+        $sheetXml .= '<c r="I' . $rTier1M . '" s="1" t="inlineStr"><is><t>TOTAL S/</t></is></c>';
+        $sheetXml .= '</row>';
+        $r++;
+
+        // Fila 2 de Cabecera (Tier 2: Tipos)
+        $rTier2M = $r;
+        $sheetXml .= '<row r="' . $rTier2M . '" ht="22" customHeight="1">';
+        $sheetXml .= '<c r="A' . $rTier2M . '" s="1"/>';
+        $sheetXml .= '<c r="B' . $rTier2M . '" s="9" t="inlineStr"><is><t>GRANOS</t></is></c>';
+        $sheetXml .= '<c r="C' . $rTier2M . '" s="9" t="inlineStr"><is><t>RACIMOS</t></is></c>';
+        $sheetXml .= '<c r="D' . $rTier2M . '" s="9" t="inlineStr"><is><t>RACIMOS CON PLAGA</t></is></c>';
+        $sheetXml .= '<c r="E' . $rTier2M . '" s="9" t="inlineStr"><is><t>GRANOS</t></is></c>';
+        $sheetXml .= '<c r="F' . $rTier2M . '" s="9" t="inlineStr"><is><t>RACIMOS</t></is></c>';
+        $sheetXml .= '<c r="G' . $rTier2M . '" s="9" t="inlineStr"><is><t>GRANOS</t></is></c>';
+        $sheetXml .= '<c r="H' . $rTier2M . '" s="9" t="inlineStr"><is><t>RACIMOS</t></is></c>';
+        $sheetXml .= '<c r="I' . $rTier2M . '" s="1"/>';
+        $sheetXml .= '</row>';
+
+        $merges[] = 'A' . $rTier1M . ':A' . $rTier2M;
+        $merges[] = 'B' . $rTier1M . ':D' . $rTier1M;
+        $merges[] = 'E' . $rTier1M . ':F' . $rTier1M;
+        $merges[] = 'G' . $rTier1M . ':H' . $rTier1M;
+        $merges[] = 'I' . $rTier1M . ':I' . $rTier2M;
+        $r++;
+
+        // Filas de Datos (Montos)
+        if (count($matrizClientes) === 0) {
+            $sheetXml .= '<row r="' . $r . '" ht="24" customHeight="1">';
+            $sheetXml .= '<c r="A' . $r . '" s="0" t="inlineStr"><is><t>No hay registros de ventas para clasificar por cliente.</t></is></c>';
+            for ($col = 1; $col < 9; $col++) {
+                $sheetXml .= '<c r="' . self::colToLetter($col) . $r . '" s="0"/>';
+            }
+            $sheetXml .= '</row>';
+            $merges[] = 'A' . $r . ':I' . $r;
+            $r++;
+        } else {
+            foreach ($matrizClientes as $c) {
+                $cName = (string) ($c['cliente'] ?? '');
+                if (!empty($c['ruc']) && !str_contains($cName, (string) $c['ruc'])) {
+                    $cName .= ' - RUC: ' . $c['ruc'];
+                }
+
+                $sheetXml .= '<row r="' . $r . '" ht="20" customHeight="1">';
+                $sheetXml .= '<c r="A' . $r . '" s="11" t="inlineStr"><is><t>' . htmlspecialchars($cName, ENT_XML1, 'UTF-8') . '</t></is></c>';
+                $sheetXml .= '<c r="B' . $r . '" s="2"><v>' . (float) ($c['monto']['Campo']['Granos'] ?? 0) . '</v></c>';
+                $sheetXml .= '<c r="C' . $r . '" s="2"><v>' . (float) ($c['monto']['Campo']['Racimos'] ?? 0) . '</v></c>';
+                $sheetXml .= '<c r="D' . $r . '" s="2"><v>' . (float) ($c['monto']['Campo']['Racimos con Plaga'] ?? 0) . '</v></c>';
+                $sheetXml .= '<c r="E' . $r . '" s="2"><v>' . (float) ($c['monto']['Packing']['Granos'] ?? 0) . '</v></c>';
+                $sheetXml .= '<c r="F' . $r . '" s="2"><v>' . (float) ($c['monto']['Packing']['Racimos'] ?? 0) . '</v></c>';
+                $sheetXml .= '<c r="G' . $r . '" s="2"><v>' . (float) ($c['monto']['Cosecha Nacional']['Granos'] ?? 0) . '</v></c>';
+                $sheetXml .= '<c r="H' . $r . '" s="2"><v>' . (float) ($c['monto']['Cosecha Nacional']['Racimos'] ?? 0) . '</v></c>';
+                $sheetXml .= '<c r="I' . $r . '" s="10"><v>' . (float) ($c['total_monto'] ?? 0) . '</v></c>';
+                $sheetXml .= '</row>';
+                $r++;
+            }
+        }
+
+        $sheetXml .= '</sheetData>';
+
+        // Merges de celdas
+        if (!empty($merges)) {
+            $sheetXml .= '<mergeCells count="' . count($merges) . '">';
+            foreach ($merges as $mRef) {
+                $sheetXml .= '<mergeCell ref="' . $mRef . '"/>';
+            }
+            $sheetXml .= '</mergeCells>';
+        }
+
+        $sheetXml .= '</worksheet>';
+
+        $files = [
+            '[Content_Types].xml' => $contentTypesXml,
+            '_rels/.rels' => $relsXml,
+            'xl/_rels/workbook.xml.rels' => $wbRelsXml,
+            'xl/workbook.xml' => $wbXml,
+            'xl/styles.xml' => $stylesXml,
+            'xl/worksheets/sheet1.xml' => $sheetXml,
+        ];
+
+        return self::createZip($files);
+    }
 }
+

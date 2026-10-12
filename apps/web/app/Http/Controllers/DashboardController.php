@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Fundo;
 use App\Models\VentaDescarte;
+use App\Services\DashboardAnalyticsService;
 use App\Services\ExcelExporter;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
@@ -12,9 +14,16 @@ use Illuminate\View\View;
 class DashboardController extends Controller
 {
     /**
-     * Show the application dashboard with segregated tables by motive and by client.
+     * Inyección de dependencias: Servicio desacoplado para cálculos y matrices analíticas.
      */
-    public function index(Request $request): View|\Illuminate\Http\RedirectResponse
+    public function __construct(
+        protected DashboardAnalyticsService $analyticsService
+    ) {}
+
+    /**
+     * Muestra el Panel de Control con tablas segregadas por motivo y matrices cruzadas por cliente.
+     */
+    public function index(Request $request): View|RedirectResponse
     {
         $user = $request->user()->load(['role', 'fundos']);
 
@@ -25,9 +34,6 @@ class DashboardController extends Controller
             }
             if ($user->canAccessModule('historial')) {
                 return redirect()->route('ventas.index');
-            }
-            if ($user->canAccessModule('reportes')) {
-                return redirect()->route('reportes.index');
             }
             if ($user->canAccessModule('admin')) {
                 return redirect()->route('admin.fundos');
@@ -54,147 +60,11 @@ class DashboardController extends Controller
         $totalGeneralKg = (float) $ventas->sum('kilogramos');
         $totalGeneralVenta = (float) $ventas->sum('valor_venta');
 
-        // 1. SEGREGACIÓN POR MOTIVO Y TIPO DE DESCARTE
-        // Venta Nacional: Racimos, Granos (solo dos tipos)
-        // Venta Campo: Racimos, Racimos con plaga, Granos
-        // Venta Packing: Racimos, Granos
-        $motivosDefinicion = [
-            'Cosecha Nacional' => [
-                'titulo' => 'Venta Nacional',
-                'badge' => 'amber',
-                'badge_bg' => '#fef3c7',
-                'badge_color' => '#92400e',
-                'icon' => '🌾',
-                'tipos_permitidos' => ['Racimos', 'Granos'],
-            ],
-            'Campo' => [
-                'titulo' => 'Venta Campo',
-                'badge' => 'green',
-                'badge_bg' => '#d1fae5',
-                'badge_color' => '#065f46',
-                'icon' => '🌿',
-                'tipos_permitidos' => ['Racimos', 'Racimos con plaga', 'Granos'],
-            ],
-            'Packing' => [
-                'titulo' => 'Venta Packing',
-                'badge' => 'blue',
-                'badge_bg' => '#dbeafe',
-                'badge_color' => '#1e40af',
-                'icon' => '📦',
-                'tipos_permitidos' => ['Racimos', 'Granos'],
-            ],
-        ];
+        // 1. Segregación operativa por motivo y tipo de descarte delegada al servicio
+        $segregacionMotivos = $this->analyticsService->calcularSegregacionMotivos($ventas, $totalGeneralKg);
 
-        $segregacionMotivos = [];
-        foreach ($motivosDefinicion as $motivoKey => $meta) {
-            $ventasMotivo = $ventas->where('motivo', $motivoKey);
-            $totalKgMotivo = (float) $ventasMotivo->sum('kilogramos');
-            $totalVentaMotivo = (float) $ventasMotivo->sum('valor_venta');
-            $precioPromMotivo = $totalKgMotivo > 0 ? $totalVentaMotivo / $totalKgMotivo : 0;
-
-            $filasTipos = [];
-            foreach ($meta['tipos_permitidos'] as $tipo) {
-                $ventasTipo = $ventasMotivo->where('tipo_descarte', $tipo);
-                $kgTipo = (float) $ventasTipo->sum('kilogramos');
-                $ventaTipo = (float) $ventasTipo->sum('valor_venta');
-                $precioPromTipo = $kgTipo > 0 ? $ventaTipo / $kgTipo : 0;
-                $countTipo = $ventasTipo->count();
-                $porcentajeKg = $totalGeneralKg > 0 ? ($kgTipo / $totalGeneralKg) * 100 : 0;
-
-                $filasTipos[] = [
-                    'tipo_descarte' => $tipo,
-                    'count' => $countTipo,
-                    'kilogramos' => $kgTipo,
-                    'precio_promedio' => $precioPromTipo,
-                    'valor_venta' => $ventaTipo,
-                    'porcentaje_kg' => round($porcentajeKg, 2),
-                ];
-            }
-
-            $segregacionMotivos[$motivoKey] = [
-                'meta' => $meta,
-                'total_kg' => $totalKgMotivo,
-                'total_venta' => $totalVentaMotivo,
-                'precio_promedio' => $precioPromMotivo,
-                'count' => $ventasMotivo->count(),
-                'porcentaje_kg' => $totalGeneralKg > 0 ? round(($totalKgMotivo / $totalGeneralKg) * 100, 2) : 0,
-                'tipos' => $filasTipos,
-            ];
-        }
-
-        // 2. SEGREGACIÓN POR CLIENTE
-        // La tabla segmenta: cliente - cosecha nacional, packing y campo - tipos de descartes - kilogramos total - precio venta
-        $clientesAgrupados = [];
-        foreach ($ventas as $v) {
-            $nombreCliente = trim((string) ($v->cliente ?? ''));
-            if ($nombreCliente === '') {
-                $nombreCliente = trim((string) ($v->ruc ?? '')) !== '' ? 'RUC: ' . trim($v->ruc) : 'Sin Cliente Registrado';
-            }
-            $motivo = $v->motivo;
-            $tipo = $v->tipo_descarte;
-            $kg = (float) $v->kilogramos;
-            $ventaTotal = (float) $v->valor_venta;
-
-            if (!isset($clientesAgrupados[$nombreCliente])) {
-                $clientesAgrupados[$nombreCliente] = [
-                    'cliente' => $nombreCliente,
-                    'ruc' => $v->ruc,
-                    'total_kg' => 0,
-                    'total_venta' => 0,
-                    'motivos' => [],
-                    'desglose' => [],
-                ];
-            }
-
-            $clientesAgrupados[$nombreCliente]['total_kg'] += $kg;
-            $clientesAgrupados[$nombreCliente]['total_venta'] += $ventaTotal;
-            if (!in_array($motivo, $clientesAgrupados[$nombreCliente]['motivos'])) {
-                $clientesAgrupados[$nombreCliente]['motivos'][] = $motivo;
-            }
-
-            $desgloseKey = "{$motivo}|{$tipo}";
-            if (!isset($clientesAgrupados[$nombreCliente]['desglose'][$desgloseKey])) {
-                $clientesAgrupados[$nombreCliente]['desglose'][$desgloseKey] = [
-                    'motivo' => $motivo,
-                    'tipo_descarte' => $tipo,
-                    'kilogramos' => 0,
-                    'valor_venta' => 0,
-                    'count' => 0,
-                ];
-            }
-
-            $clientesAgrupados[$nombreCliente]['desglose'][$desgloseKey]['kilogramos'] += $kg;
-            $clientesAgrupados[$nombreCliente]['desglose'][$desgloseKey]['valor_venta'] += $ventaTotal;
-            $clientesAgrupados[$nombreCliente]['desglose'][$desgloseKey]['count'] += 1;
-        }
-
-        foreach ($clientesAgrupados as &$cData) {
-            $cData['precio_promedio'] = $cData['total_kg'] > 0 ? $cData['total_venta'] / $cData['total_kg'] : 0;
-            foreach ($cData['desglose'] as &$dData) {
-                $dData['precio_promedio'] = $dData['kilogramos'] > 0 ? $dData['valor_venta'] / $dData['kilogramos'] : 0;
-            }
-            unset($dData);
-        }
-        unset($cData);
-
-        uasort($clientesAgrupados, fn ($a, $b) => $b['total_kg'] <=> $a['total_kg']);
-
-        // Lista plana para vista matricial
-        $filasClientesPlanas = [];
-        foreach ($clientesAgrupados as $clienteName => $cData) {
-            foreach ($cData['desglose'] as $dData) {
-                $filasClientesPlanas[] = [
-                    'cliente' => $clienteName,
-                    'ruc' => $cData['ruc'],
-                    'motivo' => $dData['motivo'],
-                    'tipo_descarte' => $dData['tipo_descarte'],
-                    'kilogramos' => $dData['kilogramos'],
-                    'precio_promedio' => $dData['precio_promedio'],
-                    'valor_venta' => $dData['valor_venta'],
-                    'count' => $dData['count'],
-                ];
-            }
-        }
+        // 2. Matrices cruzadas de clientes (Kilogramos y Montos) delegadas al servicio
+        $matrizData = $this->analyticsService->calcularMatrizClientes($ventas);
 
         return view('dashboard', [
             'user' => $user,
@@ -205,8 +75,12 @@ class DashboardController extends Controller
             'fundoSeleccionadoId' => $fundoSeleccionadoId,
             'ventas' => $ventas,
             'segregacionMotivos' => $segregacionMotivos,
-            'clientesAgrupados' => $clientesAgrupados,
-            'filasClientesPlanas' => $filasClientesPlanas,
+            'columnasMatriz' => $matrizData['columnasMatriz'],
+            'matrizClientes' => $matrizData['matrizClientes'],
+            'totalesColumnasKg' => $matrizData['totalesColumnasKg'],
+            'totalesColumnasMonto' => $matrizData['totalesColumnasMonto'],
+            'granTotalMatrizKg' => $matrizData['granTotalMatrizKg'],
+            'granTotalMatrizMonto' => $matrizData['granTotalMatrizMonto'],
             'totalGeneralKg' => $totalGeneralKg,
             'totalGeneralVenta' => $totalGeneralVenta,
         ]);
@@ -243,7 +117,7 @@ class DashboardController extends Controller
             $query->where(function ($q) use ($term) {
                 $q->where('cliente', 'like', $term)
                   ->orWhere('ruc', 'like', $term)
-                  ->orWhere('tipo_descarte', 'like', $term);
+                  ->orWhere('placa', 'like', $term);
             });
         }
 
@@ -265,95 +139,16 @@ class DashboardController extends Controller
     }
 
     /**
-     * Exporta el Resumen de Ventas por Cliente a Excel.
+     * Exporta las Matrices de Ventas por Cliente (Kilogramos y Montos) a Excel,
+     * organizadas secuencialmente una debajo de la otra.
      */
     private function exportarClientes($ventas): Response
     {
-        $headers = [
-            'CLIENTE / RAZÓN SOCIAL',
-            'RUC',
-            'ORIGEN / MOTIVO',
-            'TIPO DE DESCARTE',
-            'CANTIDAD ENVÍOS',
-            'KILOS TOTALES (KG)',
-            'PRECIO PROMEDIO (S/)',
-            'TOTAL VENTA (S/)',
-        ];
-
-        $columnTypes = [
-            0 => 'string',
-            1 => 'string', // RUC tratado como string explícito
-            2 => 'string',
-            3 => 'string',
-            4 => 'integer',
-            5 => 'decimal',
-            6 => 'decimal',
-            7 => 'decimal',
-        ];
-
-        $grupos = [];
-        foreach ($ventas as $v) {
-            $cliente = trim($v->cliente ?: ($v->ruc ? 'RUC: ' . $v->ruc : 'Venta General'));
-            $ruc = (string) ($v->ruc ?: '');
-            $motivo = $v->motivo;
-            $tipo = $v->tipo_descarte;
-            $key = "{$cliente}|{$ruc}|{$motivo}|{$tipo}";
-
-            if (!isset($grupos[$key])) {
-                $grupos[$key] = [
-                    'cliente' => $cliente,
-                    'ruc' => $ruc,
-                    'motivo' => $motivo,
-                    'tipo' => $tipo,
-                    'count' => 0,
-                    'kilos' => 0.0,
-                    'total' => 0.0,
-                ];
-            }
-            $grupos[$key]['count'] += 1;
-            $grupos[$key]['kilos'] += (float) $v->kilogramos;
-            $grupos[$key]['total'] += (float) $v->valor_venta;
-        }
-
-        $dataRows = [];
-        $totalKilos = 0.0;
-        $totalVenta = 0.0;
-        $totalCount = 0;
-
-        foreach ($grupos as $g) {
-            $precioProm = $g['kilos'] > 0 ? round($g['total'] / $g['kilos'], 2) : 0.0;
-            $dataRows[] = [
-                $g['cliente'],
-                $g['ruc'],
-                $g['motivo'],
-                $g['tipo'],
-                $g['count'],
-                $g['kilos'],
-                $precioProm,
-                $g['total'],
-            ];
-            $totalKilos += $g['kilos'];
-            $totalVenta += $g['total'];
-            $totalCount += $g['count'];
-        }
-
-        $precioPromGeneral = $totalKilos > 0 ? round($totalVenta / $totalKilos, 2) : 0.0;
-        $totalRow = [
-            'TOTAL GENERAL (' . count($grupos) . ' combinaciones)',
-            '',
-            '',
-            '',
-            $totalCount,
-            $totalKilos,
-            $precioPromGeneral,
-            $totalVenta,
-        ];
+        $matrizData = $this->analyticsService->calcularMatrizClientes($ventas);
+        $matrizClientes = $matrizData['matrizClientes'];
 
         $filename = 'resumen_ventas_clientes_' . date('Y-m-d_His') . '.xlsx';
-        $xlsxBinary = ExcelExporter::generate($headers, $dataRows, 'Ventas por Cliente', [
-            'columnTypes' => $columnTypes,
-            'totalRow' => $totalRow,
-        ]);
+        $xlsxBinary = ExcelExporter::generateMatricesClientes($matrizClientes, 'Ventas por Cliente');
 
         return response($xlsxBinary, 200, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -389,28 +184,13 @@ class DashboardController extends Controller
             6 => 'decimal',
         ];
 
-        $motivosDefinicion = [
-            'Cosecha Nacional' => [
-                'titulo' => 'Venta Nacional',
-                'tipos' => ['Racimos', 'Granos'],
-            ],
-            'Campo' => [
-                'titulo' => 'Venta Campo',
-                'tipos' => ['Racimos', 'Racimos con plaga', 'Granos'],
-            ],
-            'Packing' => [
-                'titulo' => 'Venta Packing',
-                'tipos' => ['Racimos', 'Granos'],
-            ],
-        ];
-
         $totalGeneralKg = (float) $ventas->sum('kilogramos');
         $totalGeneralVenta = (float) $ventas->sum('valor_venta');
 
         $dataRows = [];
-        foreach ($motivosDefinicion as $motivoKey => $meta) {
+        foreach (DashboardAnalyticsService::MOTIVOS_DEFINICION as $motivoKey => $meta) {
             $ventasMotivo = $ventas->where('motivo', $motivoKey);
-            foreach ($meta['tipos'] as $tipo) {
+            foreach ($meta['tipos_permitidos'] as $tipo) {
                 $ventasTipo = $ventasMotivo->where('tipo_descarte', $tipo);
                 $kgTipo = (float) $ventasTipo->sum('kilogramos');
                 $ventaTipo = (float) $ventasTipo->sum('valor_venta');
@@ -475,7 +255,7 @@ class DashboardController extends Controller
         ];
 
         $columnTypes = [
-            0 => 'string',   // AGRITAC, PROCOM, EL NEGRO
+            0 => 'string',
             1 => 'date',
             2 => 'string',
             3 => 'string',

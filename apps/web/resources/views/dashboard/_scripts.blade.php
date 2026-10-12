@@ -1,135 +1,59 @@
 {{-- Interactividad JavaScript para el Panel de Control --}}
 <script>
-var filtroMotivoActual = 'todos';
 
-function toggleClientRows(slug) {
-    var parentRow = document.getElementById('row-client-' + slug);
-    var subrows = document.querySelectorAll('.subrow-' + slug);
-    if (!parentRow) return;
+function cambiarSubvistaMatriz(modo) {
+    var contKg = document.getElementById('container-matriz-kg');
+    var contMonto = document.getElementById('container-matriz-monto');
+    var sep = document.getElementById('matrix-separator');
+    var btnAll = document.getElementById('btn-matriz-all');
+    var btnKg = document.getElementById('btn-matriz-kg');
+    var btnMonto = document.getElementById('btn-matriz-monto');
 
-    var isExpanded = parentRow.classList.contains('expanded');
-    if (isExpanded) {
-        parentRow.classList.remove('expanded');
-        subrows.forEach(function(row) { row.style.display = 'none'; });
+    [btnAll, btnKg, btnMonto].forEach(function(b) { if(b) b.classList.remove('active'); });
+
+    if (modo === 'kg') {
+        if (contKg) contKg.style.display = '';
+        if (contMonto) contMonto.style.display = 'none';
+        if (sep) sep.style.display = 'none';
+        if (btnKg) btnKg.classList.add('active');
+    } else if (modo === 'monto') {
+        if (contKg) contKg.style.display = 'none';
+        if (contMonto) contMonto.style.display = '';
+        if (sep) sep.style.display = 'none';
+        if (btnMonto) btnMonto.classList.add('active');
     } else {
-        parentRow.classList.add('expanded');
-        subrows.forEach(function(row) {
-            var rowMotivo = row.getAttribute('data-motivo');
-            if (filtroMotivoActual === 'todos' || filtroMotivoActual === rowMotivo) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
+        if (contKg) contKg.style.display = '';
+        if (contMonto) contMonto.style.display = '';
+        if (sep) sep.style.display = '';
+        if (btnAll) btnAll.classList.add('active');
     }
 }
 
-function expandAllClients(expand) {
-    var parentRows = document.querySelectorAll('.client-parent-row');
-    parentRows.forEach(function(pRow) {
-        var id = pRow.id.replace('row-client-', '');
-        var subrows = document.querySelectorAll('.subrow-' + id);
-        if (expand) {
-            pRow.classList.add('expanded');
-            subrows.forEach(function(row) {
-                var rowMotivo = row.getAttribute('data-motivo');
-                if (filtroMotivoActual === 'todos' || filtroMotivoActual === rowMotivo) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        } else {
-            pRow.classList.remove('expanded');
-            subrows.forEach(function(row) { row.style.display = 'none'; });
-        }
+function filtrarMatricesClientes() {
+    var input = document.getElementById('client-matrix-search');
+    var q = (input ? input.value : '').toLowerCase().trim();
+    var rowsKg = document.querySelectorAll('#matrix-kg-tbody .matrix-client-row');
+    var rowsMonto = document.querySelectorAll('#matrix-monto-tbody .matrix-client-row');
+    var visibleCount = 0;
+
+    rowsKg.forEach(function(r) {
+        var name = (r.getAttribute('data-client-name') || '').toLowerCase();
+        var ruc = (r.getAttribute('data-ruc') || '').toLowerCase();
+        var match = q === '' || name.indexOf(q) !== -1 || ruc.indexOf(q) !== -1;
+        r.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
     });
-}
 
-function switchClientView(view) {
-    var tableGrouped = document.getElementById('table-clients-grouped');
-    var tableFlat = document.getElementById('table-clients-flat');
-    var btnGrouped = document.getElementById('btn-view-grouped');
-    var btnFlat = document.getElementById('btn-view-flat');
+    rowsMonto.forEach(function(r) {
+        var name = (r.getAttribute('data-client-name') || '').toLowerCase();
+        var ruc = (r.getAttribute('data-ruc') || '').toLowerCase();
+        var match = q === '' || name.indexOf(q) !== -1 || ruc.indexOf(q) !== -1;
+        r.style.display = match ? '' : 'none';
+    });
 
-    if (view === 'grouped') {
-        if (tableGrouped) tableGrouped.style.display = '';
-        if (tableFlat) tableFlat.style.display = 'none';
-        if (btnGrouped) btnGrouped.classList.add('active');
-        if (btnFlat) btnFlat.classList.remove('active');
-    } else {
-        if (tableGrouped) tableGrouped.style.display = 'none';
-        if (tableFlat) tableFlat.style.display = '';
-        if (btnGrouped) btnGrouped.classList.remove('active');
-        if (btnFlat) btnFlat.classList.add('active');
-    }
-    filtrarTablaClientes();
-}
-
-function setMotivoFilter(motivo, btn) {
-    filtroMotivoActual = motivo;
-    document.querySelectorAll('.chip-btn').forEach(function(b) { b.classList.remove('active'); });
-    if (btn) btn.classList.add('active');
-    filtrarTablaClientes();
-}
-
-function filtrarTablaClientes() {
-    var q = (document.getElementById('client-search-input')?.value || '').toLowerCase().trim();
-
-    var isGroupedActive = document.getElementById('table-clients-grouped')?.style.display !== 'none';
-
-    if (isGroupedActive) {
-        var parentRows = document.querySelectorAll('.client-parent-row');
-        parentRows.forEach(function(pRow) {
-            var slug = pRow.id.replace('row-client-', '');
-            var clientName = pRow.getAttribute('data-client-name') || '';
-            var clientMotivos = pRow.getAttribute('data-motivos') || '';
-            var subrows = document.querySelectorAll('.subrow-' + slug);
-
-            var matchesMotivo = filtroMotivoActual === 'todos' || clientMotivos.indexOf(filtroMotivoActual) !== -1;
-            var matchesQuery = q === '' || clientName.indexOf(q) !== -1;
-
-            var matchingSubrows = 0;
-            subrows.forEach(function(sRow) {
-                var sMotivo = sRow.getAttribute('data-motivo') || '';
-                var sTipo = sRow.getAttribute('data-tipo') || '';
-                var subMatchesMotivo = filtroMotivoActual === 'todos' || filtroMotivoActual === sMotivo;
-                var subMatchesQuery = q === '' || clientName.indexOf(q) !== -1 || sTipo.indexOf(q) !== -1;
-
-                if (subMatchesMotivo && subMatchesQuery) {
-                    matchingSubrows++;
-                    if (pRow.classList.contains('expanded')) {
-                        sRow.style.display = '';
-                    } else {
-                        sRow.style.display = 'none';
-                    }
-                } else {
-                    sRow.style.display = 'none';
-                }
-            });
-
-            if ((matchesMotivo && matchesQuery) || matchingSubrows > 0) {
-                pRow.style.display = '';
-            } else {
-                pRow.style.display = 'none';
-            }
-        });
-    } else {
-        var flatRows = document.querySelectorAll('.flat-client-row');
-        flatRows.forEach(function(row) {
-            var clientName = row.getAttribute('data-client-name') || '';
-            var motivo = row.getAttribute('data-motivo') || '';
-            var tipo = row.getAttribute('data-tipo') || '';
-
-            var matchesMotivo = filtroMotivoActual === 'todos' || filtroMotivoActual === motivo;
-            var matchesQuery = q === '' || clientName.indexOf(q) !== -1 || tipo.indexOf(q) !== -1 || motivo.toLowerCase().indexOf(q) !== -1;
-
-            if (matchesMotivo && matchesQuery) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
+    var badge = document.getElementById('matrix-clients-count');
+    if (badge) {
+        badge.textContent = visibleCount + ' cliente(s) ' + (q !== '' ? 'encontrado(s)' : 'registrados');
     }
 }
 
@@ -144,14 +68,10 @@ function filtrarDashboardPorFundo(fundoId) {
 }
 
 function exportarClientesExcel() {
-    var q = (document.getElementById('client-search-input')?.value || '').trim();
-    var motivo = typeof filtroMotivoActual !== 'undefined' ? filtroMotivoActual : 'todos';
+    var q = (document.getElementById('client-matrix-search')?.value || document.getElementById('client-search-input')?.value || '').trim();
     var fundoSelect = document.getElementById('fundo_filter_select');
     var fundoId = fundoSelect ? fundoSelect.value : '{{ $fundoSeleccionadoId ?? "" }}';
     var url = "{{ route('dashboard.exportar') }}?tabla=clientes";
-    if (motivo && motivo !== 'todos') {
-        url += '&motivo=' + encodeURIComponent(motivo);
-    }
     if (fundoId) {
         url += '&fundo_id=' + encodeURIComponent(fundoId);
     }

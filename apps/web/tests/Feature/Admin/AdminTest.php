@@ -110,4 +110,65 @@ class AdminTest extends TestCase
         $createdUser = User::where('email', 'operador.nuevo@fundo.test')->first();
         $this->assertTrue($createdUser->fundos->contains($fundo->id));
     }
+
+    public function test_admin_usuarios_view_renders_edit_modal_with_submit_button(): void
+    {
+        $response = $this->actingAs($this->adminUser)->get(route('admin.usuarios'));
+        $response->assertStatus(200);
+        $response->assertSee('id="modal-editar-usuario"', false);
+        $response->assertSee('id="btn-submit-editar-usuario"', false);
+        $response->assertSee('Guardar Cambios');
+        $response->assertSee('btn-action-edit');
+        $response->assertSee('data-id=', false);
+        $response->assertSee('data-role-id=', false);
+    }
+
+    public function test_admin_can_update_user_successfully(): void
+    {
+        $fundo1 = Fundo::create(['name' => 'Fundo Norte', 'code' => 'FNORTE', 'is_active' => true]);
+        $fundo2 = Fundo::create(['name' => 'Fundo Sur', 'code' => 'FSUR', 'is_active' => true]);
+
+        $roleJefe = Role::firstOrCreate(['name' => Role::JEFE_FUNDO], ['display_name' => 'Jefe de Fundo']);
+
+        $payload = [
+            'name' => 'Individual Modificado',
+            'email' => 'individual.modificado@fundo.test',
+            'role_id' => $roleJefe->id,
+            'fundos' => [$fundo1->id, $fundo2->id],
+            'usar_modulos_personalizados' => '1',
+            'modulos' => ['panel', 'historial'],
+        ];
+
+        $response = $this->actingAs($this->adminUser)->put(
+            route('admin.usuarios.update', $this->individualUser),
+            $payload
+        );
+
+        $response->assertRedirect(route('admin.usuarios'));
+        $response->assertSessionHas('success');
+
+        $this->individualUser->refresh();
+        $this->assertEquals('Individual Modificado', $this->individualUser->name);
+        $this->assertEquals('individual.modificado@fundo.test', $this->individualUser->email);
+        $this->assertEquals($roleJefe->id, $this->individualUser->role_id);
+        $this->assertTrue($this->individualUser->hasCustomModules());
+        $this->assertEquals(['panel', 'historial'], $this->individualUser->modulos_personalizados);
+        $this->assertCount(2, $this->individualUser->fundos);
+    }
+
+    public function test_admin_cannot_update_user_with_duplicate_email(): void
+    {
+        $payload = [
+            'name' => 'Nombre Valido',
+            'email' => $this->adminUser->email, // duplicate email of admin
+            'role_id' => $this->individualUser->role_id,
+        ];
+
+        $response = $this->actingAs($this->adminUser)->put(
+            route('admin.usuarios.update', $this->individualUser),
+            $payload
+        );
+
+        $response->assertSessionHasErrors('email');
+    }
 }

@@ -77,6 +77,20 @@
                         </div>
                     @endif
 
+                    @if($errors->any())
+                        <div class="alert alert-danger" role="alert" style="align-items: flex-start;">
+                            <span aria-hidden="true" style="margin-top: 0.15rem;">⚠️</span>
+                            <div>
+                                <strong style="display: block; margin-bottom: 0.35rem; font-size: var(--text-sm);">Por favor corrige los siguientes inconvenientes:</strong>
+                                <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.85rem; line-height: 1.5;">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    @endif
+
                     @yield('content')
                 </main>
 

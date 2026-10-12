@@ -161,7 +161,7 @@
         border-radius: var(--radius-xl);
         max-width: 620px;
         width: 100%;
-        max-height: 90vh;
+        max-height: min(90vh, 720px);
         display: flex;
         flex-direction: column;
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
@@ -175,10 +175,23 @@
         align-items: center;
         justify-content: space-between;
         background: var(--clr-surface-50);
+        flex-shrink: 0;
+    }
+    .modal-sheet form {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+        margin: 0;
     }
     .modal-body {
         padding: 1.25rem;
         overflow-y: auto;
+        flex: 1 1 auto;
+        min-height: 0;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
     }
     .modal-footer {
         padding: 0.875rem 1.25rem;
@@ -186,7 +199,9 @@
         background: var(--clr-surface-50);
         display: flex;
         justify-content: flex-end;
-        gap: 0.5rem;
+        align-items: center;
+        gap: 0.65rem;
+        flex-shrink: 0;
     }
     .modal-close-btn {
         width: 32px;
@@ -351,7 +366,14 @@
                                         class="btn-action-icon btn-action-edit" 
                                         title="Editar Usuario" 
                                         aria-label="Editar {{ $user->name }}"
-                                        onclick='abrirModalEditarUsuario({{ $user->id }}, @json($user->name), @json($user->email), {{ $user->role_id }}, @json($user->fundos->pluck("id")), {{ $user->hasCustomModules() ? "true" : "false" }}, @json($user->getModulosHabilitados()) )'>
+                                        data-id="{{ $user->id }}"
+                                        data-name="{{ $user->name }}"
+                                        data-email="{{ $user->email }}"
+                                        data-role-id="{{ $user->role_id }}"
+                                        data-fundos='@json($user->fundos->pluck("id"))'
+                                        data-custom="{{ $user->hasCustomModules() ? '1' : '0' }}"
+                                        data-modulos='@json($user->getModulosHabilitados())'
+                                        onclick="abrirModalEditarUsuarioDesdeBoton(this)">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
 
@@ -430,7 +452,7 @@
 
                     <div class="form-group">
                         <label for="edit_user_password" class="form-label text-xs">Nueva Contraseña (opcional)</label>
-                        <input type="password" name="password" id="edit_user_password" class="form-control" placeholder="Dejar en blanco para conservar la actual">
+                        <input type="password" name="password" id="edit_user_password" class="form-control" placeholder="Dejar en blanco para conservar la actual" autocomplete="new-password">
                     </div>
 
                     {{-- Fundos asignados --}}
@@ -470,8 +492,11 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-ghost" onclick="cerrarModalEditarUsuario()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalEditarUsuario()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-editar-usuario" style="font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                        Guardar Cambios
+                    </button>
                 </div>
             </form>
         </div>
@@ -555,6 +580,21 @@
         if (!toggle.checked) {
             aplicarModulosPorDefecto('edit', roleName);
         }
+    };
+
+    window.abrirModalEditarUsuarioDesdeBoton = function(btn) {
+        if (!btn) return;
+        var id = btn.getAttribute('data-id');
+        var name = btn.getAttribute('data-name') || '';
+        var email = btn.getAttribute('data-email') || '';
+        var roleId = btn.getAttribute('data-role-id');
+        var fundosIds = [];
+        try { fundosIds = JSON.parse(btn.getAttribute('data-fundos') || '[]'); } catch(e) {}
+        var hasCustom = btn.getAttribute('data-custom') === '1';
+        var modulosActivos = [];
+        try { modulosActivos = JSON.parse(btn.getAttribute('data-modulos') || '[]'); } catch(e) {}
+
+        window.abrirModalEditarUsuario(id, name, email, roleId, fundosIds, hasCustom, modulosActivos);
     };
 
     window.abrirModalEditarUsuario = function(id, name, email, roleId, fundosIds, hasCustom, modulosActivos) {
