@@ -31,6 +31,10 @@ coverage/
 *.sqlite
 *.sqlite-journal
 
+# Binarios y herramientas temporales
+scripts/bin/
+*.exe
+
 # Archivos del sistema/IDE
 .DS_Store
 Thumbs.db
