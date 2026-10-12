@@ -302,14 +302,13 @@
     {{-- Tabla de usuarios --}}
     <div class="card" style="padding: 0; overflow: hidden;">
         <div class="table-wrapper" style="border: none; border-radius: 0;">
-            <table class="data-table" style="min-width: 780px;">
+            <table class="data-table" style="min-width: 640px;">
                 <thead>
                     <tr>
                         <th>Nombre</th>
                         <th>Correo</th>
                         <th>Rol</th>
                         <th>Fundos Asignados</th>
-                        <th>Módulos Habilitados</th>
                         <th style="text-align: center;">Estado</th>
                         <th style="text-align: center;">Acciones</th>
                     </tr>
@@ -323,6 +322,9 @@
                             <span class="role-badge role-badge-{{ $user->role?->name ?? 'default' }}">
                                 {{ $user->role?->display_name ?? 'Sin Rol' }}
                             </span>
+                            @if($user->hasCustomModules())
+                                <span class="badge-excepcion" title="Usuario con permisos personalizados para casos excepcionales" style="margin-left: 0.25rem;">⚙️ Excepción</span>
+                            @endif
                         </td>
                         <td>
                             @if($user->hasAccessToAllFundos())
@@ -334,16 +336,6 @@
                                     <span class="badge-tipo" style="margin-right: 0.25rem;">{{ $f->name }}</span>
                                 @endforeach
                             @endif
-                        </td>
-                        <td>
-                            <div style="display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center;">
-                                @foreach($user->getModulosHabilitados() as $mKey)
-                                    <span class="badge-modulo">{{ \App\Models\User::MODULOS[$mKey] ?? $mKey }}</span>
-                                @endforeach
-                                @if($user->hasCustomModules())
-                                    <span class="badge-excepcion" title="Usuario con permisos personalizados para casos excepcionales">⚙️ Excepción</span>
-                                @endif
-                            </div>
                         </td>
                         <td style="text-align: center;">
                             @if($user->is_active)
