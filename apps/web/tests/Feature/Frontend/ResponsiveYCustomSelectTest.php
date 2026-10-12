@@ -72,6 +72,12 @@ class ResponsiveYCustomSelectTest extends TestCase
         $response->assertSee('header-user-name');
         $response->assertSee('fundo-chip');
         $response->assertSee('net-label');
+
+        // Footer institucional listo para producción
+        $response->assertSee('app-footer');
+        $response->assertSee('TALSA Grape Farms');
+        $response->assertSee('Sistema Web del Fundo');
+        $response->assertSee('v1.0.0');
     }
 
     public function test_ventas_create_renders_custom_select_attributes(): void

@@ -1,7 +1,7 @@
     <style>
         /* ============================================================
          * SISTEMA DE DISEÑO — FUNDO AGRÍCOLA
-         * Versión: 4.0 | Fase 4
+         * Versión: 1.0.0 | Producción
          * ============================================================ */
 
         /* --- DESIGN TOKENS --- */
@@ -393,6 +393,92 @@
 
         .main-wrapper.sidebar-hidden {
             margin-left: 0;
+        }
+
+        /* ============================================================
+         * PIE DE PÁGINA INSTITUCIONAL (FOOTER)
+         * ============================================================ */
+        .app-footer {
+            padding: 0.75rem 1.5rem;
+            font-size: var(--text-xs);
+            color: var(--txt-muted);
+            border-top: 1px solid var(--brd-base);
+            background: var(--clr-surface-0);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .footer-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .footer-env-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.15rem 0.55rem;
+            border-radius: var(--radius-full);
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #b45309;
+            font-weight: 600;
+            font-size: 0.6875rem;
+        }
+
+        .footer-env-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #f59e0b;
+            flex-shrink: 0;
+        }
+
+        .footer-prod-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.15rem 0.55rem;
+            border-radius: var(--radius-full);
+            background: var(--clr-success-bg);
+            border: 1px solid var(--clr-success-brd);
+            color: var(--clr-success);
+            font-weight: 600;
+            font-size: 0.6875rem;
+        }
+
+        .footer-prod-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--clr-success);
+            flex-shrink: 0;
+        }
+
+        .footer-version {
+            font-weight: 500;
+            color: var(--txt-muted);
+        }
+
+        @media (max-width: 640px) {
+            .app-footer {
+                padding: 0.625rem 1rem;
+                justify-content: center;
+                text-align: center;
+                flex-direction: column;
+                gap: 0.375rem;
+            }
         }
 
         /* ============================================================

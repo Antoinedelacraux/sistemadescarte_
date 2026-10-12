@@ -59,10 +59,25 @@
                     @yield('content')
                 </main>
 
-                {{-- Pie de página institucional --}}
-                <footer style="padding: 0.75rem 1.5rem; font-size: var(--text-xs); color: var(--txt-muted); border-top: 1px solid var(--brd-base); background: var(--clr-surface-0); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;" role="contentinfo">
-                    <span>Sistema Web del Fundo &bull; Fase 4 — UI/UX &bull; {{ now()->year }}</span>
-                    <span>Entorno: {{ app()->environment() }}</span>
+                {{-- Pie de página institucional listo para producción --}}
+                <footer class="app-footer" role="contentinfo">
+                    <div class="footer-left">
+                        <span>Sistema Web del Fundo &bull; TALSA Grape Farms &bull; &copy; {{ now()->year }}</span>
+                    </div>
+                    <div class="footer-right">
+                        @if(app()->isProduction())
+                            <span class="footer-prod-tag" title="Sistema oficial en producción">
+                                <span class="footer-prod-dot" aria-hidden="true"></span>
+                                Producción &bull; v1.0.0
+                            </span>
+                        @else
+                            <span class="footer-env-pill" title="Ambiente de ejecución">
+                                <span class="footer-env-dot" aria-hidden="true"></span>
+                                Entorno: {{ app()->environment() }}
+                            </span>
+                            <span class="footer-version">v1.0.0</span>
+                        @endif
+                    </div>
                 </footer>
             </div>
         @else
