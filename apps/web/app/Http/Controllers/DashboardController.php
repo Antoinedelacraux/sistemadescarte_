@@ -79,7 +79,7 @@ class DashboardController extends Controller
                     'kilogramos' => $kgTipo,
                     'precio_promedio' => $precioPromTipo,
                     'valor_venta' => $ventaTipo,
-                    'porcentaje_kg' => round($porcentajeKg, 1),
+                    'porcentaje_kg' => round($porcentajeKg, 2),
                 ];
             }
 
@@ -89,7 +89,7 @@ class DashboardController extends Controller
                 'total_venta' => $totalVentaMotivo,
                 'precio_promedio' => $precioPromMotivo,
                 'count' => $ventasMotivo->count(),
-                'porcentaje_kg' => $totalGeneralKg > 0 ? round(($totalKgMotivo / $totalGeneralKg) * 100, 1) : 0,
+                'porcentaje_kg' => $totalGeneralKg > 0 ? round(($totalKgMotivo / $totalGeneralKg) * 100, 2) : 0,
                 'tipos' => $filasTipos,
             ];
         }
@@ -385,7 +385,7 @@ class DashboardController extends Controller
                 $ventaTipo = (float) $ventasTipo->sum('valor_venta');
                 $precioPromTipo = $kgTipo > 0 ? round($ventaTipo / $kgTipo, 2) : 0.0;
                 $countTipo = $ventasTipo->count();
-                $porcentajeKg = $totalGeneralKg > 0 ? round(($kgTipo / $totalGeneralKg) * 100, 1) : 0.0;
+                $porcentajeKg = $totalGeneralKg > 0 ? round(($kgTipo / $totalGeneralKg) * 100, 2) : 0.0;
 
                 $dataRows[] = [
                     $meta['titulo'],
@@ -405,7 +405,7 @@ class DashboardController extends Controller
             '',
             $ventas->count(),
             $totalGeneralKg,
-            100.0,
+            100.00,
             $precioPromGeneral,
             $totalGeneralVenta,
         ];

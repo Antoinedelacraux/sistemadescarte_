@@ -63,7 +63,7 @@
                                 <div class="progress-bar-wrap">
                                     <div class="progress-bar-fill progress-fill-{{ $meta['badge'] }}" style="width: {{ min(100, $tipoRow['porcentaje_kg']) }}%;"></div>
                                 </div>
-                                <span style="font-size: 0.6875rem; color: var(--txt-secondary);">{{ $tipoRow['porcentaje_kg'] }}%</span>
+                                <span style="font-size: 0.6875rem; color: var(--txt-secondary);">{{ number_format($tipoRow['porcentaje_kg'], 2) }}%</span>
                             </td>
                             <td class="text-right" style="color: var(--txt-secondary); font-family: monospace;">
                                 S/ {{ number_format($tipoRow['precio_promedio'], 2) }}
@@ -84,7 +84,7 @@
                                 <strong>{{ number_format($mInfo['total_kg'], 2) }}</strong>
                             </td>
                             <td>
-                                <span style="font-weight: 700; color: var(--txt-secondary);">{{ $mInfo['porcentaje_kg'] }}%</span>
+                                <span style="font-weight: 700; color: var(--txt-secondary);">{{ number_format($mInfo['porcentaje_kg'], 2) }}%</span>
                             </td>
                             <td class="text-right" style="font-family: monospace;">
                                 S/ {{ number_format($mInfo['precio_promedio'], 2) }}
@@ -100,7 +100,7 @@
                         <td>TOTAL GENERAL</td>
                         <td class="text-center">{{ $ventas->count() }}</td>
                         <td class="text-right" style="font-family: monospace;">{{ number_format($totalGeneralKg, 2) }} kg</td>
-                        <td>100.0%</td>
+                        <td>100.00%</td>
                         <td class="text-right" style="font-family: monospace;">
                             S/ {{ $totalGeneralKg > 0 ? number_format($totalGeneralVenta / $totalGeneralKg, 2) : '0.00' }}
                         </td>
