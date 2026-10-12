@@ -24,6 +24,27 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+    <!-- Reglas de Prerenderizado Especulativo (Instant Navigation en PC y Smartphones Chromium) -->
+    <script type="speculationrules">
+    {
+      "prerender": [
+        {
+          "where": {
+            "and": [
+              { "href_matches": "/*" },
+              { "not": { "href_matches": "/logout" } },
+              { "not": { "href_matches": "*/exportar*" } },
+              { "not": { "href_matches": "*anular*" } },
+              { "not": { "href_matches": "*reactivar*" } },
+              { "not": { "href_matches": "*toggle*" } }
+            ]
+          },
+          "eagerness": "moderate"
+        }
+      ]
+    }
+    </script>
+
     {{-- Sistema de diseño y estilos globales --}}
     @include('layouts.partials._styles')
     @yield('styles')

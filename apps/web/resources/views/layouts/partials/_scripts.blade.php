@@ -610,5 +610,36 @@
         });
     });
 
+    /* ============================================================
+     * PREFETCH UNIVERSAL DE MÓDULOS (INSTANT NAVIGATION)
+     * Anticipa la navegación al contacto táctil o hover del cursor
+     * ============================================================ */
+    var prefetchedUrls = new Set();
+    function prefetchUrl(url) {
+        if (!url || prefetchedUrls.has(url)) return;
+        if (!url.startsWith('/') || url.startsWith('//') || url.includes('/logout') || url.includes('/exportar') || url.includes('/anular') || url.includes('/toggle')) return;
+        prefetchedUrls.add(url);
+
+        var link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.href = url;
+        link.as = 'document';
+        document.head.appendChild(link);
+    }
+
+    document.addEventListener('pointerover', function(e) {
+        var anchor = e.target.closest('a[href]');
+        if (anchor && anchor.origin === window.location.origin) {
+            prefetchUrl(anchor.getAttribute('href'));
+        }
+    }, { passive: true });
+
+    document.addEventListener('touchstart', function(e) {
+        var anchor = e.target.closest('a[href]');
+        if (anchor && anchor.origin === window.location.origin) {
+            prefetchUrl(anchor.getAttribute('href'));
+        }
+    }, { passive: true });
+
 })();
 </script>

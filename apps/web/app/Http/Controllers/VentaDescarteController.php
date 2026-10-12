@@ -260,11 +260,8 @@ class VentaDescarteController extends Controller
             ? Fundo::where('is_active', true)->with('lotes.cuarteles')->get()
             : $user->fundos()->where('is_active', true)->with('lotes.cuarteles')->get();
 
-        // Lotes disponibles para el primer fundo
-        $primerFundoId = $fundos->first()?->id;
-        $lotes = $primerFundoId
-            ? Lote::where('fundo_id', $primerFundoId)->with('cuarteles')->get()
-            : collect();
+        // Lotes disponibles para el primer fundo (reutiliza la relación en memoria sin consultas redundantes)
+        $lotes = $fundos->first()?->lotes ?? collect();
 
         return view('ventas.create', compact('fundos', 'lotes'));
     }

@@ -112,7 +112,11 @@
             padding: 0;
         }
 
-        html { scroll-behavior: smooth; }
+        html {
+            scroll-behavior: smooth;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
 
         body {
             font-family: var(--font-sans);
@@ -123,6 +127,11 @@
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            touch-action: manipulation;
+        }
+
+        a, button, input, select, textarea, .btn, .nav-item {
+            touch-action: manipulation;
         }
 
         /* --- LAYOUT SHELL --- */

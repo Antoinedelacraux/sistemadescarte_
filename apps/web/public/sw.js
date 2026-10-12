@@ -1,10 +1,12 @@
-// Service Worker — Sistema Fundo PWA (v5)
-// Soporte offline-first y sincronización de ventas en campo
-const CACHE_NAME = 'fundo-pwa-v5';
+// Service Worker — Sistema Fundo PWA (v6)
+// Soporte offline-first, alta velocidad de navegación y sincronización de ventas
+const CACHE_NAME = 'fundo-pwa-v6';
 
 const PRECACHE_ASSETS = [
     '/',
     '/ventas/registrar',
+    '/ventas',
+    '/reportes',
     '/manifest.json',
     '/offline.html',
     '/apple-touch-icon.png',
@@ -64,6 +66,24 @@ self.addEventListener('fetch', (event) => {
 
     // 1. Peticiones de Navegación (Páginas HTML completas)
     if (req.mode === 'navigate') {
+        // En la pantalla crítica de registro en campo: Cache-First instantáneo + actualización en segundo plano
+        if (url.pathname === '/ventas/registrar') {
+            event.respondWith(
+                caches.match('/ventas/registrar').then((cached) => {
+                    const networkFetch = fetch(req).then((networkResponse) => {
+                        if (networkResponse && networkResponse.status === 200) {
+                            const copy = networkResponse.clone();
+                            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+                        }
+                        return networkResponse;
+                    }).catch(() => null);
+
+                    return cached || networkFetch;
+                })
+            );
+            return;
+        }
+
         event.respondWith(
             fetch(req)
                 .then((networkResponse) => {
