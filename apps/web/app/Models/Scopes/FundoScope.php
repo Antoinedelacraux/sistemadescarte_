@@ -22,12 +22,12 @@ class FundoScope implements Scope
         /** @var User $user */
         $user = Auth::user();
 
-        // Administrador, Jefe de fundo, Analista y Ventas tienen acceso a todos los fundos sin restricción
+        // Administrador, Analista y Ventas tienen acceso a todos los fundos sin restricción
         if ($user->hasAccessToAllFundos()) {
             return;
         }
 
-        // Roles General e Individual solo ven los fundos a los que están asignados
+        // Jefe de fundo y Registrador solo ven los fundos a los que están asignados
         $fundoIds = $user->fundos()->pluck('fundos.id')->toArray();
 
         $builder->whereIn($model->getTable() . '.fundo_id', $fundoIds);

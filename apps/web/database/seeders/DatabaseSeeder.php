@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
 
         $roleJefeFundo = Role::firstOrCreate(
             ['name' => Role::JEFE_FUNDO],
-            ['display_name' => 'Jefe de fundo', 'description' => 'Visualización de información de todos los fundos (Panel e Historial)']
+            ['display_name' => 'Jefe de fundo', 'description' => 'Visualización de información de sus fundos asignados (Panel e Historial)']
         );
 
         $roleRegistrador = Role::firstOrCreate(
@@ -73,11 +73,12 @@ class DatabaseSeeder extends Seeder
 
         // Cuentas limpias por rol para entorno de pruebas/desarrollo
         if (!app()->environment('production')) {
-            // Cuenta Jefe de Fundo
-            User::firstOrCreate(
+            // Cuenta Jefe de Fundo (asignado al fundo AGRITAC)
+            $jefe = User::firstOrCreate(
                 ['email' => 'jefe@fundo.test'],
                 ['name' => 'Jefe de Fundo Central', 'password' => $defaultPassword, 'role_id' => $roleJefeFundo->id, 'is_active' => true]
             );
+            $jefe->fundos()->syncWithoutDetaching([$fundoAgritac->id, $fundoProcom->id]);
 
             // Cuenta Registrador (asignado al fundo AGRITAC y PROCOM)
             $registrador = User::firstOrCreate(

@@ -93,12 +93,12 @@ class User extends Authenticatable
 
     /**
      * Determina si el usuario tiene acceso irrestricto a todos los fundos del sistema.
-     * Roles con acceso a todos los fundos: Administrador, Jefe de fundo, Analista, Ventas.
-     * El Registrador está restringido a sus fundos asignados.
+     * Roles con acceso a todos los fundos: Administrador, Analista, Ventas.
+     * Jefe de fundo y Registrador están restringidos a sus fundos asignados.
      */
     public function hasAccessToAllFundos(): bool
     {
-        return $this->isAdmin() || $this->isJefeFundo() || $this->isAnalista() || $this->isVentas();
+        return $this->isAdmin() || $this->isAnalista() || $this->isVentas();
     }
 
     public function hasFundoAccess(int $fundoId): bool

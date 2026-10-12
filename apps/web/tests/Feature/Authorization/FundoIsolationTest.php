@@ -46,8 +46,9 @@ class FundoIsolationTest extends TestCase
         $this->analista = User::create(['name' => 'Analista', 'email' => 'analista@test.com', 'password' => $pass, 'role_id' => $roleAnalista->id, 'is_active' => true]);
         $this->ventas = User::create(['name' => 'Ventas', 'email' => 'ventas@test.com', 'password' => $pass, 'role_id' => $roleVentas->id, 'is_active' => true]);
 
-        // Jefe de fundo puede ver información de todos los fundos
+        // Jefe de fundo se le asigna fundo específico (Fundo A)
         $this->jefeFundo = User::create(['name' => 'Jefe Fundo', 'email' => 'jefe@test.com', 'password' => $pass, 'role_id' => $roleJefeFundo->id, 'is_active' => true]);
+        $this->jefeFundo->fundos()->attach($this->fundoA->id);
 
         // Registrador se le asigna fundo específico
         $this->registradorA = User::create(['name' => 'Registrador A', 'email' => 'regA@test.com', 'password' => $pass, 'role_id' => $roleRegistrador->id, 'is_active' => true]);
@@ -112,15 +113,15 @@ class FundoIsolationTest extends TestCase
         $this->assertTrue($records->contains('id', $this->ventaB->id));
     }
 
-    public function test_jefe_fundo_can_access_records_from_all_fundos(): void
+    public function test_jefe_fundo_user_can_only_access_records_from_assigned_fundo(): void
     {
         $this->actingAs($this->jefeFundo);
 
         $records = VentaDescarte::all();
 
-        $this->assertCount(2, $records);
+        $this->assertCount(1, $records);
         $this->assertTrue($records->contains('id', $this->ventaA->id));
-        $this->assertTrue($records->contains('id', $this->ventaB->id));
+        $this->assertFalse($records->contains('id', $this->ventaB->id));
     }
 
     public function test_registrador_user_can_only_access_records_from_assigned_fundo(): void
@@ -145,7 +146,7 @@ class FundoIsolationTest extends TestCase
         $this->assertTrue($this->admin->hasFundoAccess($this->fundoB->id));
 
         $this->assertTrue($this->jefeFundo->hasFundoAccess($this->fundoA->id));
-        $this->assertTrue($this->jefeFundo->hasFundoAccess($this->fundoB->id));
+        $this->assertFalse($this->jefeFundo->hasFundoAccess($this->fundoB->id));
 
         $this->assertTrue($this->analista->hasFundoAccess($this->fundoA->id));
         $this->assertTrue($this->analista->hasFundoAccess($this->fundoB->id));
