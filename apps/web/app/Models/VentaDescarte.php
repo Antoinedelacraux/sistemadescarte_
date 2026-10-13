@@ -124,4 +124,94 @@ class VentaDescarte extends Model
     {
         return $query->where('estado', 'anulado');
     }
+
+    /**
+     * Determina si la venta superó la ventana de 24 horas desde su creación.
+     */
+    public function isCerradoParaEdicion(): bool
+    {
+        if (!$this->created_at) {
+            return false;
+        }
+
+        return $this->created_at->copy()->addHours(24)->isPast();
+    }
+
+    /**
+     * Retorna el tiempo restante para editar antes del cierre de 24 horas, o null si ya expiró.
+     */
+    public function tiempoRestanteEdicion(): ?string
+    {
+        if (!$this->created_at) {
+            return null;
+        }
+
+        $limite = $this->created_at->copy()->addHours(24);
+        if ($limite->isPast()) {
+            return null;
+        }
+
+        $horas = (int) now()->diffInHours($limite, false);
+        $minutos = (int) now()->diffInMinutes($limite, false) % 60;
+
+        if ($horas > 0) {
+            return "{$horas}h {$minutos}m restantes";
+        }
+
+        return "{$minutos}m restantes";
+    }
+
+    /**
+     * Determina si la venta puede ser editada por un usuario dado.
+     *
+     * Reglas de negocio:
+     * 1. Registros anulados nunca pueden ser editados.
+     * 2. Administrador: puede editar en cualquier momento sin límite de tiempo.
+     * 3. Registrador: solo dentro de las 24 horas posteriores a created_at.
+     * 4. Demás usuarios/roles: no pueden editar.
+     */
+    public function puedeSerEditadoPor(?User $user): bool
+    {
+        if (!$user || !$this->isActivo()) {
+            return false;
+        }
+
+        // El Administrador mantiene potestad total de edición sin límite temporal
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        // Requiere tener acceso al módulo de registro
+        if (!$user->canAccessModule('registro')) {
+            return false;
+        }
+
+        // Para registradores: solo dentro de las primeras 24 horas
+        return !$this->isCerradoParaEdicion();
+    }
+
+    /**
+     * Determina si la venta puede ser anulada por un usuario dado.
+     *
+     * Reglas de negocio:
+     * 1. Solo registros activos pueden anularse.
+     * 2. Administrador: puede anular en cualquier momento.
+     * 3. Registrador: solo dentro de las primeras 24 horas.
+     */
+    public function puedeSerAnuladoPor(?User $user): bool
+    {
+        if (!$user || !$this->isActivo()) {
+            return false;
+        }
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        if (!$user->canAccessModule('registro')) {
+            return false;
+        }
+
+        return !$this->isCerradoParaEdicion();
+    }
 }

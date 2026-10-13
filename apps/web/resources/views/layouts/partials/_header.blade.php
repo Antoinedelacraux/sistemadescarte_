@@ -96,10 +96,6 @@
                         {{ Auth::user()->role?->display_name ?? 'Sin Rol' }}
                     </span>
                 </div>
-                <a href="{{ route('dashboard') }}" class="dropdown-item" role="menuitem">
-                    <span aria-hidden="true">👤</span> Mi Perfil
-                </a>
-                <div class="dropdown-divider" role="separator"></div>
                 <form action="{{ route('logout') }}" method="POST" style="display:block;">
                     @csrf
                     <button type="submit" class="dropdown-item danger" role="menuitem">

@@ -1,0 +1,16 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Bloqueo estricto de archivos sensibles en hosting compartido
+    <FilesMatch "^\.(env|git|editorconfig)">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+
+    # Bloqueo de acceso directo a base de datos y logs
+    RewriteRule ^(\.env|storage/logs/|database/) - [F,L,NC]
+
+    # Redireccionar todo el tráfico web a la carpeta /public
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

@@ -307,12 +307,21 @@
             font-size: 0.6875rem;
             gap: 0.2rem;
         }
-        .modal-money-banner {
-            grid-template-columns: 1fr;
-            gap: 0.5rem;
+        .modal-money-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 0.625rem;
+            margin-bottom: 1rem;
         }
-        .modal-money-total {
-            text-align: left;
+        .modal-stat-box {
+            padding: 0.75rem 0.875rem;
+        }
+        .modal-stat-total {
+            grid-column: 1 / -1;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
         }
         .modal-data-grid {
             grid-template-columns: 1fr;
@@ -560,63 +569,97 @@
         flex: 1;
     }
 
-    .modal-money-banner {
-        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-        border: 1px solid #86efac;
+    .modal-money-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.875rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .modal-stat-box {
         border-radius: var(--radius-lg);
         padding: 0.875rem 1rem;
-        display: grid;
-        grid-template-columns: 1fr 1fr 1.3fr;
-        gap: 0.75rem;
-        align-items: center;
-        margin-bottom: 1.125rem;
-    }
-
-    .modal-money-item {
         display: flex;
         flex-direction: column;
-        gap: 0.15rem;
+        justify-content: center;
+        gap: 0.25rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
     }
 
-    .modal-money-label {
+    .modal-stat-kilos {
+        background: linear-gradient(145deg, #f0fdf4 0%, #ecfdf5 100%);
+        border: 1.5px solid #86efac;
+    }
+
+    .modal-stat-precio {
+        background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+        border: 1.5px solid #e2e8f0;
+    }
+
+    .modal-stat-label {
         font-size: 0.625rem;
         font-weight: 700;
         color: #166534;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
+        line-height: 1.1;
     }
 
-    .modal-money-val {
-        font-size: clamp(0.95rem, 3vw, 1.15rem);
+    .modal-stat-precio .modal-stat-label {
+        color: var(--txt-muted);
+    }
+
+    .modal-stat-val {
+        font-size: clamp(1.05rem, 2.2vw, 1.25rem);
         font-weight: 800;
         color: #14532d;
-        font-family: monospace;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+        white-space: nowrap;
+        line-height: 1.2;
     }
 
-    .modal-money-total {
-        background: #14532d;
-        color: #f0fdf4;
-        padding: 0.5rem 0.75rem;
-        border-radius: var(--radius-md);
-        text-align: right;
+    .modal-stat-precio .modal-stat-val {
+        color: var(--txt-primary);
     }
 
-    .modal-money-label-light {
-        display: block;
-        font-size: 0.5625rem;
-        font-weight: 700;
+    .modal-stat-total {
+        background: linear-gradient(135deg, #14532d 0%, #166534 100%);
+        border: 1px solid #14532d;
+        color: #ffffff;
+        box-shadow: 0 2px 6px rgba(20, 83, 45, 0.15);
+    }
+
+    .modal-stat-total-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+    }
+
+    .modal-stat-label-light {
+        font-size: 0.625rem;
+        font-weight: 800;
         color: #86efac;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
+        line-height: 1.1;
     }
 
-    .modal-money-val-light {
-        display: block;
-        font-size: clamp(1rem, 3.5vw, 1.3rem);
+    .modal-stat-sublabel-light {
+        font-size: 0.5625rem;
+        font-weight: 500;
+        color: #d1fae5;
+        opacity: 0.85;
+        line-height: 1.1;
+    }
+
+    .modal-stat-val-light {
+        font-size: clamp(1.15rem, 2.5vw, 1.4rem);
         font-weight: 900;
         color: #ffffff;
-        font-family: monospace;
-        line-height: 1.1;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+        white-space: nowrap;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
     }
 
     .modal-section-title {
@@ -686,6 +729,35 @@
         justify-content: space-between;
         gap: 0.5rem;
         flex-wrap: wrap;
+    }
+
+    @media (max-width: 640px) {
+        .modal-money-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 0.625rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-stat-box {
+            padding: 0.75rem 0.875rem;
+        }
+
+        .modal-stat-total {
+            grid-column: 1 / -1;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .modal-stat-val {
+            font-size: 1.05rem;
+        }
+
+        .modal-stat-val-light {
+            font-size: 1.25rem;
+        }
     }
 </style>
 @endsection
@@ -866,45 +938,61 @@
                                             data-actualizado-por="{{ $venta->updater?->name ?? '' }}"
                                             data-actualizado-at="{{ $venta->updated_at && $venta->updated_at != $venta->created_at ? $venta->updated_at->format('d/m/Y H:i') : '' }}"
                                             data-url-show="{{ route('ventas.show', $venta) }}"
-                                            @if(Auth::user()->canAccessModule('registro') || Auth::user()->isAdmin())
+                                            @if($venta->puedeSerEditadoPor(Auth::user()))
                                             data-url-edit="{{ route('ventas.edit', $venta) }}"
                                             @endif
+                                            data-cerrado="{{ $venta->isCerradoParaEdicion() ? '1' : '0' }}"
                                             onclick="abrirModalDetalle(this)">
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                     </button>
 
-                                    @if(Auth::user()->canAccessModule('registro') || Auth::user()->isAdmin())
-                                        @if($venta->isActivo())
-                                            {{-- Editar (Solo activo) --}}
-                                            <a href="{{ route('ventas.edit', $venta) }}" class="btn-action-icon btn-action-edit" title="Editar registro" aria-label="Editar venta del {{ $venta->fecha_produccion->format('d/m/Y') }}">
-                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                            </a>
+                                    @if($venta->puedeSerEditadoPor(Auth::user()))
+                                        {{-- Editar (Solo activo y dentro de 24h para registradores) --}}
+                                        <a href="{{ route('ventas.edit', $venta) }}" 
+                                           class="btn-action-icon btn-action-edit btn-row-edit" 
+                                           title="Editar registro" 
+                                           @if(!Auth::user()->isAdmin() && $venta->created_at)
+                                           data-expires-at="{{ ($venta->created_at->timestamp + 86400) * 1000 }}"
+                                           data-venta-id="{{ $venta->id }}"
+                                           @endif
+                                           aria-label="Editar venta del {{ $venta->fecha_produccion->format('d/m/Y') }}">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                        </a>
+                                    @endif
 
-                                            {{-- Anular (Paso 1 del ciclo de eliminación) --}}
-                                            <form method="POST" action="{{ route('ventas.anular', $venta) }}" style="display:inline;" onsubmit="return confirm('¿Deseas ANULAR este registro de venta? Pasará a estado anulado y se descontará de los totales.');">
-                                                @csrf
-                                                <button type="submit" class="btn-action-icon btn-action-anular" title="Anular registro (Paso 1 antes de eliminar)" aria-label="Anular venta">
-                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-                                                </button>
-                                            </form>
-                                        @else
-                                            {{-- Si ya está anulado: Permitir Reactivar --}}
-                                            <form method="POST" action="{{ route('ventas.reactivar', $venta) }}" style="display:inline;" onsubmit="return confirm('¿Deseas REACTIVAR este registro de venta?');">
-                                                @csrf
-                                                <button type="submit" class="btn-action-icon btn-action-reactivar" title="Reactivar registro" aria-label="Reactivar venta">
-                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-                                                </button>
-                                            </form>
+                                    @if($venta->puedeSerAnuladoPor(Auth::user()))
+                                        {{-- Anular (Paso 1 del ciclo de eliminación, permitido solo dentro de 24h para registradores) --}}
+                                        <form method="POST" 
+                                              action="{{ route('ventas.anular', $venta) }}" 
+                                              class="form-action-anular form-row-anular" 
+                                              style="display:inline;"
+                                              @if(!Auth::user()->isAdmin() && $venta->created_at)
+                                              data-expires-at="{{ ($venta->created_at->timestamp + 86400) * 1000 }}"
+                                              data-venta-id="{{ $venta->id }}"
+                                              @endif
+                                              onsubmit="return confirm('¿Deseas ANULAR este registro de venta? Pasará a estado anulado y se descontará de los totales.');">
+                                            @csrf
+                                            <button type="submit" class="btn-action-icon btn-action-anular" title="Anular registro (Paso 1 antes de eliminar)" aria-label="Anular venta">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                                            </button>
+                                        </form>
+                                    @elseif($venta->isAnulado() && (Auth::user()->isAdmin() || (Auth::user()->canAccessModule('registro') && !$venta->isCerradoParaEdicion())))
+                                        {{-- Si ya está anulado: Permitir Reactivar --}}
+                                        <form method="POST" action="{{ route('ventas.reactivar', $venta) }}" style="display:inline;" onsubmit="return confirm('¿Deseas REACTIVAR este registro de venta?');">
+                                            @csrf
+                                            <button type="submit" class="btn-action-icon btn-action-reactivar" title="Reactivar registro" aria-label="Reactivar venta">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                                            </button>
+                                        </form>
 
-                                            {{-- Eliminar definitivamente (Paso 2: Solo si ya está anulado) --}}
-                                            <form method="POST" action="{{ route('ventas.destroy', $venta) }}" style="display:inline;" onsubmit="return confirm('¡ADVERTENCIA! Este registro ya está anulado.\n¿Deseas ELIMINARLO DEFINITIVAMENTE de la base de datos?\nEsta acción es irreversible.');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn-action-icon btn-action-delete" title="Eliminar definitivamente de la base de datos" aria-label="Eliminar venta permanentemente">
-                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                                                </button>
-                                            </form>
-                                        @endif
+                                        {{-- Eliminar definitivamente (Paso 2: Solo si ya está anulado) --}}
+                                        <form method="POST" action="{{ route('ventas.destroy', $venta) }}" style="display:inline;" onsubmit="return confirm('¡ADVERTENCIA! Este registro ya está anulado.\n¿Deseas ELIMINARLO DEFINITIVAMENTE de la base de datos?\nEsta acción es irreversible.');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn-action-icon btn-action-delete" title="Eliminar definitivamente de la base de datos" aria-label="Eliminar venta permanentemente">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                                            </button>
+                                        </form>
                                     @endif
                                 </div>
                             </td>
@@ -948,5 +1036,70 @@
     {{-- Modal para Visualizar Registro de Venta --}}
     @include('ventas._modal_detalle')
 </div>
+
+@if(!Auth::user()->isAdmin())
+<script>
+(function() {
+    function verificarVencimientosEnTabla() {
+        var now = Date.now();
+        var expirables = document.querySelectorAll('[data-expires-at]');
+
+        expirables.forEach(function(el) {
+            var expiresAt = parseInt(el.getAttribute('data-expires-at'), 10);
+            if (expiresAt && now >= expiresAt) {
+                var group = el.closest('.row-actions-btn-group') || el.parentElement;
+
+                if (group) {
+                    // 1. Remover botón de Editar
+                    var editBtn = group.querySelector('.btn-row-edit');
+                    if (editBtn) editBtn.remove();
+
+                    // 2. Remover formulario y botón de Anular
+                    var anularForm = group.querySelector('.form-row-anular, .form-action-anular');
+                    if (anularForm) anularForm.remove();
+
+                    // 3. Actualizar botón "Ver" para que su dataset refleje cerrado=1 y no ofrezca editar
+                    var viewBtn = group.querySelector('.btn-row-view');
+                    if (viewBtn) {
+                        viewBtn.removeAttribute('data-url-edit');
+                        viewBtn.setAttribute('data-cerrado', '1');
+                    }
+                } else {
+                    el.remove();
+                }
+
+                // 4. Si el modal de detalle está abierto para este registro, actualizarlo
+                var modalEdit = document.getElementById('modal-btn-edit');
+                var modalBadgeCerrado = document.getElementById('modal-badge-cerrado');
+                if (modalEdit && modalEdit.style.display !== 'none') {
+                    modalEdit.style.display = 'none';
+                    if (modalBadgeCerrado) modalBadgeCerrado.style.display = 'inline-flex';
+                }
+            }
+        });
+    }
+
+    // Interceptar si el usuario hace clic en Anular justo al expirar
+    document.addEventListener('submit', function(e) {
+        var form = e.target.closest('.form-row-anular, .form-action-anular');
+        if (form && form.hasAttribute('data-expires-at')) {
+            var expiresAt = parseInt(form.getAttribute('data-expires-at'), 10);
+            if (Date.now() >= expiresAt) {
+                e.preventDefault();
+                e.stopPropagation();
+                alert('Este registro superó el límite de 24 horas y se encuentra cerrado para anulación.');
+                form.remove();
+                return false;
+            }
+        }
+    }, true);
+
+    // Verificar cada 1 segundo en tiempo real
+    setInterval(verificarVencimientosEnTabla, 1000);
+    // Ejecutar una pasada inmediata al cargar
+    verificarVencimientosEnTabla();
+})();
+</script>
+@endif
 @endsection
 

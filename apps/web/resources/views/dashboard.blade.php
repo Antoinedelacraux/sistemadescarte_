@@ -8,11 +8,8 @@
 @endsection
 
 @section('content')
-    {{-- 1. Hero banner de bienvenida y acciones --}}
+    {{-- 1. Hero unificado: Saludo y KPIs en 1 sola fila (Propuesta 2) --}}
     @include('dashboard._banner')
-
-    {{-- 2. Resumen de KPIs y métricas clave --}}
-    @include('dashboard._kpis')
 
     {{-- Selector de vista de tablas (Control interactivo) y Filtro por Fundo --}}
     <div class="table-view-control-bar" id="table-view-controller" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">

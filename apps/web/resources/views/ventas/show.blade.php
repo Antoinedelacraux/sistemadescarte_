@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Detalle de Venta — ' . ($venta->fundo?->name ?? 'Fundo'))
-@section('page-title', 'Detalle del Pesaje')
+@section('page-title', 'Detalle de Venta')
 
 @section('styles')
 <style>
@@ -216,7 +216,7 @@
     <div class="detail-top-bar">
         <div class="detail-heading">
             <h1>
-                <span aria-hidden="true">📋</span> Ficha de Pesaje de Descarte
+                Detalle de Venta
             </h1>
             <p>
                 {{ $venta->fundo?->name ?? 'Fundo' }} &bull; Producción del {{ $venta->fecha_produccion->format('d/m/Y') }}
@@ -226,10 +226,15 @@
             <a href="{{ route('ventas.index') }}" class="btn btn-secondary btn-sm">
                 &larr; Volver al Historial
             </a>
-            @if(Auth::user()->canAccessModule('registro') || Auth::user()->isAdmin())
+            @if($venta->puedeSerEditadoPor(Auth::user()))
                 <a href="{{ route('ventas.edit', $venta) }}" class="btn btn-primary btn-sm">
                     ✏️ Editar Registro
                 </a>
+            @elseif($venta->isCerradoParaEdicion() && !Auth::user()->isAdmin())
+                <span class="badge-cerrado-24h" title="Registro cerrado para edición tras superar 24 horas" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700; background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <span>Cerrado (&gt;24h)</span>
+                </span>
             @endif
         </div>
     </div>

@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro de Avisos en Headbar — TALSA Fundo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --clr-primary-900: #14532d;
+            --clr-primary-800: #166534;
+            --clr-primary-700: #15803d;
+            --clr-primary-600: #16a34a;
+            --clr-primary-100: #dcfce7;
+            --clr-amber-500:   #f59e0b;
+            --clr-amber-100:   #fef3c7;
+            --clr-amber-800:   #92400e;
+            --clr-red-500:     #ef4444;
+            --clr-red-100:     #fee2e2;
+            --clr-red-800:     #991b1b;
+            --clr-surface-0:   #ffffff;
+            --clr-surface-50:  #f8faf9;
+            --clr-surface-100: #f1f5f9;
+            --clr-surface-200: #e2e8f0;
+            --txt-primary:     #0f172a;
+            --txt-secondary:   #475569;
+            --txt-muted:       #64748b;
+            --brd-base:        #e2e8f0;
+            --radius-md:       0.5rem;
+            --radius-lg:       0.75rem;
+            --radius-xl:       1rem;
+            --radius-pill:     9999px;
+            --shadow-sm:       0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md:       0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg:       0 12px 28px -4px rgba(0,0,0,0.18);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #09130e;
+            color: #f1f5f9;
+            min-height: 100vh;
+            padding: 1.5rem 1rem 3rem 1rem;
+            line-height: 1.5;
+        }
+
+        .preview-topbar {
+            max-width: 1200px;
+            margin: 0 auto 1.5rem auto;
+            background: #14241b;
+            border: 1px solid #1f382a;
+            border-radius: var(--radius-xl);
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .preview-title {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .preview-badge {
+            background: #86efac;
+            color: #064e3b;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 0.2rem 0.55rem;
+            border-radius: var(--radius-pill);
+            text-transform: uppercase;
+        }
+
+        .preview-heading {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .controls-cluster {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .seg-group {
+            background: #0a1710;
+            padding: 3px;
+            border-radius: var(--radius-pill);
+            border: 1px solid #1f382a;
+            display: inline-flex;
+            gap: 3px;
+        }
+
+        .seg-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.35rem 0.85rem;
+            border-radius: var(--radius-pill);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .seg-btn.active {
+            background: #166534;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+
+        .canvas-area {
+            max-width: 1200px;
+            margin: 0 auto;
+            transition: max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .canvas-area.mode-mobile {
+            max-width: 390px;
+        }
+
+        .mockup-frame {
+            background: #f8fafc;
+            border-radius: var(--radius-xl);
+            overflow: visible;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 0 1px #1e3a2b;
+            color: var(--txt-primary);
+            position: relative;
+        }
+
+        .canvas-area.mode-mobile .mockup-frame {
+            border: 8px solid #1e293b;
+            border-radius: 36px;
+        }
+
+        /* Headbar simulado */
+        .app-header-sim {
+            height: 60px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--brd-base);
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 50;
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        }
+
+        .hdr-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .menu-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--brd-base);
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--txt-secondary);
+        }
+
+        .fundo-chip {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.25rem 0.6rem;
+            border-radius: var(--radius-pill);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .hdr-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* BOTÓN DE NOTIFICACIÓN EN HEADBAR */
+        .notif-bell-btn {
+            position: relative;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1.5px solid #fde68a;
+            background: #fffbeb;
+            color: #b45309;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .notif-bell-btn:hover {
+            transform: scale(1.06);
+            background: #fef3c7;
+        }
+
+        .notif-badge-count {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 18px;
+            height: 18px;
+            background: #ef4444;
+            color: #ffffff;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            font-size: 0.65rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            animation: pulseCount 2s infinite;
+        }
+
+        @keyframes pulseCount {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.25); }
+            100% { transform: scale(1); }
+        }
+
+        /* POPOVER ULTRA-DIRECTO DE NOTIFICACIONES */
+        .notif-center-popover {
+            position: absolute;
+            top: 52px;
+            right: 0;
+            width: 310px;
+            background: #ffffff;
+            border: 1px solid var(--brd-base);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            overflow: hidden;
+            animation: popIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .popover-header {
+            background: #ffffff;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 0.65rem 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .popover-title-text {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .badge-count-pill {
+            font-size: 0.68rem;
+            font-weight: 800;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 0.12rem 0.45rem;
+            border-radius: 99px;
+            border: 1px solid #fecaca;
+        }
+
+        .popover-body {
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            background: #ffffff;
+        }
+
+        /* FILA DIRECTA: CLIENTE + TIEMPO + BOTÓN EDITAR */
+        .direct-item {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-left: 3.5px solid #d97706;
+            border-radius: var(--radius-md);
+            padding: 0.55rem 0.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+            transition: background 0.15s ease;
+        }
+
+        .direct-item.urgent {
+            background: #fffafa;
+            border-color: #fecaca;
+            border-left-color: #ef4444;
+        }
+
+        .direct-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .direct-client {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .direct-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #b91c1c;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .btn-direct-edit {
+            background: #15803d;
+            color: #ffffff;
+            border: none;
+            padding: 0.35rem 0.65rem;
+            border-radius: var(--radius-md);
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: all 0.15s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+        }
+
+        .btn-direct-edit:hover {
+            background: #166534;
+            transform: translateY(-1px);
+        }
+
+        .empty-state-direct {
+            padding: 0.85rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-pill);
+            background: #f8fafc;
+            border: 1px solid var(--brd-base);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--txt-primary);
+        }
+
+        .avatar-circle {
+            width: 26px;
+            height: 26px;
+            background: #14532d;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 800;
+        }
+
+        /* CUERPO SIMULADO (TABLA INTACTA 100%) */
+        .app-body-sim {
+            padding: 1rem;
+            background: #f8fafc;
+            min-height: 480px;
+        }
+
+        .page-title-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .page-h1 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--txt-primary);
+        }
+
+        .table-card {
+            background: #ffffff;
+            border: 1px solid var(--brd-base);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .table-sim {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+            min-width: 960px;
+        }
+
+        .table-sim th {
+            background: #f8faf9;
+            padding: 0.65rem 0.65rem;
+            text-align: left;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--txt-muted);
+            border-bottom: 2px solid var(--brd-base);
+            white-space: nowrap;
+        }
+
+        .table-sim td {
+            padding: 0.75rem 0.65rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .badge-motivo-tag {
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: var(--radius-pill);
+            display: inline-block;
+            white-space: nowrap;
+        }
+        .b-campo { background: #fef3c7; color: #92400e; }
+        .b-pack  { background: #dcfce7; color: #166534; }
+        .b-nac   { background: #dbeafe; color: #1e40af; }
+
+        .actions-cluster {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            justify-content: center;
+        }
+
+        .action-icon-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid var(--brd-base);
+            background: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--txt-secondary);
+            font-size: 0.75rem;
+        }
+
+        .action-icon-btn.edit-btn {
+            background: #f0fdf4;
+            border-color: #86efac;
+            color: #166534;
+        }
+
+        /* SECCIÓN DE MEJORAS EXPLICADAS */
+        .feature-grid {
+            max-width: 1200px;
+            margin: 2rem auto 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .feature-card {
+            background: #14241b;
+            border: 1px solid #1f382a;
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            color: #cbd5e1;
+        }
+
+        .feature-icon-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #86efac;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-text {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            line-height: 1.45;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA SUPERIOR DE CONTROL -->
+    <div class="preview-topbar">
+        <div class="preview-title">
+            <span class="preview-badge">Opción C Mejorada</span>
+            <div class="preview-heading">Centro de Avisos en Headbar (Haz clic en la 🔔 para probarlo)</div>
+        </div>
+
+        <div class="controls-cluster">
+            <button type="button" class="seg-btn active" style="background:#166534; color:white;" onclick="toggleNotificationPopover()">
+                🔔 Abrir / Cerrar Centro de Avisos
+            </button>
+            <div class="seg-group">
+                <button type="button" class="seg-btn active" id="btn-desktop" onclick="setDevice('desktop', this)">
+                    💻 Escritorio
+                </button>
+                <button type="button" class="seg-btn" id="btn-mobile" onclick="setDevice('mobile', this)">
+                    📱 Celular (390px)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CANVAS SIMULADO -->
+    <div class="canvas-area" id="canvas-container">
+        <div class="mockup-frame">
+
+            <!-- HEADBAR CON EL CENTRO DE NOTIFICACIONES -->
+            <header class="app-header-sim">
+                <div class="hdr-left">
+                    <button class="menu-btn" title="Menú lateral">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    </button>
+                    <div class="fundo-chip">
+                        <span>🏡</span> AGRITAC
+                    </div>
+                </div>
+
+                <div class="hdr-right">
+                    <!-- BOTÓN DE NOTIFICACIÓN CON CONTADOR -->
+                    <div style="position: relative;">
+                        <button type="button" class="notif-bell-btn" id="notif-bell-trigger" onclick="toggleNotificationPopover()" title="Avisos de cierre (24h)">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                            <span class="notif-badge-count" id="badge-count-num">1</span>
+                        </button>
+
+                        <!-- POPOVER ULTRA-DIRECTO DE NOTIFICACIONES -->
+                        <div class="notif-center-popover" id="notif-popover">
+                            <div class="popover-header">
+                                <div class="popover-title-text">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    <span>Ventas por Cerrar</span>
+                                </div>
+                                <span class="badge-count-pill">1 registro</span>
+                            </div>
+
+                            <div class="popover-body">
+                                <!-- REGISTRO ULTRA-DIRECTO: SOLO CLIENTE, MINUTOS RESTANTES Y EDITAR -->
+                                <div class="direct-item urgent">
+                                    <div class="direct-info">
+                                        <div class="direct-client" title="FRUTAS DEL VALLE S.A.C.">FRUTAS DEL VALLE S.A.C.</div>
+                                        <div class="direct-time" id="ticker-live">⏳ Cierra en 03:42</div>
+                                    </div>
+                                    <a href="#editar" class="btn-direct-edit" onclick="alert('Abriendo edición directa de FRUTAS DEL VALLE S.A.C.')">
+                                        ✏️ Editar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- USUARIO -->
+                    <div class="user-pill">
+                        <div class="avatar-circle">R</div>
+                        <span id="user-label-name">Registrador</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- TABLA INTACTA (0 COLUMNAS NUEVAS, EXACTAS 11 COLUMNAS) -->
+            <main class="app-body-sim">
+                <div class="page-title-box">
+                    <div>
+                        <h1 class="page-h1">Historial de Ventas</h1>
+                        <p style="font-size: 0.75rem; color: var(--txt-muted);">La tabla no se ensancha ni 1 solo píxel: todo el aviso está en la campana 🔔 del Headbar</p>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <div style="overflow-x: auto;">
+                        <table class="table-sim">
+                            <thead>
+                                <tr>
+                                    <th>Fundo</th>
+                                    <th>Fecha</th>
+                                    <th>Cliente</th>
+                                    <th>Lote</th>
+                                    <th>Cuartel</th>
+                                    <th>Origen</th>
+                                    <th>Tipo de Descarte</th>
+                                    <th style="text-align: right;">Kilos</th>
+                                    <th style="text-align: right;">Precio/Kg</th>
+                                    <th style="text-align: right;">Total S/</th>
+                                    <th style="text-align: center;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>AGRITAC</strong></td>
+                                    <td style="white-space: nowrap;">
+                                        <strong>12/10/2026</strong>
+                                        <div style="font-size: 0.68rem; color: #64748b;">12:50 pm</div>
+                                    </td>
+                                    <td>
+                                        <strong style="color: var(--txt-primary);">FRUTAS DEL VALLE S.A.C.</strong>
+                                        <div style="font-size: 0.68rem; color: var(--txt-muted);">RUC: 20549812345</div>
+                                    </td>
+                                    <td>Lote H01</td>
+                                    <td>Cuartel 2</td>
+                                    <td><span class="badge-motivo-tag b-campo">Campo</span></td>
+                                    <td>Granos</td>
+                                    <td style="text-align: right; font-weight: 700;">850.50 kg</td>
+                                    <td style="text-align: right; color: var(--txt-muted);">S/ 1.80</td>
+                                    <td style="text-align: right; font-weight: 800; color: #166534;">S/ 1,530.90</td>
+                                    <td style="text-align: center;">
+                                        <div class="actions-cluster">
+                                            <button class="action-icon-btn" title="Ver detalle">👁️</button>
+                                            <button class="action-icon-btn edit-btn" title="Editar">✏️</button>
+                                            <button class="action-icon-btn" title="Anular" style="color: #ef4444;">🚫</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>AGRITAC</strong></td>
+                                    <td style="white-space: nowrap;">
+                                        <strong>13/10/2026</strong>
+                                        <div style="font-size: 0.68rem; color: #64748b;">11:30 am</div>
+                                    </td>
+                                    <td>
+                                        <strong>COMERCIALIZADORA AGRICOLA</strong>
+                                        <div style="font-size: 0.68rem; color: var(--txt-muted);">RUC: 20489911223</div>
+                                    </td>
+                                    <td>Lote A</td>
+                                    <td>Cuartel 4B</td>
+                                    <td><span class="badge-motivo-tag b-nac">Cosecha Nac.</span></td>
+                                    <td>Racimos</td>
+                                    <td style="text-align: right; font-weight: 700;">620.00 kg</td>
+                                    <td style="text-align: right; color: var(--txt-muted);">S/ 1.95</td>
+                                    <td style="text-align: right; font-weight: 800; color: #166534;">S/ 1,209.00</td>
+                                    <td style="text-align: center;">
+                                        <div class="actions-cluster">
+                                            <button class="action-icon-btn" title="Ver detalle">👁️</button>
+                                            <button class="action-icon-btn edit-btn" title="Editar">✏️</button>
+                                            <button class="action-icon-btn" title="Anular" style="color: #ef4444;">🚫</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr style="background: #fafafa;">
+                                    <td style="color: #64748b;"><strong>PROCOM</strong></td>
+                                    <td style="white-space: nowrap; color: #64748b;">
+                                        <strong>11/10/2026</strong>
+                                        <div style="font-size: 0.68rem; color: #94a3b8;">10:15 am</div>
+                                    </td>
+                                    <td style="color: #64748b;">
+                                        <strong>AGROEXPORTADORA SUR S.A.</strong>
+                                    </td>
+                                    <td style="color: #64748b;">Lote 01</td>
+                                    <td style="color: #64748b;">—</td>
+                                    <td><span class="badge-motivo-tag b-pack" style="opacity: 0.7;">Packing</span></td>
+                                    <td style="color: #64748b;">Racimos</td>
+                                    <td style="text-align: right; font-weight: 700; color: #64748b;">1,240.00 kg</td>
+                                    <td style="text-align: right; color: #94a3b8;">S/ 2.10</td>
+                                    <td style="text-align: right; font-weight: 700; color: #64748b;">S/ 2,604.00</td>
+                                    <td style="text-align: center;">
+                                        <div class="actions-cluster">
+                                            <button class="action-icon-btn" title="Solo lectura">👁️</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- PILARES DEL DISEÑO ULTRA-DIRECTO -->
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon-title">
+                <span>🎯</span> 1. Cero Datos Redundantes
+            </div>
+            <div class="feature-text">
+                Eliminamos kilos, totales en soles, origen y barras de progreso. Solo ves el <strong>Cliente</strong>, el <strong>tiempo restante</strong> y el botón de acción.
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon-title">
+                <span>⚡</span> 2. Un Clic para Editar
+            </div>
+            <div class="feature-text">
+                No tienes que buscar el registro entre docenas de filas en la tabla. Haces 1 clic en <strong>[✏️ Editar]</strong> y entras directo a corregir el pesaje.
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon-title">
+                <span>⏱️</span> 3. Filtro Estricto de 5 Minutos
+            </div>
+            <div class="feature-text">
+                No satura mostrando ventas que aún tienen 20 horas disponibles. Solo aparece y alerta cuando una venta está a <strong>5 minutos</strong> de bloquearse.
+            </div>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon-title">
+                <span>🛡️</span> 4. Tabla 100% Intacta
+            </div>
+            <div class="feature-text">
+                La tabla de ventas mantiene exactamente sus mismas 11 columnas. No se ensancha ni altera la comodidad de lectura del historial.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var popover = document.getElementById('notif-popover');
+
+        function toggleNotificationPopover() {
+            if (popover.style.display === 'none' || popover.style.display === '') {
+                popover.style.display = 'block';
+            } else {
+                popover.style.display = 'none';
+            }
+        }
+
+        function setDevice(device, btn) {
+            var container = document.getElementById('canvas-container');
+            document.getElementById('btn-desktop').classList.remove('active');
+            document.getElementById('btn-mobile').classList.remove('active');
+            btn.classList.add('active');
+
+            var userName = document.getElementById('user-label-name');
+
+            if (device === 'mobile') {
+                container.classList.add('mode-mobile');
+                userName.style.display = 'none';
+            } else {
+                container.classList.remove('mode-mobile');
+                userName.style.display = 'inline';
+            }
+        }
+
+        // Ticker regresivo en vivo simulado
+        var totalSeconds = 222; // 3 min 42 seg
+        setInterval(function() {
+            if (totalSeconds > 0) {
+                totalSeconds--;
+                var m = Math.floor(totalSeconds / 60);
+                var s = totalSeconds % 60;
+                var formatted = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+                var el = document.getElementById('ticker-live');
+                if (el) el.textContent = '⏳ ' + formatted;
+            } else {
+                var el = document.getElementById('ticker-live');
+                if (el) {
+                    el.textContent = '🔒 Cerrado';
+                    el.classList.remove('ticker-urgent');
+                }
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

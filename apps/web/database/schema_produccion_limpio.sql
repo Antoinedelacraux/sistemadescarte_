@@ -145,32 +145,49 @@ CREATE TABLE `lotes` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `lotes_fundo_id_foreign` (`fundo_id`),
+  KEY `idx_lotes_fundo_nombre` (`fundo_id`,`nombre`),
   CONSTRAINT `lotes_fundo_id_foreign` FOREIGN KEY (`fundo_id`) REFERENCES `fundos` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- AGRITAC (18 Lotes)
-INSERT INTO `lotes` (`fundo_id`, `nombre`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 'A03', 1, NOW(), NOW()), (1, 'A05', 1, NOW(), NOW()), (1, 'A06', 1, NOW(), NOW()),
-(1, 'L03', 1, NOW(), NOW()), (1, 'L06', 1, NOW(), NOW()), (1, 'L07', 1, NOW(), NOW()),
-(1, 'M03', 1, NOW(), NOW()), (1, 'M05', 1, NOW(), NOW()), (1, 'M04', 1, NOW(), NOW()),
-(1, 'M01', 1, NOW(), NOW()), (1, 'M02', 1, NOW(), NOW()), (1, 'A04', 1, NOW(), NOW()),
-(1, 'A02', 1, NOW(), NOW()), (1, 'A01', 1, NOW(), NOW()), (1, 'L01', 1, NOW(), NOW()),
-(1, 'L02', 1, NOW(), NOW()), (1, 'L04', 1, NOW(), NOW()), (1, 'L05', 1, NOW(), NOW());
+INSERT INTO `lotes` (`id`, `fundo_id`, `nombre`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 1, 'A03', 1, NOW(), NOW()), (2, 1, 'A05', 1, NOW(), NOW()), (3, 1, 'A06', 1, NOW(), NOW()),
+(4, 1, 'L03', 1, NOW(), NOW()), (5, 1, 'L06', 1, NOW(), NOW()), (6, 1, 'L07', 1, NOW(), NOW()),
+(7, 1, 'M03', 1, NOW(), NOW()), (8, 1, 'M05', 1, NOW(), NOW()), (9, 1, 'M04', 1, NOW(), NOW()),
+(10, 1, 'M01', 1, NOW(), NOW()), (11, 1, 'M02', 1, NOW(), NOW()), (12, 1, 'A04', 1, NOW(), NOW()),
+(13, 1, 'A02', 1, NOW(), NOW()), (14, 1, 'A01', 1, NOW(), NOW()), (15, 1, 'L01', 1, NOW(), NOW()),
+(16, 1, 'L02', 1, NOW(), NOW()), (17, 1, 'L04', 1, NOW(), NOW()), (18, 1, 'L05', 1, NOW(), NOW());
 
 -- PROCOM (9 Lotes)
-INSERT INTO `lotes` (`fundo_id`, `nombre`, `is_active`, `created_at`, `updated_at`) VALUES
-(2, 'H01', 1, NOW(), NOW()), (2, 'H02', 1, NOW(), NOW()), (2, 'H03', 1, NOW(), NOW()),
-(2, 'H04', 1, NOW(), NOW()), (2, 'H05', 1, NOW(), NOW()), (2, 'H06', 1, NOW(), NOW()),
-(2, 'H07', 1, NOW(), NOW()), (2, 'H08', 1, NOW(), NOW()), (2, 'H09', 1, NOW(), NOW());
+INSERT INTO `lotes` (`id`, `fundo_id`, `nombre`, `is_active`, `created_at`, `updated_at`) VALUES
+(19, 2, 'H01', 1, NOW(), NOW()), (20, 2, 'H02', 1, NOW(), NOW()), (21, 2, 'H03', 1, NOW(), NOW()),
+(22, 2, 'H04', 1, NOW(), NOW()), (23, 2, 'H05', 1, NOW(), NOW()), (24, 2, 'H06', 1, NOW(), NOW()),
+(25, 2, 'H07', 1, NOW(), NOW()), (26, 2, 'H08', 1, NOW(), NOW()), (27, 2, 'H09', 1, NOW(), NOW());
 
 -- EL NEGRO (7 Lotes)
-INSERT INTO `lotes` (`fundo_id`, `nombre`, `is_active`, `created_at`, `updated_at`) VALUES
-(3, 'N01', 1, NOW(), NOW()), (3, 'N03', 1, NOW(), NOW()), (3, 'N04', 1, NOW(), NOW()),
-(3, 'N05', 1, NOW(), NOW()), (3, 'N06', 1, NOW(), NOW()), (3, 'N07', 1, NOW(), NOW()),
-(3, 'N08', 1, NOW(), NOW());
+INSERT INTO `lotes` (`id`, `fundo_id`, `nombre`, `is_active`, `created_at`, `updated_at`) VALUES
+(28, 3, 'N01', 1, NOW(), NOW()), (29, 3, 'N03', 1, NOW(), NOW()), (30, 3, 'N04', 1, NOW(), NOW()),
+(31, 3, 'N05', 1, NOW(), NOW()), (32, 3, 'N06', 1, NOW(), NOW()), (33, 3, 'N07', 1, NOW(), NOW()),
+(34, 3, 'N08', 1, NOW(), NOW());
 
 -- ------------------------------------------------------------------------------
--- 7. TABLA: clientes (Catálogo de clientes compradores de fruta de descarte)
+-- 7. TABLA: cuarteles
+-- ------------------------------------------------------------------------------
+DROP TABLE IF EXISTS `cuarteles`;
+CREATE TABLE `cuarteles` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `lote_id` bigint unsigned NOT NULL,
+  `nombre` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `cuarteles_lote_id_foreign` (`lote_id`),
+  KEY `idx_cuarteles_lote_nombre` (`lote_id`,`nombre`),
+  CONSTRAINT `cuarteles_lote_id_foreign` FOREIGN KEY (`lote_id`) REFERENCES `lotes` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------------------------
+-- 8. TABLA: clientes (Catálogo de clientes compradores de fruta de descarte)
 -- ------------------------------------------------------------------------------
 DROP TABLE IF EXISTS `clientes`;
 CREATE TABLE `clientes` (
@@ -186,47 +203,62 @@ CREATE TABLE `clientes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ------------------------------------------------------------------------------
--- 8. TABLA: ventas_descarte (Registro operativo de ventas de descarte)
+-- 9. TABLA: ventas_descarte (Registro operativo de ventas de descarte)
 -- INICIA EN CERO REGISTROS PARA PRODUCCIÓN
 -- ------------------------------------------------------------------------------
 DROP TABLE IF EXISTS `ventas_descarte`;
 CREATE TABLE `ventas_descarte` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `uuid` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `fundo_id` bigint unsigned NOT NULL,
-  `user_id` bigint unsigned NOT NULL,
+  `lote_id` bigint unsigned DEFAULT NULL,
+  `cuartel_id` bigint unsigned DEFAULT NULL,
+  `cuartel_manual` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `fecha_produccion` date NOT NULL,
-  `fecha_pesaje` date DEFAULT NULL,
-  `motivo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `tipo_descarte` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `lote` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `variedad` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `motivo` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tipo_descarte` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `precio` decimal(10,2) NOT NULL,
   `kilogramos` decimal(10,2) NOT NULL,
-  `precio_unitario` decimal(10,4) NOT NULL,
-  `total` decimal(12,2) NOT NULL,
-  `placa_vehiculo` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `cliente` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `estado` enum('activo','anulado') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'activo',
-  `motivo_anulacion` text COLLATE utf8mb4_unicode_ci,
-  `anulado_por` bigint unsigned DEFAULT NULL,
-  `anulado_at` timestamp NULL DEFAULT NULL,
+  `valor_venta` decimal(10,2) NOT NULL,
+  `jabas` int DEFAULT NULL,
+  `peso_jaba` decimal(10,2) DEFAULT NULL,
+  `brevete` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ruc` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `placa` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `conductor` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `viaje` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `observacion` text COLLATE utf8mb4_unicode_ci,
+  `cliente` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `estado` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'activo',
+  `anulado_at` datetime DEFAULT NULL,
+  `anulado_by` bigint unsigned DEFAULT NULL,
+  `motivo_anulacion` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_by` bigint unsigned NOT NULL,
+  `updated_by` bigint unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `ventas_descarte_uuid_unique` (`uuid`),
   KEY `ventas_descarte_fundo_id_foreign` (`fundo_id`),
-  KEY `ventas_descarte_user_id_foreign` (`user_id`),
-  KEY `ventas_descarte_anulado_por_foreign` (`anulado_por`),
-  KEY `idx_ventas_estado_fecha` (`estado`,`fecha_produccion`),
+  KEY `ventas_descarte_lote_id_foreign` (`lote_id`),
+  KEY `ventas_descarte_cuartel_id_foreign` (`cuartel_id`),
+  KEY `ventas_descarte_created_by_foreign` (`created_by`),
+  KEY `ventas_descarte_updated_by_foreign` (`updated_by`),
+  KEY `ventas_descarte_anulado_by_foreign` (`anulado_by`),
+  KEY `idx_ventas_fecha_produccion` (`fecha_produccion`),
   KEY `idx_ventas_fundo_fecha` (`fundo_id`,`fecha_produccion`),
+  KEY `idx_ventas_estado_fecha` (`estado`,`fecha_produccion`),
+  KEY `idx_ventas_motivo_tipo` (`motivo`,`tipo_descarte`),
+  KEY `idx_ventas_cliente` (`cliente`),
   KEY `idx_ventas_analytics` (`estado`,`fundo_id`,`fecha_produccion`),
-  CONSTRAINT `ventas_descarte_anulado_por_foreign` FOREIGN KEY (`anulado_por`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `ventas_descarte_fundo_id_foreign` FOREIGN KEY (`fundo_id`) REFERENCES `fundos` (`id`),
-  CONSTRAINT `ventas_descarte_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+  CONSTRAINT `ventas_descarte_anulado_by_foreign` FOREIGN KEY (`anulado_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ventas_descarte_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`),
+  CONSTRAINT `ventas_descarte_cuartel_id_foreign` FOREIGN KEY (`cuartel_id`) REFERENCES `cuarteles` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ventas_descarte_fundo_id_foreign` FOREIGN KEY (`fundo_id`) REFERENCES `fundos` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ventas_descarte_lote_id_foreign` FOREIGN KEY (`lote_id`) REFERENCES `lotes` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ventas_descarte_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ------------------------------------------------------------------------------
--- 9. TABLAS DE SOPORTE LARAVEL: sessions, cache, jobs
+-- 10. TABLAS DE SOPORTE LARAVEL: sessions, cache, jobs
 -- ------------------------------------------------------------------------------
 DROP TABLE IF EXISTS `sessions`;
 CREATE TABLE `sessions` (

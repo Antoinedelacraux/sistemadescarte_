@@ -1,42 +1,46 @@
-{{-- 1. HERO BANNER DE BIENVENIDA Y ACCESO RÁPIDO --}}
-<div class="welcome-banner">
-    <div class="welcome-banner-info">
-        <div class="welcome-greeting" style="display: flex; align-items: center; gap: 0.5rem;">
-            <img src="/images/logo-emblem.webp" alt="TALSA" width="20" height="20" style="object-fit: contain; background: transparent; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4)) drop-shadow(0 0 6px rgba(255,255,255,0.4));">
-            <span>TALSA Grape Farms &bull; Gestión Agrícola</span>
+{{-- HERO UNIFICADO: SALUDO Y KPIS EN 1 SOLA FILA (PROPUESTA 2) --}}
+{{-- Diseñado para eliminar el scroll vertical y ubicar los totales en primer plano --}}
+<div class="fusion-hero-grid" role="region" aria-label="Resumen ejecutivo del fundo">
+    {{-- Columna 1: Tarjeta de Bienvenida y Contexto --}}
+    <div class="fusion-welcome-card">
+        <div class="fusion-header-tag">
+            <img src="/images/logo-emblem-white.webp" alt="TALSA" width="16" height="16" style="object-fit: contain;">
+            <span>TALSA GRAPE FARMS</span>
         </div>
-        <div class="welcome-name">Hola, {{ $user->name }}</div>
-        <div class="welcome-meta">
-            <div class="welcome-meta-item">
-                <span>{{ now()->translatedFormat('l, d \d\e F \d\e Y') }}</span>
-            </div>
+        <div class="fusion-name">Hola, {{ $user->name }}</div>
+        <div class="fusion-meta">
+            <span>{{ now()->translatedFormat('l, d \d\e F') }}</span>
+            <span class="fusion-meta-sep">•</span>
             @if(Auth::user()->hasAccessToAllFundos())
-                <div class="welcome-meta-item" style="color: #bbf7d0;">
-                    <span>Acceso a todos los fundos</span>
-                </div>
+                <span class="fusion-meta-fundo">Todos los fundos</span>
             @elseif($fundos->count())
-                <div class="welcome-meta-item" style="color: #bbf7d0;">
-                    <span>{{ $fundos->map(fn($f) => $f->nombre_completo ?: $f->name)->join(', ') }}</span>
-                </div>
+                <span class="fusion-meta-fundo">{{ $fundos->map(fn($f) => $f->nombre_completo ?: $f->name)->join(', ') }}</span>
             @endif
         </div>
     </div>
 
-    {{-- Botones de acción directa para trabajadores --}}
-    <div class="welcome-actions">
-        @if(Auth::user()->canAccessModule('registro'))
-            <a href="{{ route('ventas.create') }}" class="btn-hero-primary" id="btn-quick-create">
-                <span>Registrar Venta</span>
-            </a>
-        @endif
-        @if(Auth::user()->canAccessModule('historial'))
-        <a href="{{ route('ventas.index') }}" class="btn-hero-secondary">
-            <span>Ver Historial</span>
-        </a>
-        @endif
-        <a href="{{ route('dashboard.exportar', array_filter(['tabla' => 'completo', 'fundo_id' => $fundoSeleccionadoId ?? null])) }}" class="btn-hero-secondary" title="Descargar reporte consolidado del panel en Excel (.xlsx)">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            <span>Exportar Excel</span>
-        </a>
+    {{-- Columna 2: KPI Kilogramos Totales --}}
+    <div class="fusion-kpi-card">
+        <div class="stat-icon green" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="m3 7 9-4 9 4"/><path d="m6 13-3-6h6l-3 6a3 3 0 0 1-3-3"/><path d="m18 13-3-6h6l-3 6a3 3 0 0 1-3-3"/></svg>
+        </div>
+        <div style="min-width: 0;">
+            <div class="stat-value">{{ number_format($totalGeneralKg, 2) }} kg</div>
+            <div class="stat-label">Kilogramos Totales</div>
+        </div>
+    </div>
+
+    {{-- Columna 3: KPI Valor Total en Ventas --}}
+    <div class="fusion-kpi-card">
+        <div class="stat-icon yellow" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9.5" stroke-width="1.8"/>
+                <text x="12" y="12.5" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="800" font-family="Inter, -apple-system, BlinkMacSystemFont, sans-serif" fill="currentColor" stroke="none">S/</text>
+            </svg>
+        </div>
+        <div style="min-width: 0;">
+            <div class="stat-value">S/ {{ number_format($totalGeneralVenta, 2) }}</div>
+            <div class="stat-label">Valor Total en Ventas</div>
+        </div>
     </div>
 </div>

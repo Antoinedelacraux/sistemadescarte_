@@ -62,3 +62,149 @@ Route::middleware('auth')->group(function () {
     });
 });
 
+if (!app()->environment('production')) {
+    Route::get('/dev/seed-test-vencimiento-5min', function () {
+        // 1. Borrar todas las ventas de prueba anteriores
+        \App\Models\VentaDescarte::withoutGlobalScopes()->forceDelete();
+
+        // 2. Fundo AGRITAC y lotes
+        $fundo = \App\Models\Fundo::where('code', 'AGRITAC')->first() ?? \App\Models\Fundo::first();
+        $lotes = \App\Models\Lote::withoutGlobalScopes()->where('fundo_id', $fundo->id)->get();
+
+        $registrador = \App\Models\User::where('email', 'registrador@fundo.test')->first()
+            ?? \App\Models\User::first();
+
+        $now = \Carbon\Carbon::now();
+
+        // Configuración de los 5 registros en cadena escalonada de 2 minutos
+        $datos = [
+            [
+                'minutos' => 2,
+                'cliente' => '1. AGRO EXPORT CHINCHA S.A.C.',
+                'ruc' => '20549812341',
+                'lote_idx' => 0,
+                'cuartel' => 'Cuartel 01',
+                'motivo' => 'Campo',
+                'tipo' => 'Granos',
+                'kg' => 750.00,
+                'precio' => 1.80,
+            ],
+            [
+                'minutos' => 4,
+                'cliente' => '2. FRUTAS DEL VALLE S.A.C.',
+                'ruc' => '20549812342',
+                'lote_idx' => 1,
+                'cuartel' => 'Cuartel 02',
+                'motivo' => 'Packing',
+                'tipo' => 'Racimos',
+                'kg' => 1240.00,
+                'precio' => 2.10,
+            ],
+            [
+                'minutos' => 6,
+                'cliente' => '3. AGROINDUSTRIAL ICA S.A.',
+                'ruc' => '20549812343',
+                'lote_idx' => 2,
+                'cuartel' => 'Cuartel 03',
+                'motivo' => 'Campo',
+                'tipo' => 'Granos',
+                'kg' => 890.50,
+                'precio' => 1.75,
+            ],
+            [
+                'minutos' => 8,
+                'cliente' => '4. COMERCIALIZADORA DEL SUR E.I.R.L.',
+                'ruc' => '20549812344',
+                'lote_idx' => 3,
+                'cuartel' => 'Cuartel 04',
+                'motivo' => 'Cosecha Nac.',
+                'tipo' => 'Segunda',
+                'kg' => 620.00,
+                'precio' => 1.50,
+            ],
+            [
+                'minutos' => 10,
+                'cliente' => '5. EXPORTADORA SANTA RITA S.A.C.',
+                'ruc' => '20549812345',
+                'lote_idx' => 4,
+                'cuartel' => 'Cuartel 05',
+                'motivo' => 'Packing',
+                'tipo' => 'Racimos',
+                'kg' => 1500.00,
+                'precio' => 2.20,
+            ],
+        ];
+
+        $ventasCreadas = [];
+
+        foreach ($datos as $item) {
+            $created = $now->copy()->subHours(24)->addMinutes($item['minutos']);
+            $lote = $lotes->skip($item['lote_idx'])->first() ?? $lotes->first();
+
+            $venta = \App\Models\VentaDescarte::withoutGlobalScopes()->create([
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'fundo_id' => $fundo->id,
+                'lote_id' => $lote?->id,
+                'cuartel_manual' => $item['cuartel'],
+                'fecha_produccion' => $now->copy()->subDay()->format('Y-m-d'),
+                'motivo' => $item['motivo'],
+                'tipo_descarte' => $item['tipo'],
+                'precio' => $item['precio'],
+                'kilogramos' => $item['kg'],
+                'valor_venta' => round($item['precio'] * $item['kg'], 2),
+                'cliente' => $item['cliente'],
+                'ruc' => $item['ruc'],
+                'jabas' => ceil($item['kg'] / 20),
+                'peso_jaba' => 20.00,
+                'created_by' => $registrador->id,
+                'estado' => 'activo',
+            ]);
+
+            \Illuminate\Support\Facades\DB::table('ventas_descarte')->where('id', $venta->id)->update([
+                'created_at' => $created->format('Y-m-d H:i:s'),
+                'updated_at' => $created->format('Y-m-d H:i:s'),
+            ]);
+
+            $ventasCreadas[] = [
+                'id' => $venta->id,
+                'cliente' => $item['cliente'],
+                'minutos_para_vencer' => $item['minutos'],
+                'created_at' => $created->toDateTimeString(),
+                'vence_a' => $created->copy()->addHours(24)->toDateTimeString(),
+                'url_edit' => route('ventas.edit', $venta),
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'now' => $now->toDateTimeString(),
+            'total_registros' => count($ventasCreadas),
+            'ventas_creadas' => $ventasCreadas
+        ]);
+    });
+
+    Route::get('/dev/status-ventas', function () {
+        $now = \Carbon\Carbon::now();
+        $ventas = \App\Models\VentaDescarte::withoutGlobalScopes()->get()->map(function($v) use ($now) {
+            $limite = $v->created_at->copy()->addHours(24);
+            $diffSeconds = $limite->timestamp - $now->timestamp;
+            return [
+                'id' => $v->id,
+                'cliente' => $v->cliente,
+                'created_at' => $v->created_at->toDateTimeString(),
+                'vence_a' => $limite->toDateTimeString(),
+                'segundos_restantes' => $diffSeconds,
+                'minutos_restantes' => round($diffSeconds / 60, 2),
+                'esta_cerrado' => $v->isCerradoParaEdicion(),
+            ];
+        });
+
+        return response()->json([
+            'now' => $now->toDateTimeString(),
+            'ventas' => $ventas,
+        ]);
+    });
+}
+
+
+

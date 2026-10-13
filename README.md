@@ -2,11 +2,11 @@
 
 Sistema web empresarial y progresivo (PWA) para el registro, control, análisis y exportación de ventas de descarte agrícola en fundos, diseñado para operar en campo tanto en dispositivos móviles (Android / iOS) como en estaciones de escritorio.
 
-- **Versión:** 0.5.8 (Estable — Módulos Completados y Verificados)
-- **Framework & Backend:** Laravel 12 (PHP 8.4)
-- **Frontend & UI:** Blade + Vanilla CSS moderno con Design Tokens (sin Tailwind) + JavaScript Vanilla
-- **Base de Datos:** SQLite local (desarrollo) / MySQL 8.0 (producción en VPS DonWeb)
-- **Cobertura de Pruebas:** 55 pruebas automatizadas PHPUnit pasando (242 aserciones)
+- **Versión:** 1.0.4 (Release Listo para Producción en DonWeb Ferozo)
+- **Framework & Backend:** Laravel 12
+- **Frontend & UI:** Blade + Vanilla CSS moderno con Design Tokens (sin dependencias Node.js en servidor) + JavaScript Vanilla
+- **Base de Datos:** SQLite local (desarrollo) / MySQL 8.0 (producción en DonWeb Ferozo)
+- **Cobertura de Pruebas:** 84 pruebas automatizadas PHPUnit pasando (418 aserciones)
 - **Ubicación de la App:** `apps/web/`
 
 ---
@@ -14,9 +14,9 @@ Sistema web empresarial y progresivo (PWA) para el registro, control, análisis 
 ## Módulos y Funcionalidades Implementadas
 
 1. **Autenticación y Control de Acceso por Roles (RBAC):**
-   - 4 roles con permisos diferenciados: `Administrador`, `General`, `Individual` y `Analista`.
+   - 5 roles oficiales con permisos diferenciados: `Administrador`, `Jefe de fundo`, `Registrador`, `Analista` y `Ventas`.
    - Cuentas activas/inactivas con bloqueo automático y sesión segura.
-   - Branding corporativo TALSA Grape Farms (isotipo e imagotipo transparentes) con fondo panorámico de viñedos en [login](file:///apps/web/resources/views/auth/login.blade.php).
+   - Branding corporativo TALSA Grape Farms (emblemas oficiales en blanco con transparencia pura) con fondo panorámico de viñedos en [login](file:///apps/web/resources/views/auth/login.blade.php).
 
 2. **Aislamiento Multi-Tenant (`FundoScope`):**
    - Filtrado transparente y seguro a nivel de base de datos (`Eloquent Global Scope`).
@@ -24,9 +24,8 @@ Sistema web empresarial y progresivo (PWA) para el registro, control, análisis 
      - **AGRITAC** (`AGRICOLA TAMBO COLORADO`)
      - **PROCOM** (`AGRICOLA PROCOM`)
      - **EL NEGRO** (`TALSA GRAPE FARMS`)
-   - El rol `Individual` solo opera sobre su fundo asignado (ej. PROCOM sin select fantasma).
-   - El rol `General` visualiza únicamente los fundos asignados.
-   - `Administrador` y `Analista` poseen acceso transversal a todos los fundos.
+   - El rol `Registrador` y `Jefe de fundo` operan sobre sus fundos asignados.
+   - `Administrador`, `Analista` y `Ventas` poseen acceso transversal a todos los fundos.
 
 3. **Catálogos Dinámicos de Campo:**
    - Carga reactiva de Lotes y Cuarteles por Fundo (`GET /api/catalogo/lotes`).
@@ -81,11 +80,18 @@ cd apps/web
 # Iniciar servidor local
 php artisan serve
 
-# Ejecutar la suite completa de 55 pruebas automatizadas
+# Ejecutar la suite completa de 84 pruebas automatizadas
 php artisan test
 ```
 
 Acceder en el navegador a: `http://127.0.0.1:8000`
+
+---
+
+## Empaquetado y Despliegue en DonWeb Ferozo
+
+1. **Empaquetar para Producción:** Ejecuta el archivo `empaquetar_produccion.bat` en la raíz del proyecto para generar `dist/sistema-fundo-ferozo.zip`.
+2. **Guía de Despliegue:** Consulta la [Guía Maestra de Despliegue en Ferozo](file:///docs/05-operacion/GUIA_DESPLIEGUE_FEROZO_DONWEB.md) para subirlo e inicializar la base de datos limpia con 0 ventas.
 
 ---
 

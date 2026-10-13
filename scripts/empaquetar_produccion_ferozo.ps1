@@ -66,12 +66,18 @@ foreach ($folder in $foldersToCopy) {
 }
 
 # Copiar archivos individuales clave
-$filesToCopy = @("artisan", "composer.json", ".env.production.example")
+$filesToCopy = @("artisan", "composer.json", ".env.production.example", ".htaccess")
 foreach ($file in $filesToCopy) {
     $src = Join-Path $webAppPath $file
     if (Test-Path $src) {
         Copy-Item -Path $src -Destination $tempDir -Force
     }
+}
+
+# Copiar esquema SQL limpio a la raíz del ZIP para acceso inmediato
+$schemaSql = Join-Path $webAppPath "database\schema_produccion_limpio.sql"
+if (Test-Path $schemaSql) {
+    Copy-Item -Path $schemaSql -Destination (Join-Path $tempDir "schema_produccion_limpio.sql") -Force
 }
 
 # Limpiar posibles archivos de entorno o bases de datos de desarrollo en temp_build

@@ -22,6 +22,9 @@ class VentaDescarteController extends Controller
      */
     public function exportar(Request $request): Response
     {
+        @ini_set('memory_limit', '512M');
+        @set_time_limit(180);
+
         $user = Auth::user();
 
         $query = VentaDescarte::with(['fundo', 'lote', 'cuartel', 'creator', 'updater', 'anulador'])
@@ -67,8 +70,6 @@ class VentaDescarteController extends Controller
                   ->orWhere('ruc', 'like', $term);
             });
         }
-
-        $ventas = $query->get();
 
         $headers = [
             'FUNDO',
@@ -119,7 +120,8 @@ class VentaDescarteController extends Controller
         ];
 
         $dataRows = [];
-        foreach ($ventas as $v) {
+        // Streaming en lotes pequeños (lazy chunks) para mantener la memoria RAM bajo control (< 25MB)
+        $query->lazy(500)->each(function ($v) use (&$dataRows) {
             $fundoNombre = $v->fundo?->nombre_corto ?? $v->fundo?->name ?? 'N/A';
             $dataRows[] = [
                 $fundoNombre,
@@ -144,7 +146,7 @@ class VentaDescarteController extends Controller
                 $v->creator?->name ?? 'Sistema',
                 $v->created_at ? $v->created_at->format('d/m/Y H:i') : '',
             ];
-        }
+        });
 
         $filename = 'ventas_historial_' . date('Y-m-d_His') . '.xlsx';
         $xlsxBinary = ExcelExporter::generate($headers, $dataRows, 'Historial Ventas', [
@@ -263,10 +265,24 @@ class VentaDescarteController extends Controller
 
         $this->syncClienteCatalogo($validated['cliente'] ?? null, $validated['ruc'] ?? null);
 
-        // Idempotencia: Si viene con UUID desde la cola offline del cliente, usamos firstOrCreate
-        $venta = !empty($validated['id'])
-            ? VentaDescarte::firstOrCreate(['id' => $validated['id']], $validated)
-            : VentaDescarte::create($validated);
+        // Idempotencia: Si viene con UUID desde la cola offline del cliente, usamos firstOrCreate con captura de colisiones
+        try {
+            $venta = !empty($validated['id'])
+                ? VentaDescarte::withoutGlobalScopes()->firstOrCreate(['id' => $validated['id']], $validated)
+                : VentaDescarte::create($validated);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Manejo tolerante a fallos si dos llamadas concurrentes intentaron insertar el mismo UUID
+            if ($e->getCode() == 23000 || str_contains($e->getMessage(), 'Duplicate entry') || str_contains($e->getMessage(), '1062')) {
+                $venta = !empty($validated['id'])
+                    ? VentaDescarte::withoutGlobalScopes()->find($validated['id'])
+                    : null;
+                if (!$venta) {
+                    throw $e;
+                }
+            } else {
+                throw $e;
+            }
+        }
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
@@ -288,9 +304,17 @@ class VentaDescarteController extends Controller
     /**
      * Formulario de edición.
      */
-    public function edit(VentaDescarte $venta): View
+    public function edit(VentaDescarte $venta): View|RedirectResponse
     {
         $user = Auth::user();
+
+        if (!$venta->puedeSerEditadoPor($user)) {
+            $mensaje = $venta->isCerradoParaEdicion()
+                ? 'Este registro tiene más de 24 horas y se encuentra cerrado para edición. Solicite los ajustes a un Administrador.'
+                : 'No tienes permisos para editar este registro.';
+
+            return redirect()->route('ventas.index')->with('error', $mensaje);
+        }
 
         $fundos = $user->hasAccessToAllFundos()
             ? Fundo::where('is_active', true)->with('lotes.cuarteles')->get()
@@ -308,6 +332,15 @@ class VentaDescarteController extends Controller
     public function update(Request $request, VentaDescarte $venta): RedirectResponse
     {
         $user = Auth::user();
+
+        if (!$venta->puedeSerEditadoPor($user)) {
+            $mensaje = $venta->isCerradoParaEdicion()
+                ? 'Este registro superó el límite de 24 horas y se encuentra cerrado para edición.'
+                : 'No tienes permisos para actualizar este registro.';
+
+            return redirect()->route('ventas.index')->with('error', $mensaje);
+        }
+
         $this->normalizarCuartelInput($request);
 
         $fundosAccesibles = $user->hasAccessToAllFundos()
@@ -463,8 +496,13 @@ class VentaDescarteController extends Controller
     public function anular(Request $request, VentaDescarte $venta): RedirectResponse
     {
         $user = Auth::user();
-        if (!$user->canAccessModule('registro') && !$user->isAdmin()) {
-            abort(403, 'No tienes permisos para anular registros de venta.');
+
+        if (!$venta->puedeSerAnuladoPor($user)) {
+            $mensaje = $venta->isCerradoParaEdicion()
+                ? 'Este registro superó el límite de 24 horas y se encuentra cerrado para anulación. Solo un Administrador puede gestionarlo.'
+                : 'No tienes permisos para anular registros de venta.';
+
+            return redirect()->route('ventas.index')->with('error', $mensaje);
         }
 
         $motivo = $request->input('motivo_anulacion', 'Anulación manual');
@@ -487,8 +525,12 @@ class VentaDescarteController extends Controller
     public function reactivar(VentaDescarte $venta): RedirectResponse
     {
         $user = Auth::user();
-        if (!$user->canAccessModule('registro') && !$user->isAdmin()) {
-            abort(403, 'No tienes permisos para reactivar registros.');
+
+        if (!$user->isAdmin()) {
+            if (!$user->canAccessModule('registro') || $venta->isCerradoParaEdicion()) {
+                return redirect()->route('ventas.index')
+                    ->with('error', 'Solo un Administrador puede reactivar registros con más de 24 horas de antigüedad.');
+            }
         }
 
         $venta->update([
@@ -509,8 +551,12 @@ class VentaDescarteController extends Controller
     public function destroy(VentaDescarte $venta): RedirectResponse
     {
         $user = Auth::user();
-        if (!$user->canAccessModule('registro') && !$user->isAdmin()) {
-            abort(403, 'No tienes permisos para eliminar registros.');
+
+        if (!$user->isAdmin()) {
+            if (!$user->canAccessModule('registro') || $venta->isCerradoParaEdicion()) {
+                return redirect()->route('ventas.index')
+                    ->with('error', 'Solo un Administrador puede eliminar definitivamente registros con más de 24 horas de antigüedad.');
+            }
         }
 
         if (!$venta->isAnulado()) {

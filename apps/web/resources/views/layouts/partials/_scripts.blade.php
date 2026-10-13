@@ -108,6 +108,9 @@
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
             } catch(e) {
                 console.error('[Offline] Error al guardar cola:', e);
+                if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED' || e.code === 22) {
+                    showToast('El almacenamiento local del navegador está lleno. Conéctate a internet para sincronizar los registros pendientes y liberar memoria.', 'danger', 9000, 'Memoria Saturada');
+                }
             }
             updateBadge();
         }
@@ -259,6 +262,14 @@
 
                     if (response.status === 201 || response.status === 200) {
                         syncedCount++;
+                    } else if (response.status === 409) {
+                        // El registro ya existía en el servidor (confirmación idempotente)
+                        syncedCount++;
+                    } else if (response.status === 419) {
+                        console.warn('[Offline] Token CSRF caducado.');
+                        showToast('Tu sesión de seguridad expiró mientras estabas sin conexión. Recarga la página con internet para renovar el acceso y sincronizar.', 'warning', 8000, 'Sesión Expirada');
+                        remainingQueue.push(item);
+                        break;
                     } else if (response.status === 422) {
                         var errData = await response.json();
                         console.error('[Offline] Error validando venta:', errData);

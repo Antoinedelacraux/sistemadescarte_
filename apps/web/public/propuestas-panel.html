@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propuestas de Rediseño — Panel de Control TALSA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --clr-primary-700: #14532d;
+            --clr-primary-600: #166534;
+            --clr-primary-500: #15803d;
+            --clr-primary-400: #16a34a;
+            --clr-primary-300: #86efac;
+            --clr-surface-0: #ffffff;
+            --clr-surface-50: #f8fafc;
+            --clr-surface-100: #f1f5f9;
+            --clr-surface-200: #e2e8f0;
+            --txt-primary: #0f172a;
+            --txt-secondary: #475569;
+            --txt-muted: #64748b;
+            --brd-base: #e2e8f0;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-pill: 9999px;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f1f5f9;
+            color: var(--txt-primary);
+            line-height: 1.5;
+            padding-bottom: 4rem;
+        }
+
+        /* Barra de Control de la Demostración */
+        .demo-bar {
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .demo-title {
+            font-size: 0.875rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #86efac;
+        }
+
+        .demo-tabs {
+            display: flex;
+            gap: 0.4rem;
+            background: rgba(255,255,255,0.08);
+            padding: 0.25rem;
+            border-radius: var(--radius-pill);
+            flex-wrap: wrap;
+        }
+
+        .demo-tab-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            padding: 0.4rem 0.85rem;
+            border-radius: var(--radius-pill);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .demo-tab-btn:hover { color: white; }
+        .demo-tab-btn.active {
+            background: #16a34a;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Contenedor Principal que simula el Dashboard */
+        .main-container {
+            max-width: 1240px;
+            margin: 1.5rem auto;
+            padding: 0 1.25rem;
+        }
+
+        .proposal-card-wrapper {
+            background: #ffffff;
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--brd-base);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
+        }
+
+        .proposal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.875rem;
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid var(--clr-surface-200);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .proposal-badge {
+            font-size: 0.6875rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.2rem 0.6rem;
+            border-radius: var(--radius-pill);
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .proposal-desc {
+            font-size: 0.8125rem;
+            color: var(--txt-secondary);
+        }
+
+        /* -------------------------------------------------------------
+         * ESTILOS COMUNES DEL DASHBOARD
+         * ------------------------------------------------------------- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(280px, 420px));
+            justify-content: center;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+            max-width: 880px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .stat-card {
+            background: var(--clr-surface-0);
+            border: 1px solid var(--brd-base);
+            border-radius: var(--radius-xl);
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .stat-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.green { background: #dcfce7; color: #15803d; }
+        .stat-icon.yellow { background: #fef9c3; color: #a16207; }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--txt-primary);
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.1;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--txt-muted);
+            margin-top: 0.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        /* Barra de Control de Tablas */
+        .table-view-control-bar {
+            background: var(--clr-surface-0);
+            border: 1px solid var(--brd-base);
+            border-radius: var(--radius-lg);
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .table-view-pills {
+            display: flex;
+            gap: 0.35rem;
+            background: var(--clr-surface-100);
+            padding: 0.25rem;
+            border-radius: var(--radius-pill);
+        }
+
+        .view-pill {
+            background: transparent;
+            border: none;
+            padding: 0.35rem 0.85rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: var(--radius-pill);
+            color: var(--txt-secondary);
+            cursor: pointer;
+        }
+
+        .view-pill.active {
+            background: #ffffff;
+            color: var(--txt-primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        /* Mockup de tabla que simula los datos que suben */
+        .mock-table-preview {
+            background: #ffffff;
+            border: 1px solid var(--brd-base);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            text-align: center;
+            color: var(--txt-muted);
+            font-size: 0.8125rem;
+            border-style: dashed;
+        }
+
+        /* -------------------------------------------------------------
+         * PROPUESTA 1: BARRA EJECUTIVA SLIM
+         * ------------------------------------------------------------- */
+        .banner-slim {
+            background: linear-gradient(135deg, #14532d 0%, #052e16 100%);
+            border-radius: var(--radius-lg);
+            padding: 0.65rem 1.15rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.15rem;
+            box-shadow: 0 2px 8px rgba(5,46,22,0.12);
+            flex-wrap: wrap;
+        }
+
+        .banner-slim-left {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .banner-slim-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .banner-slim-chip {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: var(--radius-pill);
+            background: rgba(134, 239, 172, 0.18);
+            color: #86efac;
+            border: 1px solid rgba(134, 239, 172, 0.3);
+        }
+
+        .banner-slim-right {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.75);
+            font-weight: 500;
+        }
+
+        /* -------------------------------------------------------------
+         * PROPUESTA 2: FUSIÓN HERO (SALUDO + KPIS EN 1 SOLA FILA)
+         * ------------------------------------------------------------- */
+        .fusion-hero-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.15rem;
+            align-items: stretch;
+        }
+
+        .fusion-welcome-card {
+            background: linear-gradient(135deg, #14532d 0%, #052e16 100%);
+            border-radius: var(--radius-xl);
+            padding: 1rem 1.25rem;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(5,46,22,0.14);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .fusion-welcome-card::after {
+            content: '';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(134, 239, 172, 0.08);
+            pointer-events: none;
+        }
+
+        .fusion-header-tag {
+            font-size: 0.625rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #86efac;
+            margin-bottom: 0.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .fusion-name {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.2;
+            margin-bottom: 0.35rem;
+        }
+
+        .fusion-meta {
+            font-size: 0.6875rem;
+            color: #d1fae5;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .fusion-kpi-card {
+            background: var(--clr-surface-0);
+            border: 1px solid var(--brd-base);
+            border-radius: var(--radius-xl);
+            padding: 1rem 1.15rem;
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        /* -------------------------------------------------------------
+         * PROPUESTA 3: CABECERA TIPOGRÁFICA SAAS (SIN CAJA OSCURA)
+         * ------------------------------------------------------------- */
+        .saas-header {
+            padding: 0.25rem 0 1rem 0;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 1px solid var(--clr-surface-200);
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .saas-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--txt-primary);
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+
+        .saas-subtitle {
+            font-size: 0.8125rem;
+            color: var(--txt-secondary);
+            margin-top: 0.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .saas-chip {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: var(--radius-pill);
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        /* Responsividad en Móviles (< 768px) */
+        @media (max-width: 768px) {
+            .fusion-hero-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .banner-slim {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA FLOTANTE DE DEMOSTRACIÓN -->
+    <header class="demo-bar">
+        <div class="demo-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            <span>PREVISUALIZADOR DE DISEÑO: PANEL DE CONTROL</span>
+        </div>
+        <div class="demo-tabs">
+            <button class="demo-tab-btn active" onclick="mostrarPropuesta(1)">
+                <span>Propuesta 1: Barra Slim</span>
+            </button>
+            <button class="demo-tab-btn" onclick="mostrarPropuesta(2)">
+                <span>Propuesta 2: Fusión Hero ⭐</span>
+            </button>
+            <button class="demo-tab-btn" onclick="mostrarPropuesta(3)">
+                <span>Propuesta 3: Cabecera SaaS</span>
+            </button>
+            <button class="demo-tab-btn" onclick="mostrarTodas()">
+                <span>Comparar las 3</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="main-container">
+
+        <!-- =========================================================
+             PROPUESTA 1: BARRA EJECUTIVA SLIM
+             ========================================================= -->
+        <section id="propuesta-1" class="proposal-card-wrapper">
+            <div class="proposal-header">
+                <div>
+                    <span class="proposal-badge">Propuesta 1: Barra Ejecutiva Slim</span>
+                    <h3 style="margin-top: 0.25rem; font-size: 1.05rem; font-weight: 800;">Franja horizontal delgada de una sola línea (Ahorro del 75% de altura)</h3>
+                </div>
+                <div class="proposal-desc">
+                    Altura del banner: <strong>~46 px</strong> • Sin botones redundantes.
+                </div>
+            </div>
+
+            <!-- 1. El Banner Slim -->
+            <div class="banner-slim">
+                <div class="banner-slim-left">
+                    <img src="/images/logo-emblem-white.webp" alt="TALSA" width="18" height="18" style="object-fit: contain;">
+                    <span class="banner-slim-name">Hola, Administrador General</span>
+                    <span class="banner-slim-chip">Todos los fundos</span>
+                </div>
+                <div class="banner-slim-right">
+                    <span>martes, 13 de octubre de 2026</span>
+                </div>
+            </div>
+
+            <!-- 2. KPIs Centrados Abajo -->
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="m3 7 9-4 9 4"/><path d="m6 13-3-6h6l-3 6a3 3 0 0 1-3-3"/><path d="m18 13-3-6h6l-3 6a3 3 0 0 1-3-3"/></svg>
+                    </div>
+                    <div>
+                        <div class="stat-value">0.00 kg</div>
+                        <div class="stat-label">Kilogramos Totales de Descarte</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon yellow">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="9.5" stroke-width="1.8"/>
+                            <text x="12" y="12.5" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="800" font-family="Inter, sans-serif" fill="currentColor" stroke="none">S/</text>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="stat-value">S/ 0.00</div>
+                        <div class="stat-label">Valor Total en Ventas</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Selector de tablas que ahora sube inmediatamente -->
+            <div class="table-view-control-bar">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--txt-muted);">Mostrar tabla:</span>
+                    <div class="table-view-pills">
+                        <button class="view-pill active">Por Tipo y Descarte</button>
+                        <button class="view-pill">Por Cliente</button>
+                    </div>
+                </div>
+                <div style="font-size: 0.8125rem; font-weight: 600; color: #166534;">
+                    Fundo: Todos los Fundos
+                </div>
+            </div>
+
+            <div class="mock-table-preview">
+                📊 [Aquí comienza la tabla de datos — ¡Subió más de 120 píxeles respecto al diseño anterior!]
+            </div>
+        </section>
+
+
+        <!-- =========================================================
+             PROPUESTA 2: FUSIÓN HERO (SALUDO + KPIS EN 1 SOLA FILA)
+             ========================================================= -->
+        <section id="propuesta-2" class="proposal-card-wrapper">
+            <div class="proposal-header">
+                <div>
+                    <span class="proposal-badge" style="background: #14532d; color: #86efac;">Propuesta 2: Fusión Hero en 1 Sola Fila ⭐ (Recomendada)</span>
+                    <h3 style="margin-top: 0.25rem; font-size: 1.05rem; font-weight: 800;">Elimina una fila entera de la pantalla: Saludo y Totales en paralelo</h3>
+                </div>
+                <div class="proposal-desc">
+                    Espacio vertical ocupado: <strong>~110 px en total</strong> • Máximo ahorro de scroll.
+                </div>
+            </div>
+
+            <!-- Fusión: 3 columnas al mismo nivel -->
+            <div class="fusion-hero-grid">
+                <!-- Columna 1: Tarjeta de Saludo -->
+                <div class="fusion-welcome-card">
+                    <div class="fusion-header-tag">
+                        <img src="/images/logo-emblem-white.webp" alt="TALSA" width="14" height="14" style="object-fit: contain;">
+                        <span>TALSA GRAPE FARMS</span>
+                    </div>
+                    <div class="fusion-name">Hola, Administrador General</div>
+                    <div class="fusion-meta">
+                        <span>martes, 13 de octubre</span>
+                        <span>•</span>
+                        <span style="color: #86efac; font-weight: 700;">Todos los fundos</span>
+                    </div>
+                </div>
+
+                <!-- Columna 2: KPI Kilos -->
+                <div class="fusion-kpi-card">
+                    <div class="stat-icon green">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="m3 7 9-4 9 4"/><path d="m6 13-3-6h6l-3 6a3 3 0 0 1-3-3"/><path d="m18 13-3-6h6l-3 6a3 3 0 0 1-3-3"/></svg>
+                    </div>
+                    <div>
+                        <div class="stat-value">0.00 kg</div>
+                        <div class="stat-label">Kilogramos Totales</div>
+                    </div>
+                </div>
+
+                <!-- Columna 3: KPI Monto -->
+                <div class="fusion-kpi-card">
+                    <div class="stat-icon yellow">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="9.5" stroke-width="1.8"/>
+                            <text x="12" y="12.5" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="800" font-family="Inter, sans-serif" fill="currentColor" stroke="none">S/</text>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="stat-value">S/ 0.00</div>
+                        <div class="stat-label">Valor Total en Ventas</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selector de tablas directamente debajo -->
+            <div class="table-view-control-bar">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--txt-muted);">Mostrar tabla:</span>
+                    <div class="table-view-pills">
+                        <button class="view-pill active">Por Tipo y Descarte</button>
+                        <button class="view-pill">Por Cliente</button>
+                    </div>
+                </div>
+                <div style="font-size: 0.8125rem; font-weight: 600; color: #166534;">
+                    Fundo: Todos los Fundos
+                </div>
+            </div>
+
+            <div class="mock-table-preview">
+                📊 [Aquí comienza la tabla de datos — ¡Visible en pantalla sin tener que hacer scroll!]
+            </div>
+        </section>
+
+
+        <!-- =========================================================
+             PROPUESTA 3: CABECERA TIPOGRÁFICA SAAS (SIN CAJA OSCURA)
+             ========================================================= -->
+        <section id="propuesta-3" class="proposal-card-wrapper">
+            <div class="proposal-header">
+                <div>
+                    <span class="proposal-badge" style="background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1;">Propuesta 3: Cabecera Tipográfica SaaS</span>
+                    <h3 style="margin-top: 0.25rem; font-size: 1.05rem; font-weight: 800;">Sin contenedor oscuro, diseño ultraligero y minimalista</h3>
+                </div>
+                <div class="proposal-desc">
+                    Sensación visual limpia y espaciosa • Máxima sobriedad corporativa.
+                </div>
+            </div>
+
+            <!-- 1. Encabezado en texto puro -->
+            <div class="saas-header">
+                <div>
+                    <h1 class="saas-title">Panel de Control</h1>
+                    <div class="saas-subtitle">
+                        <span>Hola, <strong>Administrador General</strong></span>
+                        <span>&bull;</span>
+                        <span>martes, 13 de octubre de 2026</span>
+                        <span class="saas-chip">Todos los fundos</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. KPIs Centrados Abajo -->
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="m3 7 9-4 9 4"/><path d="m6 13-3-6h6l-3 6a3 3 0 0 1-3-3"/><path d="m18 13-3-6h6l-3 6a3 3 0 0 1-3-3"/></svg>
+                    </div>
+                    <div>
+                        <div class="stat-value">0.00 kg</div>
+                        <div class="stat-label">Kilogramos Totales de Descarte</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon yellow">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="9.5" stroke-width="1.8"/>
+                            <text x="12" y="12.5" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="800" font-family="Inter, sans-serif" fill="currentColor" stroke="none">S/</text>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="stat-value">S/ 0.00</div>
+                        <div class="stat-label">Valor Total en Ventas</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Selector de tablas -->
+            <div class="table-view-control-bar">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--txt-muted);">Mostrar tabla:</span>
+                    <div class="table-view-pills">
+                        <button class="view-pill active">Por Tipo y Descarte</button>
+                        <button class="view-pill">Por Cliente</button>
+                    </div>
+                </div>
+                <div style="font-size: 0.8125rem; font-weight: 600; color: #166534;">
+                    Fundo: Todos los Fundos
+                </div>
+            </div>
+
+            <div class="mock-table-preview">
+                📊 [Aquí comienza la tabla de datos — Vista tradicional limpia de software de gestión]
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        function mostrarPropuesta(num) {
+            document.querySelectorAll('.proposal-card-wrapper').forEach(function(el) {
+                el.style.display = 'none';
+            });
+            document.getElementById('propuesta-' + num).style.display = 'block';
+
+            document.querySelectorAll('.demo-tab-btn').forEach(function(btn, idx) {
+                btn.classList.toggle('active', idx === (num - 1));
+            });
+        }
+
+        function mostrarTodas() {
+            document.querySelectorAll('.proposal-card-wrapper').forEach(function(el) {
+                el.style.display = 'block';
+            });
+            document.querySelectorAll('.demo-tab-btn').forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.demo-tab-btn').classList.add('active');
+        }
+
+        // Por defecto arranca mostrando la recomendada (Propuesta 2)
+        document.addEventListener('DOMContentLoaded', function() {
+            mostrarPropuesta(2);
+        });
+    </script>
+</body>
+</html>

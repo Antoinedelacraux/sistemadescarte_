@@ -4,160 +4,105 @@
      * Diseñado para máxima claridad y facilidad de uso operativo
      * ============================================================ */
 
-    /* Banner principal de bienvenida y acceso rápido */
-    .welcome-banner {
-        background: linear-gradient(135deg, #14532d 0%, #052e16 100%);
-        border-radius: var(--radius-xl);
-        padding: clamp(1.25rem, 4vw, 1.75rem);
-        color: white;
-        position: relative;
-        overflow: hidden;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 4px 16px rgba(5,46,22,0.18);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1.25rem;
-        flex-wrap: wrap;
+    /* ============================================================
+     * FUSIÓN HERO: SALUDO + KPIS EN 1 SOLA FILA (PROPUESTA 2)
+     * Elimina el scroll excesivo unificando métricas en un solo nivel
+     * ============================================================ */
+    .fusion-hero-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+        align-items: stretch;
     }
 
-    .welcome-banner::before {
+    .fusion-welcome-card {
+        background: linear-gradient(135deg, #14532d 0%, #052e16 100%);
+        border-radius: var(--radius-xl);
+        padding: 1rem 1.25rem;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        box-shadow: 0 4px 14px rgba(5, 46, 22, 0.16);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(134, 239, 172, 0.2);
+    }
+
+    .fusion-welcome-card::after {
         content: '';
         position: absolute;
-        top: -40px;
-        right: 180px;
-        width: 180px;
-        height: 180px;
+        top: -30px;
+        right: -30px;
+        width: 120px;
+        height: 120px;
         border-radius: 50%;
-        background: rgba(74,222,128,0.10);
+        background: rgba(134, 239, 172, 0.08);
         pointer-events: none;
     }
 
-    .welcome-banner-info {
-        flex: 1;
-        min-width: 240px;
-        position: relative;
-        z-index: 1;
-    }
-
-    .welcome-greeting {
-        font-size: var(--text-xs);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: #86efac;
-        font-weight: 700;
-        margin-bottom: 0.25rem;
-    }
-
-    .welcome-name {
-        font-size: clamp(1.25rem, 5vw, 1.75rem);
+    .fusion-header-tag {
+        font-size: 0.625rem;
         font-weight: 800;
-        letter-spacing: -0.02em;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #86efac;
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+    }
+
+    .fusion-name {
+        font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+        font-weight: 800;
+        color: #ffffff;
         line-height: 1.2;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.35rem;
+        letter-spacing: -0.01em;
         word-break: break-word;
     }
 
-    .welcome-meta {
+    .fusion-meta {
+        font-size: 0.6875rem;
+        color: #d1fae5;
         display: flex;
         align-items: center;
-        gap: 0.875rem;
+        gap: 0.45rem;
         flex-wrap: wrap;
-        font-size: var(--text-xs);
-        color: rgba(255,255,255,0.75);
     }
 
-    .welcome-meta-item {
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
+    .fusion-meta-sep {
+        opacity: 0.6;
     }
 
-    .welcome-actions {
-        display: flex;
-        align-items: center;
-        gap: 0.625rem;
-        flex-wrap: wrap;
-        position: relative;
-        z-index: 2;
-    }
-
-    .btn-hero-primary {
-        background: #22c55e;
-        color: #052e16;
+    .fusion-meta-fundo {
+        color: #86efac;
         font-weight: 700;
-        padding: 0.625rem 1.125rem;
-        border-radius: var(--radius-md);
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.45rem;
-        font-size: var(--text-sm);
-        transition: all var(--transition-fast);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    .btn-hero-primary:hover {
-        background: #4ade80;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
     }
 
-    .btn-hero-secondary {
-        background: rgba(255,255,255,0.12);
-        color: white;
-        border: 1px solid rgba(255,255,255,0.25);
-        font-weight: 600;
-        padding: 0.625rem 1rem;
-        border-radius: var(--radius-md);
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.45rem;
-        font-size: var(--text-sm);
-        transition: all var(--transition-fast);
-    }
-    .btn-hero-secondary:hover {
-        background: rgba(255,255,255,0.22);
-    }
-
-    @media (max-width: 640px) {
-        .welcome-actions {
-            width: 100%;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.5rem;
-        }
-        .btn-hero-primary, .btn-hero-secondary {
-            justify-content: center;
-            padding: 0.5625rem 0.5rem;
-            font-size: clamp(0.75rem, 2.8vw, 0.8125rem);
-            text-align: center;
-        }
-    }
-
-    /* Grid de métricas clave (KPIs) */
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-        margin-bottom: 1.75rem;
-    }
-
-    .stat-card {
+    .fusion-kpi-card {
         background: white;
         border: 1px solid var(--brd-base);
-        border-radius: var(--radius-lg);
-        padding: 1.125rem 1.25rem;
+        border-radius: var(--radius-xl);
+        padding: 1rem 1.25rem;
         display: flex;
         align-items: center;
         gap: 1rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    .fusion-kpi-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
     }
 
     .stat-icon {
         width: 48px;
         height: 48px;
-        border-radius: var(--radius-md);
+        border-radius: var(--radius-lg);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -169,26 +114,47 @@
     .stat-icon.blue   { background: #dbeafe; color: #1e40af; }
 
     .stat-value {
-        font-size: clamp(1.2rem, 4.5vw, 1.5rem);
+        font-size: clamp(1.2rem, 3.5vw, 1.45rem);
         font-weight: 800;
         line-height: 1.1;
         color: var(--txt-primary);
-        font-family: monospace;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+        letter-spacing: -0.01em;
     }
 
     .stat-label {
         font-size: var(--text-xs);
         color: var(--txt-muted);
-        margin-top: 0.2rem;
-        font-weight: 500;
+        margin-top: 0.25rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
     }
 
-    @media (max-width: 768px) {
-        .dashboard-grid {
-            grid-template-columns: 1fr;
+    @media (max-width: 1024px) {
+        .fusion-hero-grid {
+            grid-template-columns: 1fr 1fr;
             gap: 0.75rem;
         }
-        .stat-card {
+
+        .fusion-welcome-card {
+            grid-column: 1 / -1;
+            padding: 0.875rem 1.15rem;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .fusion-hero-grid {
+            grid-template-columns: 1fr;
+            gap: 0.625rem;
+            margin-bottom: 1rem;
+        }
+
+        .fusion-welcome-card {
+            padding: 0.875rem 1rem;
+        }
+
+        .fusion-kpi-card {
             padding: 0.875rem 1rem;
         }
     }

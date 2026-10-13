@@ -34,19 +34,19 @@ Verifica en tu panel de control Ferozo:
 En tu equipo local de desarrollo:
 1. Abre la carpeta del proyecto.
 2. Ejecuta el script de empaquetado:
-   - Haciendo doble clic en `scripts/empaquetar_produccion_ferozo.bat`
+   - Haciendo doble clic directamente en **`empaquetar_produccion.bat`** (en la raíz del proyecto)
    - O en PowerShell:
      ```powershell
      .\scripts\empaquetar_produccion_ferozo.ps1
      ```
 3. El script ejecutará automáticamente las pruebas (`php artisan test`) y generará el archivo:
-   `dist/sistema-fundo-ferozo.zip` (incluye toda la aplicación y sus librerías de producción).
+   `dist/sistema-fundo-ferozo.zip` (incluye toda la aplicación, librerías de producción `vendor`, archivo de blindaje `.htaccess` y el esquema SQL limpio).
 
 ---
 
 ### Paso 3: Subir y Descomprimir en Ferozo
 1. En el panel Ferozo, ve a **Archivos** -> **Administrador de Archivos** (o conéctate por FTP/SFTP mediante FileZilla).
-2. Sube el archivo `sistema-fundo-ferozo.zip`.
+2. Sube el archivo `dist/sistema-fundo-ferozo.zip`.
 3. **Estructura según tu tipo de cuenta:**
 
 #### Opción A (Recomendada: Subdominio o Dominio con DocumentRoot personalizable):
@@ -57,19 +57,16 @@ En tu equipo local de desarrollo:
 
 #### Opción B (Hosting Compartido con DocumentRoot fijo a `public_html`):
 - Si tu plan de Ferozo no permite cambiar el DocumentRoot y exige usar `/public_html`:
-  1. Descomprime todo el ZIP en `/home/tu_usuario/sistema-fundo/` (al mismo nivel de `public_html`).
-  2. Mueve **únicamente** los archivos y carpetas de `sistema-fundo/public/` hacia el interior de `/public_html/`.
-  3. En `/public_html/index.php`, actualiza las rutas hacia el núcleo:
-     ```php
-     require __DIR__.'/../sistema-fundo/vendor/autoload.php';
-     $app = require_once __DIR__.'/../sistema-fundo/bootstrap/app.php';
-     ```
+  - Descomprime el ZIP directamente en `/public_html/`.
+  - El sistema incluye un archivo `.htaccess` en la raíz que redirige automáticamente todo el tráfico web a `/public` y bloquea cualquier intento de descarga de `.env`, `.git` o logs.
+  - Alternativamente, puedes mover el contenido de `public/` al interior de `public_html/` y el resto de carpetas un nivel arriba.
 
 ---
 
 ### Paso 4: Configurar el Archivo `.env`
-1. En el directorio raíz de la aplicación, renombra o copia `.env.production.example` como `.env`.
-2. Edita los valores principales:
+1. En el directorio de la aplicación en Ferozo, renombra o copia `.env.production.example` como **`.env`**.
+   *(Nota de seguridad: `.env.production.example` ya viene con una `APP_KEY` segura preconfigurada de 32 bytes, por lo que el sistema no fallará ni requerirá consola SSH obligatoria).*
+2. Edita los valores principales de tu conexión a base de datos y URL:
    ```env
    APP_NAME="TALSA Fundo"
    APP_ENV=production
@@ -103,9 +100,9 @@ Tienes dos alternativas igualmente rápidas:
 1. En Ferozo, ve a **Bases de Datos** -> **phpMyAdmin**.
 2. Selecciona tu base de datos creada en el menú de la izquierda.
 3. Haz clic en la pestaña superior **Importar**.
-4. Selecciona el archivo `database/schema_produccion_limpio.sql` incluido en el paquete.
+4. Selecciona el archivo **`schema_produccion_limpio.sql`** (incluido tanto en la raíz del ZIP como en la carpeta `database/`).
 5. Haz clic en **Continuar / Importar**.
-6. ¡Listo! Se habrán creado todas las tablas, los 5 roles, los 3 fundos, los 34 lotes oficiales y el Administrador inicial, con **0 registros en ventas**.
+6. ¡Listo! Se habrán creado todas las tablas, los 5 roles oficiales, los 3 fundos, los 34 lotes oficiales y el Administrador inicial, con **0 registros en ventas**.
 
 #### Alternativa B — Mediante Consola SSH o Terminal Web de Ferozo:
 Si tu servidor cuenta con acceso a terminal:

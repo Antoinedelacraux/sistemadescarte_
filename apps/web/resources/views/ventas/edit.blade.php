@@ -234,16 +234,34 @@
         @endif
     </div>
 
-    @if ($errors->any())
-        <div class="alert alert-danger" role="alert">
-            <span aria-hidden="true">⚠️</span>
+    {{-- Banner de tiempo restante para registradores (Límite 24h) --}}
+    @if(!Auth::user()->isAdmin())
+        @php
+            $segundosRestantes = max(0, 86400 - (now()->timestamp - $venta->created_at->timestamp));
+        @endphp
+        <div id="countdown-edit-banner" class="alert alert-warning" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; border-left: 4px solid #f59e0b; background: #fffbeb; padding: 0.75rem 1rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+            <div style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.8125rem; color: #92400e;">
+                <span style="font-size: 1.25rem; line-height: 1;">⏳</span>
+                <div>
+                    <strong>Plazo de edición (24 horas):</strong>
+                    <span id="timer-edit-live" style="font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 800; color: #b45309; margin-left: 0.25rem;">
+                        Calculando...
+                    </span>
+                </div>
+            </div>
+            <span style="font-size: 0.72rem; color: #b45309; font-weight: 600;">
+                Al llegar a 00:00 se bloqueará automáticamente
+            </span>
+        </div>
+
+        {{-- Alerta de bloqueo cuando expire el tiempo --}}
+        <div id="banner-bloqueado-expirado" class="alert alert-danger" style="display: none; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; border-left: 4px solid #dc2626; background: #fef2f2; padding: 0.85rem 1rem; border-radius: var(--radius-md);">
+            <span style="font-size: 1.5rem; line-height: 1;">🔒</span>
             <div>
-                <strong>Por favor corrige los siguientes errores:</strong>
-                <ul style="margin-left: 1.25rem; margin-top: 0.25rem;">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+                <strong style="color: #991b1b; font-size: 0.875rem;">¡Plazo de edición de 24 horas finalizado!</strong>
+                <p style="margin: 0.15rem 0 0 0; font-size: 0.78rem; color: #b91c1c;">
+                    Este registro superó el límite permitido de 24 horas mientras tenías el formulario abierto. El formulario ha sido bloqueado y los cambios ya no pueden ser guardados.
+                </p>
             </div>
         </div>
     @endif
@@ -254,4 +272,110 @@
         @include('ventas._form', ['venta' => $venta, 'isEdit' => true])
     </form>
 </div>
+
+@if(!Auth::user()->isAdmin())
+<script>
+(function() {
+    // Timestamp exacto de vencimiento (24h desde created_at)
+    var expiresAtMs = {{ ($venta->created_at->timestamp + 86400) * 1000 }};
+    var timerEl = document.getElementById('timer-edit-live');
+    var countdownBanner = document.getElementById('countdown-edit-banner');
+    var blockedBanner = document.getElementById('banner-bloqueado-expirado');
+    var form = document.getElementById('form-venta');
+    var isExpired = false;
+
+    function bloquearFormulario() {
+        if (isExpired) return;
+        isExpired = true;
+
+        if (timerEl) {
+            timerEl.textContent = '00:00 (Cerrado)';
+            timerEl.style.color = '#dc2626';
+        }
+        if (countdownBanner) {
+            countdownBanner.style.display = 'none';
+        }
+        if (blockedBanner) {
+            blockedBanner.style.display = 'flex';
+        }
+
+        // Deshabilitar todos los inputs, selects y botones dentro del formulario
+        if (form) {
+            var elements = form.querySelectorAll('input, select, textarea, button');
+            elements.forEach(function(el) {
+                el.disabled = true;
+                el.style.opacity = '0.65';
+                el.style.cursor = 'not-allowed';
+            });
+
+            // Buscar botón principal de envío
+            var submitBtn = form.querySelector('.btn-submit-sale') || form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '🔒 Plazo de 24h vencido — Formulario bloqueado';
+                submitBtn.style.background = '#94a3b8';
+                submitBtn.style.cursor = 'not-allowed';
+                submitBtn.style.boxShadow = 'none';
+            }
+
+            // Interceptar cualquier intento de envío remanente
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                alert('El plazo de 24 horas para editar este registro ha expirado. No es posible guardar los cambios.');
+                window.location.href = "{{ route('ventas.index') }}";
+                return false;
+            }, true);
+        }
+    }
+
+    function actualizarCuentaRegresiva() {
+        var now = Date.now();
+        var diff = expiresAtMs - now;
+
+        if (diff <= 0) {
+            bloquearFormulario();
+            return;
+        }
+
+        var totalSegundos = Math.floor(diff / 1000);
+        var horas = Math.floor(totalSegundos / 3600);
+        var minutos = Math.floor((totalSegundos % 3600) / 60);
+        var segundos = totalSegundos % 60;
+
+        var formateado = '';
+        if (horas > 0) {
+            formateado = (horas < 10 ? '0' : '') + horas + ':' +
+                         (minutos < 10 ? '0' : '') + minutos + ':' +
+                         (segundos < 10 ? '0' : '') + segundos;
+        } else {
+            formateado = (minutos < 10 ? '0' : '') + minutos + ':' +
+                         (segundos < 10 ? '0' : '') + segundos;
+        }
+
+        if (timerEl) {
+            timerEl.textContent = formateado;
+            // Si faltan menos de 5 minutos, resaltar en rojo parpadeante
+            if (totalSegundos <= 300) {
+                timerEl.style.color = '#dc2626';
+                if (countdownBanner) {
+                    countdownBanner.style.background = '#fef2f2';
+                    countdownBanner.style.borderColor = '#ef4444';
+                }
+            }
+        }
+    }
+
+    // Ejecutar de inmediato y luego cada segundo
+    actualizarCuentaRegresiva();
+    var timerInterval = setInterval(function() {
+        if (isExpired) {
+            clearInterval(timerInterval);
+        } else {
+            actualizarCuentaRegresiva();
+        }
+    }, 1000);
+})();
+</script>
+@endif
 @endsection

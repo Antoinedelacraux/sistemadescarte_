@@ -25,6 +25,8 @@ class DashboardController extends Controller
      */
     public function index(Request $request): View|RedirectResponse
     {
+        @ini_set('memory_limit', '256M');
+
         $user = $request->user()->load(['role', 'fundos']);
 
         // Si el usuario no tiene acceso al módulo panel, redirigir a su primer módulo habilitado
@@ -91,6 +93,9 @@ class DashboardController extends Controller
      */
     public function exportar(Request $request): Response
     {
+        @ini_set('memory_limit', '512M');
+        @set_time_limit(180);
+
         $tabla = $request->input('tabla', 'clientes');
 
         $query = VentaDescarte::with(['fundo', 'lote', 'cuartel', 'creator'])
