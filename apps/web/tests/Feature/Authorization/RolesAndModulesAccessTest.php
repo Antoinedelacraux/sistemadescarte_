@@ -87,15 +87,16 @@ class RolesAndModulesAccessTest extends TestCase
 
         $this->actingAs($registrador);
 
-        // Puede acceder a REGISTRO e HISTORIAL
+        $this->get(route('dashboard'))->assertStatus(200);
+        // Puede acceder a PANEL, REGISTRO e HISTORIAL
         $this->get(route('ventas.create'))->assertStatus(200);
         $this->get(route('ventas.index'))->assertStatus(200);
 
-        // Al visitar / (dashboard) se redirige automáticamente al primer módulo permitido (ventas.create)
-        $this->get('/')->assertRedirect(route('ventas.create'));
+        // Al visitar / se muestra el Panel de Control directamente
+        $this->get('/')->assertOk();
 
-        // Intento directo al módulo PANEL da 403
-        $this->get(route('dashboard.exportar'))->assertStatus(403);
+        // También puede exportar desde el módulo PANEL
+        $this->get(route('dashboard.exportar'))->assertOk();
 
         // No puede acceder a ADMIN
         $this->get(route('admin.fundos'))->assertStatus(403);

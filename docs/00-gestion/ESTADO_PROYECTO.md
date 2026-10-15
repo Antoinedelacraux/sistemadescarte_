@@ -10,6 +10,7 @@
 ## Log de avances
 | Fecha | Hecho verificado | Pruebas | Bloqueos | Siguiente acción |
 |---|---|---|---|---|
+| 2026-10-15 | El rol Registrador ahora recibe Panel de Control como permiso predeterminado junto con Registrar Venta e Historial. La interfaz de creación de usuarios marca automáticamente Panel al seleccionar el rol. No se modificó el esquema ni se alteraron usuarios personalizados existentes. | 15 pruebas enfocadas (86 aserciones), lint PHP, `view:cache` y `git diff --check` exitosos | Validación visual final de la casilla en navegador pendiente | Confirmar el flujo de creación de un Registrador desde Administración |
 | 2026-10-15 | Panel de Control ampliado con matriz Por Lote y exportacion XLSX alineada visualmente con la tabla: encabezados de dos niveles, grupos fusionados por motivo y columnas FUNDO/LOTE/TOTAL KG, sin fila TOTAL GENERAL. No se modifico la base de datos. | 8 pruebas enfocadas (80 aserciones), lint PHP, `view:cache` y `git diff --check` exitosos; suite completa: 85 pasaron, 1 fallo y 6 errores conocidos | Validacion visual final en navegador pendiente; fallos completos corresponden a pruebas existentes de VentaDescarte/VentaEdicion24Horas | Validar descarga desde el navegador con datos reales de prueba |
 | 2026-10-08 | Arquitectura y Diseño de Datos Completado | N/A | Ninguno | Iniciar configuración de proyecto Laravel |
 | 2026-10-08 | Plan de Despliegue para VPS documentado | N/A | Ninguno | Esperar aprobación para escribir código |

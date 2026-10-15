@@ -109,6 +109,10 @@ class AdminTest extends TestCase
 
         $createdUser = User::where('email', 'operador.nuevo@fundo.test')->first();
         $this->assertTrue($createdUser->fundos->contains($fundo->id));
+        $this->assertFalse($createdUser->hasCustomModules());
+        $this->assertTrue($createdUser->canAccessModule('panel'));
+        $this->assertTrue($createdUser->canAccessModule('registro'));
+        $this->assertTrue($createdUser->canAccessModule('historial'));
     }
 
     public function test_admin_usuarios_view_renders_edit_modal_with_submit_button(): void
@@ -121,6 +125,7 @@ class AdminTest extends TestCase
         $response->assertSee('btn-action-edit');
         $response->assertSee('data-id=', false);
         $response->assertSee('data-role-id=', false);
+        $response->assertSee("'registrador': ['panel', 'registro', 'historial']", false);
     }
 
     public function test_admin_can_update_user_successfully(): void

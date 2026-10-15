@@ -522,11 +522,11 @@
     var roleDefaultModulos = {
         'admin': ['panel', 'registro', 'historial', 'admin'],
         'jefe_fundo': ['panel', 'historial'],
-        'registrador': ['registro', 'historial'],
+        'registrador': ['panel', 'registro', 'historial'],
         'analista': ['historial'],
         'ventas': ['historial'],
         'general': ['panel', 'historial'],
-        'individual': ['registro', 'historial']
+        'individual': ['panel', 'registro', 'historial']
     };
 
     function getSelectedRoleName(selectElem) {

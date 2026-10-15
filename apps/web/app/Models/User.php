@@ -118,7 +118,7 @@ class User extends Authenticatable
         return match ($roleName) {
             Role::ADMIN => ['panel', 'registro', 'historial', 'admin'],
             Role::JEFE_FUNDO, 'general' => ['panel', 'historial'],
-            Role::REGISTRADOR, 'individual' => ['registro', 'historial'],
+            Role::REGISTRADOR, 'individual' => ['panel', 'registro', 'historial'],
             Role::ANALISTA => ['historial'],
             Role::VENTAS => ['historial'],
             default => [],

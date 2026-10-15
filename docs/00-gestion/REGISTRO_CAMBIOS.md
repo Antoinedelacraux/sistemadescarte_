@@ -2,6 +2,7 @@
 
 | Versión | Fecha | Cambios | Compatibilidad | Validación | Aprobó |
 |---|---|---|---|---|---|
+| 1.1.0 | 2026-10-15 | Permiso predeterminado de Panel de Control para el rol Registrador: los usuarios nuevos con este rol reciben Panel, Registrar Venta e Historial; el formulario de administracion marca automaticamente la casilla Panel al seleccionar Registrador. | Sin migracion ni cambios destructivos; se conservan las excepciones personalizadas existentes | 15 pruebas enfocadas, 86 aserciones; lint PHP y cache Blade exitosos | Pendiente validacion del propietario |
 | 1.0.9 | 2026-10-15 | Panel de Control y exportacion por lote: la matriz de kilogramos por Fundo/Lote queda disponible como vista del selector existente y su descarga XLSX replica la tabla con encabezados jerarquicos fusionados (FUNDO, LOTE, motivos/tipos y TOTAL KG), sin fila TOTAL GENERAL. | Sin cambios de esquema ni datos; compatible con registros existentes y Excel/LibreOffice | 8 pruebas enfocadas, 80 aserciones; Blade cache exitoso; suite completa conserva 1 fallo y 6 errores preexistentes | Pendiente validacion del propietario |
 | 0.0.0 | 2026-10-08 | Estructura de trabajo previa a la aplicación y análisis RF/RNF | No aplica | Auditoría y especificación | Propietario |
 | 0.1.0 | 2026-10-08 | Fase 3: Instalación de Laravel 12 en `apps/web` (PHP 8.4), migraciones base (roles, fundos, users, fundo_user, ventas_descarte), autenticación, rate limiting y aislamiento estricto FundoScope. | PHP 8.4, SQLite local, MySQL 8.0 prod | 15 pruebas PHPUnit (55 aserciones) | Propietario |
