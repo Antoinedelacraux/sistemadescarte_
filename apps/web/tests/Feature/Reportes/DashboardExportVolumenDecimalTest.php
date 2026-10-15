@@ -83,25 +83,49 @@ class DashboardExportVolumenDecimalTest extends TestCase
         ]);
     }
 
-    public function test_dashboard_displays_volumen_with_two_decimals(): void
+    public function test_dashboard_resumen_tipo_no_muestra_volumen_porcentaje_ni_precio_promedio(): void
     {
         $response = $this->actingAs($this->analistaUser)->get(route('dashboard'));
 
         $response->assertStatus(200);
-        // Debe mostrarse con 2 decimales y no como entero redondeado (15.96% en vez de 16%)
-        $response->assertSee('15.96%');
-        $response->assertSee('68.09%');
-        $response->assertSee('100.00%');
+        $response->assertDontSee('% Volumen');
+        $response->assertDontSee('Precio Prom.');
+        $response->assertSee('Kilogramos (kg)');
+        $response->assertSee('Total (S/)');
     }
 
-    public function test_dashboard_export_motivos_downloads_xlsx_with_decimal_volumen(): void
+    public function test_dashboard_export_motivos_xlsx_omite_volumen_porcentaje_y_precio_promedio(): void
     {
         $response = $this->actingAs($this->analistaUser)->get(route('dashboard.exportar', ['tabla' => 'motivos']));
 
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         $this->assertStringContainsString('attachment; filename="resumen_tipo_descarte_', (string) $response->headers->get('Content-Disposition'));
-        $this->assertNotEmpty($response->getContent());
+
+        $tempZip = tempnam(sys_get_temp_dir(), 'test_motivos_xlsx_');
+        file_put_contents($tempZip, $response->getContent());
+        $zip = new \ZipArchive();
+        $this->assertTrue($zip->open($tempZip));
+        $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $zip->close();
+        @unlink($tempZip);
+
+        $this->assertNotEmpty($sheetXml);
+        $this->assertStringNotContainsString('% VOLUMEN DESCARTE', $sheetXml);
+        $this->assertStringNotContainsString('PRECIO PROMEDIO (S/)', $sheetXml);
+        $this->assertStringContainsString('KILOGRAMOS TOTALES (KG)', $sheetXml);
+        $this->assertStringContainsString('TOTAL VENTA (S/)', $sheetXml);
+    }
+
+    public function test_dashboard_exportar_lotes_xlsx(): void
+    {
+        $response = $this->actingAs($this->analistaUser)->get(route('dashboard.exportar', [
+            'tabla' => 'lotes',
+        ]));
+
+        $response->assertStatus(200);
+        $this->assertTrue(str_contains($response->headers->get('Content-Disposition'), 'resumen_ventas_lotes_'));
+        $this->assertStringStartsWith("PK\x03\x04", $response->getContent());
     }
 
     public function test_dashboard_renders_cliente_matrices_for_kg_and_monto(): void

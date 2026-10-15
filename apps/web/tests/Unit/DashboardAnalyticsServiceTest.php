@@ -101,4 +101,47 @@ class DashboardAnalyticsServiceTest extends TestCase
         $this->assertEquals(500.0, $matriz['AGRICOLA SAN JOSE']['kg']['Campo']['Racimos']);
         $this->assertEquals(200.0, $matriz['AGRICOLA SAN JOSE']['kg']['Packing']['Granos']);
     }
+
+    public function test_calcular_matriz_lotes_acumula_kilogramos_por_fundo_lote_motivo_y_tipo(): void
+    {
+        $ventas = collect([
+            (object) [
+                'fundo_id' => 1,
+                'lote_id' => 10,
+                'fundo' => (object) ['nombre_corto' => 'AGRITAC'],
+                'lote' => (object) ['nombre' => 'A01'],
+                'motivo' => 'Campo',
+                'tipo_descarte' => 'Racimos',
+                'kilogramos' => 500.0,
+            ],
+            (object) [
+                'fundo_id' => 1,
+                'lote_id' => 10,
+                'fundo' => (object) ['nombre_corto' => 'AGRITAC'],
+                'lote' => (object) ['nombre' => 'A01'],
+                'motivo' => 'Packing',
+                'tipo_descarte' => 'Granos',
+                'kilogramos' => 200.0,
+            ],
+            (object) [
+                'fundo_id' => 2,
+                'lote_id' => 10,
+                'fundo' => (object) ['nombre_corto' => 'PROCOM'],
+                'lote' => (object) ['nombre' => 'A01'],
+                'motivo' => 'Cosecha Nacional',
+                'tipo_descarte' => 'Racimos',
+                'kilogramos' => 150.0,
+            ],
+        ]);
+
+        $resultado = $this->service->calcularMatrizLotes($ventas);
+
+        $this->assertCount(2, $resultado['matrizLotes']);
+        $this->assertEquals(850.0, $resultado['granTotalKg']);
+        $this->assertEquals(500.0, $resultado['totalesColumnasKg']['Campo']['Racimos']);
+        $this->assertEquals(200.0, $resultado['totalesColumnasKg']['Packing']['Granos']);
+        $this->assertEquals(150.0, $resultado['totalesColumnasKg']['Cosecha Nacional']['Racimos']);
+        $this->assertEquals(700.0, $resultado['matrizLotes']['1:10']['total_kg']);
+        $this->assertEquals(150.0, $resultado['matrizLotes']['2:10']['total_kg']);
+    }
 }

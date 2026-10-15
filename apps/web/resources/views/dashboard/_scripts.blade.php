@@ -81,6 +81,37 @@ function exportarClientesExcel() {
     window.location.href = url;
 }
 
+function exportarLotesExcel() {
+    var fundoSelect = document.getElementById('fundo_filter_select');
+    var fundoId = fundoSelect ? fundoSelect.value : '{{ $fundoSeleccionadoId ?? "" }}';
+    var url = "{{ route('dashboard.exportar') }}?tabla=lotes";
+    if (fundoId) {
+        url += '&fundo_id=' + encodeURIComponent(fundoId);
+    }
+    window.location.href = url;
+}
+
+function filtrarMatrizLotes() {
+    var input = document.getElementById('lote-matrix-search');
+    var q = (input ? input.value : '').toLowerCase().trim();
+    var rows = document.querySelectorAll('#matrix-lotes-tbody .matrix-lote-row');
+    var visibleCount = 0;
+
+    rows.forEach(function(row) {
+        var lote = (row.getAttribute('data-lote-name') || '').toLowerCase();
+        var fundo = (row.getAttribute('data-fundo-name') || '').toLowerCase();
+        var match = q === '' || lote.indexOf(q) !== -1 || fundo.indexOf(q) !== -1;
+        row.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
+    });
+
+    var badge = document.getElementById('matrix-lotes-count');
+    if (badge) badge.textContent = visibleCount + ' lote(s) ' + (q !== '' ? 'encontrado(s)' : 'registrados');
+
+    var empty = document.getElementById('matrix-lotes-empty-filter');
+    if (empty) empty.style.display = visibleCount > 0 ? 'none' : 'block';
+}
+
 function cambiarVistaTabla(vista, btn) {
     document.querySelectorAll('.view-pill').forEach(function(b) {
         b.classList.remove('active');
@@ -93,16 +124,24 @@ function cambiarVistaTabla(vista, btn) {
 
     var secMotivos = document.getElementById('sec-motivos-container');
     var secClientes = document.getElementById('sec-clientes-container');
+    var secLotes = document.getElementById('sec-lotes-container');
     var secRecientes = document.getElementById('sec-recientes-container');
 
     if (vista === 'clientes') {
         if (secMotivos) secMotivos.style.display = 'none';
         if (secClientes) secClientes.style.display = '';
+        if (secLotes) secLotes.style.display = 'none';
+        if (secRecientes) secRecientes.style.display = 'none';
+    } else if (vista === 'lotes') {
+        if (secMotivos) secMotivos.style.display = 'none';
+        if (secClientes) secClientes.style.display = 'none';
+        if (secLotes) secLotes.style.display = '';
         if (secRecientes) secRecientes.style.display = 'none';
     } else {
         // Por defecto: 'motivos' (Por Tipo y Descarte)
         if (secMotivos) secMotivos.style.display = '';
         if (secClientes) secClientes.style.display = 'none';
+        if (secLotes) secLotes.style.display = 'none';
         if (secRecientes) secRecientes.style.display = 'none';
     }
 
@@ -115,7 +154,7 @@ function cambiarVistaTabla(vista, btn) {
 (function() {
     try {
         var guardada = localStorage.getItem('fundo_dashboard_tab_view') || 'motivos';
-        if (guardada !== 'motivos' && guardada !== 'clientes') {
+        if (guardada !== 'motivos' && guardada !== 'clientes' && guardada !== 'lotes') {
             guardada = 'motivos';
         }
         var targetBtn = document.querySelector('.view-pill[data-view="' + guardada + '"]');

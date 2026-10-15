@@ -144,13 +144,16 @@ class ResponsiveYCustomSelectTest extends TestCase
         $response->assertSee("nativeSelect.tagName !== 'SELECT'", false);
     }
 
-    public function test_dashboard_renders_only_motivos_and_clientes_in_table_switcher(): void
+    public function test_dashboard_renders_motivos_clientes_y_lotes_en_table_switcher(): void
     {
         $response = $this->actingAs($this->adminUser)->get(route('dashboard'));
 
         $response->assertStatus(200);
         $response->assertSee('Por Tipo y Descarte');
         $response->assertSee('Por Cliente');
+        $response->assertSee('Por Lote');
+        $response->assertSee('Resumen de Ventas por Lote');
+        $response->assertSee('table-matrix-lotes');
         $response->assertDontSee('Todas las Tablas');
         $response->assertDontSee('data-view="recientes"', false);
         $response->assertDontSee('data-view="all"', false);
@@ -161,6 +164,8 @@ class ResponsiveYCustomSelectTest extends TestCase
         $response = $this->actingAs($this->adminUser)->get(route('dashboard'));
 
         $response->assertStatus(200);
+        $response->assertDontSee('% Volumen');
+        $response->assertDontSee('Precio Prom.');
         $response->assertDontSee('<th scope="col" class="text-center" style="width: 90px;">Envíos</th>', false);
     }
 

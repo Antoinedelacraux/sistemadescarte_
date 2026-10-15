@@ -49,7 +49,7 @@ class DashboardController extends Controller
         $fundoSeleccionadoId = $request->input('fundo_id', '');
 
         // FundoScope aplica automáticamente el aislamiento de fundos para roles 'general' e 'individual'
-        $ventasQuery = VentaDescarte::with(['fundo', 'creator'])
+        $ventasQuery = VentaDescarte::with(['fundo', 'lote', 'creator'])
             ->activos()
             ->latest('fecha_produccion');
 
@@ -67,6 +67,7 @@ class DashboardController extends Controller
 
         // 2. Matrices cruzadas de clientes (Kilogramos y Montos) delegadas al servicio
         $matrizData = $this->analyticsService->calcularMatrizClientes($ventas);
+        $matrizLotesData = $this->analyticsService->calcularMatrizLotes($ventas);
 
         return view('dashboard', [
             'user' => $user,
@@ -83,6 +84,9 @@ class DashboardController extends Controller
             'totalesColumnasMonto' => $matrizData['totalesColumnasMonto'],
             'granTotalMatrizKg' => $matrizData['granTotalMatrizKg'],
             'granTotalMatrizMonto' => $matrizData['granTotalMatrizMonto'],
+            'matrizLotes' => $matrizLotesData['matrizLotes'],
+            'totalesColumnasLotesKg' => $matrizLotesData['totalesColumnasKg'],
+            'granTotalLotesKg' => $matrizLotesData['granTotalKg'],
             'totalGeneralKg' => $totalGeneralKg,
             'totalGeneralVenta' => $totalGeneralVenta,
         ]);
@@ -132,6 +136,10 @@ class DashboardController extends Controller
             return $this->exportarMotivos($ventas);
         }
 
+        if ($tabla === 'lotes') {
+            return $this->exportarLotes($ventas);
+        }
+
         if ($tabla === 'recientes') {
             return $this->exportarRecientes($ventas);
         }
@@ -174,8 +182,6 @@ class DashboardController extends Controller
             'TIPO DE DESCARTE',
             'CANTIDAD ENVÍOS',
             'KILOGRAMOS TOTALES (KG)',
-            '% VOLUMEN DESCARTE',
-            'PRECIO PROMEDIO (S/)',
             'TOTAL VENTA (S/)',
         ];
 
@@ -185,11 +191,8 @@ class DashboardController extends Controller
             2 => 'integer',
             3 => 'decimal',
             4 => 'decimal',
-            5 => 'decimal',
-            6 => 'decimal',
         ];
 
-        $totalGeneralKg = (float) $ventas->sum('kilogramos');
         $totalGeneralVenta = (float) $ventas->sum('valor_venta');
 
         $dataRows = [];
@@ -199,17 +202,13 @@ class DashboardController extends Controller
                 $ventasTipo = $ventasMotivo->where('tipo_descarte', $tipo);
                 $kgTipo = (float) $ventasTipo->sum('kilogramos');
                 $ventaTipo = (float) $ventasTipo->sum('valor_venta');
-                $precioPromTipo = $kgTipo > 0 ? round($ventaTipo / $kgTipo, 2) : 0.0;
                 $countTipo = $ventasTipo->count();
-                $porcentajeKg = $totalGeneralKg > 0 ? round(($kgTipo / $totalGeneralKg) * 100, 2) : 0.0;
 
                 $dataRows[] = [
                     $meta['titulo'],
                     $tipo,
                     $countTipo,
                     $kgTipo,
-                    $porcentajeKg,
-                    $precioPromTipo,
                     $ventaTipo,
                 ];
             }
@@ -219,14 +218,66 @@ class DashboardController extends Controller
             'TOTAL GENERAL',
             '',
             $ventas->count(),
-            $totalGeneralKg,
-            100.00,
-            '',
+            (float) $ventas->sum('kilogramos'),
             $totalGeneralVenta,
         ];
 
         $filename = 'resumen_tipo_descarte_' . date('Y-m-d_His') . '.xlsx';
         $xlsxBinary = ExcelExporter::generate($headers, $dataRows, 'Por Tipo y Descarte', [
+            'columnTypes' => $columnTypes,
+            'totalRow' => $totalRow,
+        ]);
+
+        return response($xlsxBinary, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control' => 'max-age=0, must-revalidate',
+            'Pragma' => 'public',
+            'Content-Length' => strlen($xlsxBinary),
+        ]);
+    }
+
+    /**
+     * Exporta la matriz de kilogramos por fundo, lote, motivo y tipo de descarte.
+     */
+    private function exportarLotes($ventas): Response
+    {
+        $matrizData = $this->analyticsService->calcularMatrizLotes($ventas);
+        $columnas = $matrizData['columnasMatriz'];
+        $headers = ['FUNDO', 'LOTE'];
+        $columnTypes = ['string', 'string'];
+
+        foreach ($columnas as $colDef) {
+            foreach ($colDef['tipos'] as $tipo) {
+                $headers[] = $colDef['titulo'] . ' - ' . $tipo . ' (KG)';
+                $columnTypes[] = 'decimal';
+            }
+        }
+        $headers[] = 'TOTAL KG';
+        $columnTypes[] = 'decimal';
+
+        $dataRows = [];
+        foreach ($matrizData['matrizLotes'] as $lote) {
+            $row = [$lote['fundo'], $lote['lote']];
+            foreach ($columnas as $motivoKey => $colDef) {
+                foreach ($colDef['tipos'] as $tipo) {
+                    $row[] = (float) ($lote['kg'][$motivoKey][$tipo] ?? 0);
+                }
+            }
+            $row[] = (float) $lote['total_kg'];
+            $dataRows[] = $row;
+        }
+
+        $totalRow = ['TOTAL GENERAL', ''];
+        foreach ($columnas as $motivoKey => $colDef) {
+            foreach ($colDef['tipos'] as $tipo) {
+                $totalRow[] = (float) ($matrizData['totalesColumnasKg'][$motivoKey][$tipo] ?? 0);
+            }
+        }
+        $totalRow[] = (float) $matrizData['granTotalKg'];
+
+        $filename = 'resumen_ventas_lotes_' . date('Y-m-d_His') . '.xlsx';
+        $xlsxBinary = ExcelExporter::generate($headers, $dataRows, 'Ventas por Lote', [
             'columnTypes' => $columnTypes,
             'totalRow' => $totalRow,
         ]);

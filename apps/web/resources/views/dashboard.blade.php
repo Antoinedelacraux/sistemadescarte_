@@ -25,6 +25,9 @@
                 <button type="button" class="view-pill" data-view="clientes" onclick="cambiarVistaTabla('clientes', this)" role="tab" aria-selected="false">
                     <span>Por Cliente</span>
                 </button>
+                <button type="button" class="view-pill" data-view="lotes" onclick="cambiarVistaTabla('lotes', this)" role="tab" aria-selected="false">
+                    <span>Por Lote</span>
+                </button>
             </div>
         </div>
 
@@ -51,6 +54,7 @@
 
     {{-- 4. Tabla 2: Resumen por cliente --}}
     @include('dashboard._tabla_clientes')
+    @include('dashboard._tabla_lotes')
 
     {{-- 5. Tabla 3: Envíos recientes --}}
     @include('dashboard._tabla_recientes')

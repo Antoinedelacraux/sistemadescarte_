@@ -26,8 +26,6 @@
                     <tr>
                         <th scope="col" style="min-width: 180px;">Origen / Tipo</th>
                         <th scope="col" class="text-right" style="width: 140px;">Kilogramos (kg)</th>
-                        <th scope="col" style="width: 130px;">% Volumen</th>
-                        <th scope="col" class="text-right" style="width: 130px;">Precio Prom.</th>
                         <th scope="col" class="text-right" style="width: 140px;">Total (S/)</th>
                     </tr>
                 </thead>
@@ -37,7 +35,7 @@
 
                         {{-- Fila agrupada de cabecera --}}
                         <tr style="background: #f8fafc; font-weight: 700;">
-                            <td colspan="5" style="padding-top: 0.75rem; padding-bottom: 0.4rem;">
+                            <td colspan="3" style="padding-top: 0.75rem; padding-bottom: 0.4rem;">
                                 <span class="motivo-pill motivo-pill-{{ $meta['badge'] }}">
                                     <span>{{ $meta['titulo'] }}</span>
                                 </span>
@@ -55,15 +53,6 @@
                             <td class="text-right" style="font-weight: 600; font-family: monospace;">
                                 {{ number_format($tipoRow['kilogramos'], 2) }}
                             </td>
-                            <td>
-                                <div class="progress-bar-wrap">
-                                    <div class="progress-bar-fill progress-fill-{{ $meta['badge'] }}" style="width: {{ min(100, $tipoRow['porcentaje_kg']) }}%;"></div>
-                                </div>
-                                <span style="font-size: 0.6875rem; color: var(--txt-secondary);">{{ number_format($tipoRow['porcentaje_kg'], 2) }}%</span>
-                            </td>
-                            <td class="text-right" style="color: var(--txt-secondary); font-family: monospace;">
-                                S/ {{ number_format($tipoRow['precio_promedio'], 2) }}
-                            </td>
                             <td class="text-right" style="font-weight: 600; color: var(--txt-primary); font-family: monospace;">
                                 S/ {{ number_format($tipoRow['valor_venta'], 2) }}
                             </td>
@@ -78,12 +67,6 @@
                             <td class="text-right" style="font-family: monospace;">
                                 <strong>{{ number_format($mInfo['total_kg'], 2) }}</strong>
                             </td>
-                            <td>
-                                <span style="font-weight: 700; color: var(--txt-secondary);">{{ number_format($mInfo['porcentaje_kg'], 2) }}%</span>
-                            </td>
-                            <td class="text-right" style="font-family: monospace;">
-                                S/ {{ number_format($mInfo['precio_promedio'], 2) }}
-                            </td>
                             <td class="text-right" style="font-family: monospace; color: var(--clr-primary-700);">
                                 <strong>S/ {{ number_format($mInfo['total_venta'], 2) }}</strong>
                             </td>
@@ -94,10 +77,6 @@
                     <tr class="row-grand-total">
                         <td>TOTAL GENERAL</td>
                         <td class="text-right" style="font-family: monospace;">{{ number_format($totalGeneralKg, 2) }} kg</td>
-                        <td>100.00%</td>
-                        <td class="text-right" style="font-family: monospace;">
-                            S/ {{ $totalGeneralKg > 0 ? number_format($totalGeneralVenta / $totalGeneralKg, 2) : '0.00' }}
-                        </td>
                         <td class="text-right text-highlight" style="font-family: monospace;">
                             S/ {{ number_format($totalGeneralVenta, 2) }}
                         </td>

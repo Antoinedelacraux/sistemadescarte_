@@ -197,4 +197,110 @@ class DashboardAnalyticsService
             'columnasMatriz' => $columnasMatriz,
         ];
     }
+
+    /**
+     * Calcula la matriz de kilogramos por fundo, lote, motivo y tipo de descarte.
+     * Mantiene la misma estructura de columnas que la matriz por cliente para
+     * que ambas lecturas sean comparables en el dashboard.
+     *
+     * @param \Illuminate\Support\Collection $ventas Coleccion de ventas filtradas
+     * @return array
+     */
+    public function calcularMatrizLotes($ventas): array
+    {
+        $columnasMatriz = self::COLUMNAS_MATRIZ;
+        $matrizLotes = [];
+        $totalesColumnasKg = [];
+        $granTotalKg = 0.0;
+
+        foreach ($columnasMatriz as $motivoKey => $colDef) {
+            foreach ($colDef['tipos'] as $tipoKey) {
+                $totalesColumnasKg[$motivoKey][$tipoKey] = 0.0;
+            }
+        }
+
+        foreach ($ventas as $venta) {
+            $loteId = $venta->lote_id ?: 'sin-lote';
+            $fundoId = $venta->fundo_id ?: 'sin-fundo';
+            $key = $fundoId . ':' . $loteId;
+            $loteNombre = $venta->lote?->nombre ?: 'Sin lote registrado';
+            $fundoNombre = $venta->fundo?->nombre_corto ?: ($venta->fundo?->name ?: 'Sin fundo');
+
+            if (!isset($matrizLotes[$key])) {
+                $matrizLotes[$key] = [
+                    'fundo' => $fundoNombre,
+                    'lote' => $loteNombre,
+                    'kg' => [],
+                    'total_kg' => 0.0,
+                ];
+
+                foreach ($columnasMatriz as $motivoKey => $colDef) {
+                    foreach ($colDef['tipos'] as $tipoKey) {
+                        $matrizLotes[$key]['kg'][$motivoKey][$tipoKey] = 0.0;
+                    }
+                }
+            }
+
+            $motivoNorm = $this->normalizarMotivo($venta->motivo);
+            $tipoNorm = $this->normalizarTipoDescarte($venta->tipo_descarte);
+            $kg = (float) $venta->kilogramos;
+
+            if ($motivoNorm && $tipoNorm && isset($matrizLotes[$key]['kg'][$motivoNorm][$tipoNorm])) {
+                $matrizLotes[$key]['kg'][$motivoNorm][$tipoNorm] += $kg;
+                $matrizLotes[$key]['total_kg'] += $kg;
+                $totalesColumnasKg[$motivoNorm][$tipoNorm] += $kg;
+                $granTotalKg += $kg;
+            }
+        }
+
+        uasort($matrizLotes, function (array $a, array $b): int {
+            $totalCompare = $b['total_kg'] <=> $a['total_kg'];
+            if ($totalCompare !== 0) {
+                return $totalCompare;
+            }
+
+            return strcmp($a['fundo'] . ' ' . $a['lote'], $b['fundo'] . ' ' . $b['lote']);
+        });
+
+        return [
+            'matrizLotes' => $matrizLotes,
+            'totalesColumnasKg' => $totalesColumnasKg,
+            'granTotalKg' => $granTotalKg,
+            'columnasMatriz' => $columnasMatriz,
+        ];
+    }
+
+    private function normalizarMotivo(?string $motivo): ?string
+    {
+        $motivoRaw = strtolower(trim((string) $motivo));
+
+        if (str_contains($motivoRaw, 'campo')) {
+            return 'Campo';
+        }
+        if (str_contains($motivoRaw, 'packing')) {
+            return 'Packing';
+        }
+        if (str_contains($motivoRaw, 'nacional') || str_contains($motivoRaw, 'cosecha')) {
+            return 'Cosecha Nacional';
+        }
+
+        return null;
+    }
+
+    private function normalizarTipoDescarte(?string $tipo): ?string
+    {
+        $tipoRaw = strtolower(trim((string) $tipo));
+
+        if ($tipoRaw === 'granos') {
+            return 'Granos';
+        }
+        if (str_contains($tipoRaw, 'plaga')) {
+            return 'Racimos con Plaga';
+        }
+        if ($tipoRaw === 'racimos') {
+            return 'Racimos';
+        }
+
+        return null;
+    }
 }
