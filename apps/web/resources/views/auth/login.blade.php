@@ -12,10 +12,10 @@
      */
 
     // 1. IMAGEN DE FONDO (Desktop Hero)
-    // Ubicación predeterminada: apps/web/public/images/login-bg.webp o login-bg.jpg
-    $loginBgImage = file_exists(public_path('images/login-bg.webp'))
-        ? asset('images/login-bg.webp')
-        : (file_exists(public_path('images/login-bg.jpg')) ? asset('images/login-bg.jpg') : '');
+    // Ubicación predeterminada: apps/web/public/images/login-bg.jpg o login-bg.webp
+    $loginBgImage = file_exists(public_path('images/login-bg.jpg'))
+        ? asset('images/login-bg.jpg')
+        : (file_exists(public_path('images/login-bg.webp')) ? asset('images/login-bg.webp') : '');
 
     // 2. LOGO CON NOMBRE DE LA EMPRESA (Transparente, sin fondo)
     $loginLogoFull = file_exists(public_path('images/logo.webp'))
