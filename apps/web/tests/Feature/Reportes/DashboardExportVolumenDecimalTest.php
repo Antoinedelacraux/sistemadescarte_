@@ -125,7 +125,27 @@ class DashboardExportVolumenDecimalTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertTrue(str_contains($response->headers->get('Content-Disposition'), 'resumen_ventas_lotes_'));
-        $this->assertStringStartsWith("PK\x03\x04", $response->getContent());
+
+        $tempZip = tempnam(sys_get_temp_dir(), 'test_lotes_xlsx_');
+        file_put_contents($tempZip, $response->getContent());
+        $zip = new \ZipArchive();
+        $this->assertTrue($zip->open($tempZip));
+        $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $zip->close();
+        @unlink($tempZip);
+
+        $this->assertNotEmpty($sheetXml);
+        $this->assertStringContainsString('FUNDO', $sheetXml);
+        $this->assertStringContainsString('LOTE', $sheetXml);
+        $this->assertStringContainsString('DESCARTE CAMPO', $sheetXml);
+        $this->assertStringContainsString('DESCARTE PACKING', $sheetXml);
+        $this->assertStringContainsString('COSECHA NACIONAL', $sheetXml);
+        $this->assertStringContainsString('TOTAL KG', $sheetXml);
+        $this->assertStringContainsString('<mergeCell ref="A1:A2"/>', $sheetXml);
+        $this->assertStringContainsString('<mergeCell ref="C1:E1"/>', $sheetXml);
+        $this->assertStringContainsString('<mergeCell ref="F1:G1"/>', $sheetXml);
+        $this->assertStringContainsString('<mergeCell ref="H1:I1"/>', $sheetXml);
+        $this->assertStringContainsString('<mergeCell ref="J1:J2"/>', $sheetXml);
     }
 
     public function test_dashboard_renders_cliente_matrices_for_kg_and_monto(): void

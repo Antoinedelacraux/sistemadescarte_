@@ -10,6 +10,7 @@
 ## Log de avances
 | Fecha | Hecho verificado | Pruebas | Bloqueos | Siguiente acción |
 |---|---|---|---|---|
+| 2026-10-15 | Panel de Control ampliado con matriz Por Lote y exportacion XLSX alineada visualmente con la tabla: encabezados de dos niveles, grupos fusionados por motivo, columnas FUNDO/LOTE/TOTAL KG y fila TOTAL GENERAL. No se modifico la base de datos. | 8 pruebas enfocadas (79 aserciones), lint PHP, `view:cache` y `git diff --check` exitosos; suite completa: 85 pasaron, 1 fallo y 6 errores conocidos | Validacion visual final en navegador pendiente; fallos completos corresponden a pruebas existentes de VentaDescarte/VentaEdicion24Horas | Validar descarga desde el navegador con datos reales de prueba |
 | 2026-10-08 | Arquitectura y Diseño de Datos Completado | N/A | Ninguno | Iniciar configuración de proyecto Laravel |
 | 2026-10-08 | Plan de Despliegue para VPS documentado | N/A | Ninguno | Esperar aprobación para escribir código |
 | 2026-10-08 | Fase 3: Instalación de PHP 8.4, Composer 2.11 y Laravel en `apps/web`. Implementado Login, RBAC (4 roles), Fundos y aislamiento estricto `FundoScope`. | 15 pruebas PHPUnit exitosas (55 aserciones) | Ninguno | Avanzar a Diseño UI/UX |

@@ -629,5 +629,163 @@ class ExcelExporter
 
         return self::createZip($files);
     }
-}
 
+    /**
+     * Genera una matriz XLSX de una sola tabla para el resumen por lote.
+     * Los encabezados de motivos se fusionan igual que en la matriz por cliente.
+     */
+    public static function generateMatrizLotes(
+        array $matrizLotes,
+        array $columnasMatriz,
+        array $totalesColumnasKg,
+        float $granTotalKg,
+        string $sheetTitle = 'Ventas por Lote'
+    ): string {
+        $sheetTitle = preg_replace('~[\\/*?\[\]:]~', '', substr($sheetTitle, 0, 31));
+        if (trim($sheetTitle) === '') {
+            $sheetTitle = 'Lotes';
+        }
+
+        $contentTypesXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n" .
+            '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' .
+            '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' .
+            '<Default Extension="xml" ContentType="application/xml"/>' .
+            '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' .
+            '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' .
+            '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' .
+            '</Types>';
+
+        $relsXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n" .
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' .
+            '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' .
+            '</Relationships>';
+
+        $wbRelsXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n" .
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' .
+            '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' .
+            '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' .
+            '</Relationships>';
+
+        $wbXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n" .
+            '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' .
+            '<sheets><sheet name="' . htmlspecialchars($sheetTitle, ENT_XML1, 'UTF-8') . '" sheetId="1" r:id="rId1"/></sheets>' .
+            '</workbook>';
+
+        $stylesXml = self::getStylesXml();
+        $totalColumns = 2;
+        foreach ($columnasMatriz as $colDef) {
+            $totalColumns += count($colDef['tipos']);
+        }
+        $totalColumns += 1;
+
+        $colWidths = [1 => 20, 2 => 14];
+        for ($column = 3; $column < $totalColumns; $column++) {
+            $colWidths[$column] = 18;
+        }
+        $colWidths[$totalColumns] = 18;
+
+        $sheetXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n" .
+            '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' .
+            '<sheetViews><sheetView tabSelected="1" workbookViewId="0"/></sheetViews><cols>';
+
+        for ($column = 1; $column <= $totalColumns; $column++) {
+            $sheetXml .= '<col min="' . $column . '" max="' . $column . '" width="' . ($colWidths[$column] ?? 18) . '" customWidth="1"/>';
+        }
+        $sheetXml .= '</cols><sheetData>';
+
+        $merges = [];
+        $row = 1;
+        $lastColumn = self::colToLetter($totalColumns - 1);
+
+        // Primera fila: encabezados agrupados por motivo.
+        $sheetXml .= '<row r="1" ht="26" customHeight="1">';
+        $sheetXml .= '<c r="A1" s="1" t="inlineStr"><is><t>FUNDO</t></is></c>';
+        $sheetXml .= '<c r="B1" s="1" t="inlineStr"><is><t>LOTE</t></is></c>';
+        $columnIndex = 3;
+        foreach ($columnasMatriz as $colDef) {
+            $start = self::colToLetter($columnIndex - 1);
+            $end = self::colToLetter($columnIndex + count($colDef['tipos']) - 2);
+            $sheetXml .= '<c r="' . $start . '1" s="1" t="inlineStr"><is><t>' . htmlspecialchars($colDef['titulo'], ENT_XML1, 'UTF-8') . '</t></is></c>';
+            for ($blank = $columnIndex + 1; $blank <= $columnIndex + count($colDef['tipos']) - 1; $blank++) {
+                $sheetXml .= '<c r="' . self::colToLetter($blank - 1) . '1" s="1"/>';
+            }
+            $merges[] = $start . '1:' . $end . '1';
+            $columnIndex += count($colDef['tipos']);
+        }
+        $sheetXml .= '<c r="' . $lastColumn . '1" s="1" t="inlineStr"><is><t>TOTAL KG</t></is></c></row>';
+
+        // Segunda fila: tipos de descarte.
+        $row = 2;
+        $sheetXml .= '<row r="2" ht="22" customHeight="1">';
+        $sheetXml .= '<c r="A2" s="1"/><c r="B2" s="1"/>';
+        $columnIndex = 3;
+        foreach ($columnasMatriz as $colDef) {
+            foreach ($colDef['tipos'] as $tipo) {
+                $cell = self::colToLetter($columnIndex - 1);
+                $sheetXml .= '<c r="' . $cell . '2" s="9" t="inlineStr"><is><t>' . htmlspecialchars(strtoupper($tipo), ENT_XML1, 'UTF-8') . '</t></is></c>';
+                $columnIndex++;
+            }
+        }
+        $sheetXml .= '<c r="' . $lastColumn . '2" s="1"/></row>';
+        $merges[] = 'A1:A2';
+        $merges[] = 'B1:B2';
+        $merges[] = $lastColumn . '1:' . $lastColumn . '2';
+
+        $row = 3;
+        if (count($matrizLotes) === 0) {
+            $sheetXml .= '<row r="3" ht="24" customHeight="1"><c r="A3" s="0" t="inlineStr"><is><t>No hay registros de ventas para clasificar por lote.</t></is></c></row>';
+            $merges[] = 'A3:' . $lastColumn . '3';
+            $row++;
+        } else {
+            foreach ($matrizLotes as $lote) {
+                $sheetXml .= '<row r="' . $row . '" ht="20" customHeight="1">';
+                $sheetXml .= '<c r="A' . $row . '" s="11" t="inlineStr"><is><t>' . htmlspecialchars((string) ($lote['fundo'] ?? ''), ENT_XML1, 'UTF-8') . '</t></is></c>';
+                $sheetXml .= '<c r="B' . $row . '" s="11" t="inlineStr"><is><t>' . htmlspecialchars((string) ($lote['lote'] ?? ''), ENT_XML1, 'UTF-8') . '</t></is></c>';
+                $columnIndex = 3;
+                foreach ($columnasMatriz as $motivoKey => $colDef) {
+                    foreach ($colDef['tipos'] as $tipo) {
+                        $cell = self::colToLetter($columnIndex - 1);
+                        $value = (float) ($lote['kg'][$motivoKey][$tipo] ?? 0);
+                        $sheetXml .= '<c r="' . $cell . $row . '" s="2"><v>' . $value . '</v></c>';
+                        $columnIndex++;
+                    }
+                }
+                $sheetXml .= '<c r="' . $lastColumn . $row . '" s="10"><v>' . (float) ($lote['total_kg'] ?? 0) . '</v></c></row>';
+                $row++;
+            }
+        }
+
+        // Total general con la misma estructura de columnas.
+        $sheetXml .= '<row r="' . $row . '" ht="24" customHeight="1">';
+        $sheetXml .= '<c r="A' . $row . '" s="5" t="inlineStr"><is><t>TOTAL GENERAL</t></is></c><c r="B' . $row . '" s="5"/>';
+        $merges[] = 'A' . $row . ':B' . $row;
+        $columnIndex = 3;
+        foreach ($columnasMatriz as $motivoKey => $colDef) {
+            foreach ($colDef['tipos'] as $tipo) {
+                $cell = self::colToLetter($columnIndex - 1);
+                $value = (float) ($totalesColumnasKg[$motivoKey][$tipo] ?? 0);
+                $sheetXml .= '<c r="' . $cell . $row . '" s="6"><v>' . $value . '</v></c>';
+                $columnIndex++;
+            }
+        }
+        $sheetXml .= '<c r="' . $lastColumn . $row . '" s="6"><v>' . $granTotalKg . '</v></c></row></sheetData>';
+
+        if (!empty($merges)) {
+            $sheetXml .= '<mergeCells count="' . count($merges) . '">';
+            foreach ($merges as $merge) {
+                $sheetXml .= '<mergeCell ref="' . $merge . '"/>';
+            }
+            $sheetXml .= '</mergeCells>';
+        }
+        $sheetXml .= '</worksheet>';
+
+        return self::createZip([
+            '[Content_Types].xml' => $contentTypesXml,
+            '_rels/.rels' => $relsXml,
+            'xl/_rels/workbook.xml.rels' => $wbRelsXml,
+            'xl/workbook.xml' => $wbXml,
+            'xl/styles.xml' => $stylesXml,
+            'xl/worksheets/sheet1.xml' => $sheetXml,
+        ]);
+    }
+}

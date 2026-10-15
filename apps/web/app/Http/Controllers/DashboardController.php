@@ -243,44 +243,14 @@ class DashboardController extends Controller
     private function exportarLotes($ventas): Response
     {
         $matrizData = $this->analyticsService->calcularMatrizLotes($ventas);
-        $columnas = $matrizData['columnasMatriz'];
-        $headers = ['FUNDO', 'LOTE'];
-        $columnTypes = ['string', 'string'];
-
-        foreach ($columnas as $colDef) {
-            foreach ($colDef['tipos'] as $tipo) {
-                $headers[] = $colDef['titulo'] . ' - ' . $tipo . ' (KG)';
-                $columnTypes[] = 'decimal';
-            }
-        }
-        $headers[] = 'TOTAL KG';
-        $columnTypes[] = 'decimal';
-
-        $dataRows = [];
-        foreach ($matrizData['matrizLotes'] as $lote) {
-            $row = [$lote['fundo'], $lote['lote']];
-            foreach ($columnas as $motivoKey => $colDef) {
-                foreach ($colDef['tipos'] as $tipo) {
-                    $row[] = (float) ($lote['kg'][$motivoKey][$tipo] ?? 0);
-                }
-            }
-            $row[] = (float) $lote['total_kg'];
-            $dataRows[] = $row;
-        }
-
-        $totalRow = ['TOTAL GENERAL', ''];
-        foreach ($columnas as $motivoKey => $colDef) {
-            foreach ($colDef['tipos'] as $tipo) {
-                $totalRow[] = (float) ($matrizData['totalesColumnasKg'][$motivoKey][$tipo] ?? 0);
-            }
-        }
-        $totalRow[] = (float) $matrizData['granTotalKg'];
-
         $filename = 'resumen_ventas_lotes_' . date('Y-m-d_His') . '.xlsx';
-        $xlsxBinary = ExcelExporter::generate($headers, $dataRows, 'Ventas por Lote', [
-            'columnTypes' => $columnTypes,
-            'totalRow' => $totalRow,
-        ]);
+        $xlsxBinary = ExcelExporter::generateMatrizLotes(
+            $matrizData['matrizLotes'],
+            $matrizData['columnasMatriz'],
+            $matrizData['totalesColumnasKg'],
+            $matrizData['granTotalKg'],
+            'Ventas por Lote'
+        );
 
         return response($xlsxBinary, 200, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
