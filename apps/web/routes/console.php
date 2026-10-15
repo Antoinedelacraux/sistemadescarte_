@@ -69,7 +69,7 @@ Artisan::command('fundo:resetear-usuarios', function () {
     );
     $roleReg = \App\Models\Role::firstOrCreate(
         ['name' => \App\Models\Role::REGISTRADOR],
-        ['display_name' => 'Registrador', 'description' => 'Registro de ventas e historial en sus fundos asignados']
+        ['display_name' => 'Registrador', 'description' => 'Panel de control, registro de ventas e historial en sus fundos asignados']
     );
     $roleAna = \App\Models\Role::firstOrCreate(
         ['name' => \App\Models\Role::ANALISTA],
@@ -147,11 +147,10 @@ Artisan::command('fundo:resetear-usuarios', function () {
     $this->info("================================================================================");
     $this->line("1. Administrador: admin@fundo.test       | Rol: Administrador  | Módulos: TODOS | Fundos: TODOS");
     $this->line("2. Jefe de fundo: jefe@fundo.test        | Rol: Jefe de fundo  | Módulos: PANEL, HISTORIAL | Fundos: TODOS");
-    $this->line("3. Registrador:   registrador@fundo.test | Rol: Registrador    | Módulos: REGISTRO, HISTORIAL | Fundos: ASIGNADOS");
+    $this->line("3. Registrador:   registrador@fundo.test | Rol: Registrador    | Módulos: PANEL, REGISTRO, HISTORIAL | Fundos: ASIGNADOS");
     $this->line("4. Analista:      analista@fundo.test    | Rol: Analista       | Módulos: HISTORIAL | Fundos: TODOS");
     $this->line("5. Ventas:        ventas@fundo.test      | Rol: Ventas         | Módulos: HISTORIAL | Fundos: TODOS");
     $this->info("================================================================================");
 
     return 0;
 })->purpose('Crea las 5 cuentas oficiales con la nueva arquitectura de roles y módulos');
-

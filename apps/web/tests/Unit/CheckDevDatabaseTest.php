@@ -6,7 +6,7 @@ use App\Models\Role;
 use App\Models\User;
 use PHPUnit\Framework\TestCase;
 
-class UserModelModulesTest extends TestCase
+class CheckDevDatabaseTest extends TestCase
 {
     public function test_modulos_constant_contains_expected_keys(): void
     {

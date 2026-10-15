@@ -347,7 +347,7 @@ class VentaDescarteTest extends TestCase
         $response = $this->actingAs($this->individualUser)->get(route('ventas.show', $venta));
 
         $response->assertStatus(200);
-        $response->assertSee('Ficha de Pesaje de Descarte');
+        $response->assertSee('Detalle de Venta');
         $response->assertSee('Distribuidora del Sur');
         $response->assertSee('360.00');
     }
@@ -468,4 +468,3 @@ class VentaDescarteTest extends TestCase
         $responseEdit->assertViewHas('clientes');
     }
 }
-

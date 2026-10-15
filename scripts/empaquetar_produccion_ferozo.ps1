@@ -28,14 +28,17 @@ if (-not (Test-Path $webAppPath)) {
 Write-Host "--> [1/4] Ejecutando suite de pruebas automatizadas..." -ForegroundColor Yellow
 Push-Location $webAppPath
 try {
-    $testResult = php artisan test
+    & php artisan test
+    if ($LASTEXITCODE -ne 0) {
+        throw "php artisan test terminó con código de salida $LASTEXITCODE."
+    }
     Write-Host "    Pruebas completadas con éxito." -ForegroundColor Green
 } catch {
     Write-Error "Las pruebas automatizadas fallaron. Corrige los errores antes de empaquetar para producción."
-    Pop-Location
     exit 1
+} finally {
+    Pop-Location
 }
-Pop-Location
 
 # 3. Preparar directorio dist/
 Write-Host "--> [2/4] Preparando carpeta de distribución (dist/)..." -ForegroundColor Yellow
@@ -94,7 +97,35 @@ foreach ($sub in $storageSubs) {
 
 # 5. Generar archivo ZIP
 Write-Host "--> [4/4] Comprimiendo archivo ZIP de producción..." -ForegroundColor Yellow
-Compress-Archive -Path "$tempDir\*" -DestinationPath $zipOutput -CompressionLevel Optimal
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+[System.IO.Compression.ZipFile]::CreateFromDirectory(
+    $tempDir,
+    $zipOutput,
+    [System.IO.Compression.CompressionLevel]::Optimal,
+    $false
+)
+
+# Verificar que el ZIP sea completo antes de eliminar la fuente temporal.
+$archive = [System.IO.Compression.ZipFile]::OpenRead($zipOutput)
+try {
+    $entryNames = @($archive.Entries | ForEach-Object { $_.FullName -replace '\\', '/' })
+    $requiredEntries = @(
+        'artisan',
+        'app/Http/Controllers/DashboardController.php',
+        'app/Models/User.php',
+        'app/Services/ExcelExporter.php',
+        'resources/views/dashboard/_tabla_lotes.blade.php',
+        'vendor/autoload.php',
+        '.env.production.example',
+        'schema_produccion_limpio.sql'
+    )
+    $missingEntries = @($requiredEntries | Where-Object { $_ -notin $entryNames })
+    if ($missingEntries.Count -gt 0) {
+        throw "El ZIP no contiene archivos esenciales: $($missingEntries -join ', ')"
+    }
+} finally {
+    $archive.Dispose()
+}
 
 # Eliminar carpeta temporal
 Remove-Item $tempDir -Recurse -Force
@@ -108,11 +139,11 @@ Write-Host "=================================================================" -
 Write-Host "Archivo generado: $zipOutput" -ForegroundColor White
 Write-Host "Tamano:           $zipSizeMb MB" -ForegroundColor White
 Write-Host ""
-Write-Host "Pasos para instalar en DonWeb Ferozo:" -ForegroundColor Cyan
+Write-Host "Pasos para una instalación nueva en DonWeb Ferozo:" -ForegroundColor Cyan
 Write-Host "1. Sube este archivo ZIP mediante el Administrador de Archivos de Ferozo."
 Write-Host "2. Descomprimelo en tu carpeta del servidor (ej. /sistema-fundo o /public_html)."
 Write-Host "3. Copia '.env.production.example' como '.env' y coloca tus datos de MySQL."
-Write-Host "4. Importa 'schema_produccion_limpio.sql' en phpMyAdmin de Ferozo."
+Write-Host "4. Solo en una instalación nueva, importa 'schema_produccion_limpio.sql' en phpMyAdmin de Ferozo."
 Write-Host "5. Listo! El sistema iniciara en limpio para operar en campo."
+Write-Host "Para actualizar una instalación existente, sigue la guía y no importes el esquema limpio."
 Write-Host "=================================================================" -ForegroundColor Green
-

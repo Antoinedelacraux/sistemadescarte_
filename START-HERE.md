@@ -33,7 +33,7 @@ La plataforma ha completado su fase de desarrollo e implementación en `apps/web
    - En la pantalla de login, dispones de una **tabla interactiva con las 5 cuentas oficiales** con contraseña predeterminada (`password123`):
      - **Administrador:** `admin@fundo.test` (acceso total a todos los fundos y módulos).
      - **Jefe de fundo:** `jefe@fundo.test` (acceso a fundos asignados, módulos Panel e Historial).
-     - **Registrador:** `registrador@fundo.test` (acceso a fundos asignados, módulos Registro e Historial).
+     - **Registrador:** `registrador@fundo.test` (acceso a fundos asignados, módulos Panel, Registro e Historial).
      - **Analista:** `analista@fundo.test` (acceso a todos los fundos, módulo Historial).
      - **Ventas:** `ventas@fundo.test` (acceso a todos los fundos, módulo Historial).
 

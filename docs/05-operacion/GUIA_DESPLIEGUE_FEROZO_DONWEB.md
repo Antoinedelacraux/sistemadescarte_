@@ -8,8 +8,8 @@ Este manual detalla paso a paso el procedimiento oficial para subir, configurar 
 ## 1. Requisitos Previos en el Panel Ferozo
 
 Verifica en tu panel de control Ferozo:
-1. **Versión de PHP:** PHP 8.2, 8.3 o 8.4 (en Ferozo: *Avanzado* -> *Configuración de PHP*).
-2. **Extensiones PHP activas:** `pdo_mysql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `cURL`, `bcmath`, `fileinfo`, `gd`. (Vienen activadas por defecto en Ferozo).
+1. **Versión de PHP:** PHP 8.3 o 8.4 (preferentemente 8.4; en Ferozo: *Avanzado* -> *Configuración de PHP*).
+2. **Extensiones PHP activas:** `pdo_mysql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `json`, `cURL`, `bcmath`, `fileinfo`, `gd`, `zip`. (Vienen activadas por defecto en Ferozo).
 3. **Motor de Base de Datos:** MySQL 8.0 o MariaDB 10.4+.
 4. **Certificado SSL / HTTPS:** Indispensable para la PWA y funcionamiento offline. Ferozo incluye Let's Encrypt gratuito (*Seguridad* -> *Certificados SSL*).
 
@@ -65,8 +65,8 @@ En tu equipo local de desarrollo:
 
 ### Paso 4: Configurar el Archivo `.env`
 1. En el directorio de la aplicación en Ferozo, renombra o copia `.env.production.example` como **`.env`**.
-   *(Nota de seguridad: `.env.production.example` ya viene con una `APP_KEY` segura preconfigurada de 32 bytes, por lo que el sistema no fallará ni requerirá consola SSH obligatoria).*
-2. Edita los valores principales de tu conexión a base de datos y URL:
+2. Genera y configura una **`APP_KEY` única** para esta instalación. Si hay SSH, ejecuta `php artisan key:generate`. Si no hay SSH, genera una clave local con `php artisan key:generate --show` y pega el resultado solo en el `.env` del servidor. Nunca reutilices una clave de ejemplo ni una clave de otro ambiente.
+3. Edita los valores principales de tu conexión a base de datos y URL:
    ```env
    APP_NAME="TALSA Fundo"
    APP_ENV=production
@@ -85,7 +85,7 @@ En tu equipo local de desarrollo:
    CACHE_STORE=database
    QUEUE_CONNECTION=database
    ```
-3. **Permisos de carpetas:**
+4. **Permisos de carpetas:**
    Asegúrate de que las siguientes carpetas tengan permisos de escritura (`chmod 775` o `755`):
    - `storage/` (y todas sus subcarpetas: `logs`, `framework/cache`, `framework/sessions`, `framework/views`)
    - `bootstrap/cache/`
@@ -96,7 +96,7 @@ En tu equipo local de desarrollo:
 
 Tienes dos alternativas igualmente rápidas:
 
-#### Alternativa A — Mediante phpMyAdmin en Ferozo (Sin necesidad de SSH):
+#### Alternativa A — Mediante phpMyAdmin en Ferozo (Sin necesidad de SSH, solo instalación nueva):
 1. En Ferozo, ve a **Bases de Datos** -> **phpMyAdmin**.
 2. Selecciona tu base de datos creada en el menú de la izquierda.
 3. Haz clic en la pestaña superior **Importar**.
@@ -104,7 +104,7 @@ Tienes dos alternativas igualmente rápidas:
 5. Haz clic en **Continuar / Importar**.
 6. ¡Listo! Se habrán creado todas las tablas, los 5 roles oficiales, los 3 fundos, los 34 lotes oficiales y el Administrador inicial, con **0 registros en ventas**.
 
-#### Alternativa B — Mediante Consola SSH o Terminal Web de Ferozo:
+#### Alternativa B — Mediante Consola SSH o Terminal Web de Ferozo (solo instalación nueva):
 Si tu servidor cuenta con acceso a terminal:
 ```bash
 cd /ruta/hacia/sistema-fundo
@@ -114,6 +114,18 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 ```
+
+### Actualización de una producción existente (preserva ventas y usuarios)
+
+Este procedimiento es distinto a una instalación nueva. Antes de actualizar, verifica un respaldo restaurable de la base de datos y conserva una copia del directorio actualmente publicado.
+
+1. Activa temporalmente el modo mantenimiento si dispones de SSH: `php artisan down --secret="clave_temporal_para_ti"`.
+2. Sube el nuevo ZIP a una carpeta de versión nueva y valida su contenido antes de cambiar el DocumentRoot o reemplazar la versión activa.
+3. Conserva el archivo `.env` de producción existente; no lo sustituyas con el archivo de ejemplo y no cambies su `APP_KEY`.
+4. **No importes** `schema_produccion_limpio.sql`, no ejecutes `migrate:fresh` y no ejecutes seeds en una producción existente: esas acciones corresponden exclusivamente a una instalación desde cero.
+5. Esta versión no incorpora migraciones, por lo que no requiere ejecutar `php artisan migrate`. En futuras versiones, ejecuta `php artisan migrate --force` únicamente si sus notas de despliegue declaran una migración.
+6. Con SSH, limpia y reconstruye cachés: `php artisan optimize:clear`, `php artisan config:cache`, `php artisan route:cache` y `php artisan view:cache`.
+7. Verifica inicio de sesión, Panel de Control, registro de una venta de prueba controlada y exportación XLSX; luego desactiva mantenimiento con `php artisan up`.
 
 ---
 
@@ -138,7 +150,7 @@ php artisan view:cache
 3. **Crear las cuentas del personal de venta de descarte:**
    - Dirígete a la sección de usuarios y crea las cuentas según sus responsabilidades:
      - **Jefe de fundo:** Accede al Panel de control e Historial. Asignar su fundo.
-     - **Registrador:** Accede al Registro e Historial. Asignar los fundos donde pesa y despacha fruta.
+     - **Registrador:** Accede al Panel de Control, Registro e Historial. Asignar los fundos donde pesa y despacha fruta.
      - **Analista:** Accede al Historial consolidado de todos los fundos.
      - **Ventas:** Accede al Historial consolidado de todos los fundos.
 4. **Comprobación:**

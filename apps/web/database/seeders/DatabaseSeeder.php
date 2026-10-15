@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
 
         $roleRegistrador = Role::firstOrCreate(
             ['name' => Role::REGISTRADOR],
-            ['display_name' => 'Registrador', 'description' => 'Registro de ventas e historial en sus fundos asignados']
+            ['display_name' => 'Registrador', 'description' => 'Panel de control, registro de ventas e historial en sus fundos asignados']
         );
 
         $roleAnalista = Role::firstOrCreate(

@@ -46,8 +46,10 @@ class VentaEdicion24HorasTest extends TestCase
         ]);
 
         $this->fundo = Fundo::create([
-            'name' => 'Fundo Procom',
-            'code' => 'PROCOM',
+            // Las migraciones de referencia crean PROCOM en cada base de pruebas.
+            // Este escenario debe tener su propio fundo para no depender de ese dato.
+            'name' => 'Fundo Prueba 24 Horas',
+            'code' => 'PRUEBA24H',
             'is_active' => true,
         ]);
 
