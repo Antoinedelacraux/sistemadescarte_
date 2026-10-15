@@ -637,8 +637,6 @@ class ExcelExporter
     public static function generateMatrizLotes(
         array $matrizLotes,
         array $columnasMatriz,
-        array $totalesColumnasKg,
-        float $granTotalKg,
         string $sheetTitle = 'Ventas por Lote'
     ): string {
         $sheetTitle = preg_replace('~[\\/*?\[\]:]~', '', substr($sheetTitle, 0, 31));
@@ -755,20 +753,7 @@ class ExcelExporter
             }
         }
 
-        // Total general con la misma estructura de columnas.
-        $sheetXml .= '<row r="' . $row . '" ht="24" customHeight="1">';
-        $sheetXml .= '<c r="A' . $row . '" s="5" t="inlineStr"><is><t>TOTAL GENERAL</t></is></c><c r="B' . $row . '" s="5"/>';
-        $merges[] = 'A' . $row . ':B' . $row;
-        $columnIndex = 3;
-        foreach ($columnasMatriz as $motivoKey => $colDef) {
-            foreach ($colDef['tipos'] as $tipo) {
-                $cell = self::colToLetter($columnIndex - 1);
-                $value = (float) ($totalesColumnasKg[$motivoKey][$tipo] ?? 0);
-                $sheetXml .= '<c r="' . $cell . $row . '" s="6"><v>' . $value . '</v></c>';
-                $columnIndex++;
-            }
-        }
-        $sheetXml .= '<c r="' . $lastColumn . $row . '" s="6"><v>' . $granTotalKg . '</v></c></row></sheetData>';
+        $sheetXml .= '</sheetData>';
 
         if (!empty($merges)) {
             $sheetXml .= '<mergeCells count="' . count($merges) . '">';

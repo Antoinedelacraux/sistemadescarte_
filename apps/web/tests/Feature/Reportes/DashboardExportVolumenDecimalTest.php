@@ -146,6 +146,7 @@ class DashboardExportVolumenDecimalTest extends TestCase
         $this->assertStringContainsString('<mergeCell ref="F1:G1"/>', $sheetXml);
         $this->assertStringContainsString('<mergeCell ref="H1:I1"/>', $sheetXml);
         $this->assertStringContainsString('<mergeCell ref="J1:J2"/>', $sheetXml);
+        $this->assertStringNotContainsString('TOTAL GENERAL', $sheetXml);
     }
 
     public function test_dashboard_renders_cliente_matrices_for_kg_and_monto(): void

@@ -247,8 +247,6 @@ class DashboardController extends Controller
         $xlsxBinary = ExcelExporter::generateMatrizLotes(
             $matrizData['matrizLotes'],
             $matrizData['columnasMatriz'],
-            $matrizData['totalesColumnasKg'],
-            $matrizData['granTotalKg'],
             'Ventas por Lote'
         );
 
