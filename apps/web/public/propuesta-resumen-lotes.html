@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Propuesta — Resumen por lotes | TALSA Fundo</title>
+    <style>
+        :root {
+            --green-950: #10251a; --green-900: #14532d; --green-700: #15803d;
+            --green-600: #16a34a; --green-100: #dcfce7; --green-50: #f0fdf4;
+            --ink: #17231b; --muted: #657268; --line: #dfe8e1; --surface: #fff;
+            --canvas: #f4f7f5; --amber: #a16207; --amber-bg: #fef3c7;
+            --blue: #1d4ed8; --blue-bg: #dbeafe; --shadow: 0 12px 34px rgba(16,37,26,.08);
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: var(--canvas); color: var(--ink); font: 14px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif; }
+        button, input { font: inherit; }
+        .shell { display: flex; min-height: 100vh; }
+        .sidebar { width: 226px; flex: 0 0 226px; padding: 22px 14px; background: var(--green-950); color: #d9eadc; }
+        .brand { display: flex; align-items: center; gap: 10px; padding: 6px 10px 28px; color: white; font-weight: 800; }
+        .brand-mark { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid #77bd88; border-radius: 10px; color: #b8efc3; }
+        .nav-label { margin: 18px 10px 8px; color: #78917d; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+        .nav-item { display: block; margin: 3px 0; padding: 10px 12px; border-radius: 9px; color: #b9c9bc; text-decoration: none; }
+        .nav-item.active { background: var(--green-900); color: white; }
+        .main { min-width: 0; flex: 1; }
+        .topbar { height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 28px; background: var(--surface); border-bottom: 1px solid var(--line); }
+        .crumb { color: var(--muted); font-size: 13px; } .crumb strong { color: var(--ink); }
+        .status { color: var(--green-700); background: var(--green-50); border: 1px solid #b8e0c1; border-radius: 999px; padding: 5px 10px; font-size: 12px; font-weight: 700; }
+        .content { max-width: 1380px; margin: 0 auto; padding: 28px; }
+        .hero { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+        h1, h2, h3, p { margin: 0; } h1 { font-size: clamp(22px, 3vw, 31px); letter-spacing: -.03em; } h2 { font-size: 17px; } h3 { font-size: 14px; }
+        .eyebrow { margin-bottom: 5px; color: var(--green-700); font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+        .subtle { color: var(--muted); }
+        .hero-note { max-width: 410px; padding: 12px 14px; color: #42604a; background: var(--green-50); border: 1px solid #ccebd2; border-radius: 10px; font-size: 12px; }
+        .view-switch { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }
+        .view-switch button { cursor: pointer; padding: 8px 13px; color: #506057; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; font-weight: 700; }
+        .view-switch button.active, .view-switch button:hover { color: white; background: var(--green-900); border-color: var(--green-900); }
+        .card { margin-bottom: 20px; overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+        .card-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 19px 21px; border-bottom: 1px solid var(--line); }
+        .card-head p { margin-top: 3px; color: var(--muted); font-size: 12px; }
+        .btn { cursor: pointer; padding: 8px 12px; color: var(--green-900); background: white; border: 1px solid #b9d7bf; border-radius: 8px; font-weight: 800; font-size: 12px; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; min-width: 780px; border-collapse: collapse; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #edf2ee; text-align: left; white-space: nowrap; }
+        th { color: #64736a; background: #f8fbf8; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; }
+        td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+        td.num { color: #24372a; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+        tbody tr:hover { background: #fbfefb; } tfoot td { color: var(--green-900); background: var(--green-50); font-weight: 800; }
+        .group { color: var(--green-900); background: #eef8f0; text-align: center; }
+        .group.blue { color: var(--blue); background: #eff6ff; } .group.amber { color: var(--amber); background: #fffbeb; }
+        .tag { display: inline-block; margin-right: 5px; padding: 3px 7px; border-radius: 999px; font-size: 10px; font-weight: 800; }
+        .tag.green { color: var(--green-900); background: var(--green-100); } .tag.blue { color: var(--blue); background: var(--blue-bg); } .tag.amber { color: var(--amber); background: var(--amber-bg); }
+        .lot { font-weight: 800; } .muted-cell { color: #a5b0a8; }
+        .controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 21px; background: #fcfefd; border-bottom: 1px solid var(--line); }
+        .search { width: min(330px, 100%); padding: 9px 11px; color: var(--ink); background: white; border: 1px solid var(--line); border-radius: 8px; outline: none; }
+        .search:focus { border-color: var(--green-600); box-shadow: 0 0 0 3px #dcfce7; }
+        .note { margin: 0 21px 18px; padding: 11px 13px; color: #53625a; background: #f8faf8; border-left: 3px solid var(--green-600); font-size: 12px; }
+        .empty { display: none; padding: 28px; color: var(--muted); text-align: center; }
+        .view { display: none; } .view.active { display: block; }
+        @media (max-width: 800px) { .sidebar { display: none; } .content { padding: 20px 14px; } .topbar { padding: 0 14px; } .hero { display: block; } .hero-note { margin-top: 14px; } .card-head { align-items: flex-start; flex-direction: column; } .controls { align-items: stretch; flex-direction: column; } .search { width: 100%; } }
+    </style>
+</head>
+<body>
+<div class="shell">
+    <aside class="sidebar" aria-label="Navegación de propuesta">
+        <div class="brand"><span class="brand-mark">TG</span><span>TALSA Fundo</span></div>
+        <div class="nav-label">Panel</div>
+        <a class="nav-item active" href="#">Panel de control</a>
+        <a class="nav-item" href="#">Registrar venta</a>
+        <a class="nav-item" href="#">Historial de ventas</a>
+        <div class="nav-label">Análisis</div>
+        <a class="nav-item" href="#resumen">Resumen operativo</a>
+        <a class="nav-item" href="#detalle">Detalle por cliente y lote</a>
+    </aside>
+    <main class="main">
+        <header class="topbar"><div class="crumb">Panel de control <span>/</span> <strong>Vista previa de propuesta</strong></div><span class="status">● Datos de demostración</span></header>
+        <div class="content">
+            <div class="hero">
+                <div><div class="eyebrow">Propuesta de agregación</div><h1>Resumen operativo de ventas</h1><p class="subtle">La información por lote se integra en el análisis existente, sin crear otro filtro principal.</p></div>
+                <div class="hero-note"><strong>Cambio principal:</strong> el resumen por tipo conserva kilos y total de venta; el precio promedio y el porcentaje de volumen desaparecen.</div>
+            </div>
+
+            <div class="view-switch" role="tablist" aria-label="Vistas existentes del panel">
+                <button class="active" data-view="all" role="tab" aria-selected="true">Todas</button>
+                <button data-view="type" role="tab" aria-selected="false">Por tipo y descarte</button>
+                <button data-view="detail" role="tab" aria-selected="false">Por cliente</button>
+                <button data-view="recent" role="tab" aria-selected="false">Últimos envíos</button>
+            </div>
+
+            <section class="view active" id="view-all" data-panel>
+                <div id="resumen" class="card">
+                    <div class="card-head"><div><h2>Resumen por Tipo de Venta y Descarte</h2><p>Kilogramos vendidos y valor total por motivo y tipo de descarte</p></div><button class="btn">↓ Exportar Excel</button></div>
+                    <div class="table-wrap"><table aria-label="Resumen simplificado por tipo de venta y descarte"><thead><tr><th>Origen / Tipo</th><th class="num">Kilogramos (kg)</th><th class="num">Total (S/)</th></tr></thead><tbody>
+                        <tr><td colspan="3"><span class="tag amber">Venta Nacional</span></td></tr><tr><td>&nbsp;&nbsp;• Racimos</td><td class="num">1,420.00</td><td class="num">S/ 3,550.00</td></tr><tr><td>&nbsp;&nbsp;• Granos</td><td class="num">980.00</td><td class="num">S/ 1,960.00</td></tr><tr><td colspan="3"><span class="tag green">Venta Campo</span></td></tr><tr><td>&nbsp;&nbsp;• Racimos</td><td class="num">2,180.00</td><td class="num">S/ 4,578.00</td></tr><tr><td>&nbsp;&nbsp;• Racimos con plaga</td><td class="num">740.00</td><td class="num">S/ 962.00</td></tr><tr><td>&nbsp;&nbsp;• Granos</td><td class="num">1,860.00</td><td class="num">S/ 3,255.00</td></tr><tr><td colspan="3"><span class="tag blue">Venta Packing</span></td></tr><tr><td>&nbsp;&nbsp;• Racimos</td><td class="num">1,690.00</td><td class="num">S/ 3,887.00</td></tr><tr><td>&nbsp;&nbsp;• Granos</td><td class="num">1,120.00</td><td class="num">S/ 2,240.00</td></tr>
+                    </tbody><tfoot><tr><td>TOTAL GENERAL</td><td class="num">9,990.00 kg</td><td class="num">S/ 20,432.00</td></tr></tfoot></table></div>
+                </div>
+            </section>
+
+            <section class="view" id="view-detail" data-panel>
+                <div id="detalle" class="card"><div class="card-head"><div><h2>Detalle de Ventas por Cliente y Lote</h2><p>La matriz por lote se incorpora debajo del análisis actual por cliente</p></div><button class="btn">↓ Exportar Excel</button></div><div class="note">No se agrega una nueva pestaña al panel. Esta vista reúne el detalle comercial por cliente y el detalle operativo por lote.</div><div class="controls"><strong>Resumen de kilogramos vendidos por lote</strong><input class="search" id="lotSearch" type="search" placeholder="Buscar lote…" aria-label="Buscar lote"></div>
+                    <div class="table-wrap"><table aria-label="Resumen de kilogramos por lote y tipo de descarte"><thead><tr><th rowspan="2">Lote</th><th class="group" colspan="3">Venta Campo</th><th class="group blue" colspan="2">Venta Packing</th><th class="group amber" colspan="2">Venta Nacional</th><th rowspan="2" class="num">Total KG</th></tr><tr><th class="num">Granos</th><th class="num">Racimos</th><th class="num">Racimos con plaga</th><th class="num">Granos</th><th class="num">Racimos</th><th class="num">Granos</th><th class="num">Racimos</th></tr></thead><tbody id="lotsBody">
+                        <tr data-lot="a01"><td class="lot">A01</td><td class="num">520.00</td><td class="num">310.00</td><td class="num muted-cell">—</td><td class="num">120.00</td><td class="num">90.00</td><td class="num">—</td><td class="num">180.00</td><td class="num"><strong>1,220.00</strong></td></tr>
+                        <tr data-lot="a02"><td class="lot">A02</td><td class="num">280.00</td><td class="num">460.00</td><td class="num">120.00</td><td class="num">—</td><td class="num">210.00</td><td class="num">80.00</td><td class="num">—</td><td class="num"><strong>1,150.00</strong></td></tr>
+                        <tr data-lot="l03"><td class="lot">L03</td><td class="num">410.00</td><td class="num">250.00</td><td class="num">—</td><td class="num">190.00</td><td class="num">320.00</td><td class="num">—</td><td class="num">130.00</td><td class="num"><strong>1,300.00</strong></td></tr>
+                        <tr data-lot="m04"><td class="lot">M04</td><td class="num">175.00</td><td class="num">390.00</td><td class="num">210.00</td><td class="num">240.00</td><td class="num">—</td><td class="num">140.00</td><td class="num">90.00</td><td class="num"><strong>1,245.00</strong></td></tr>
+                        <tr data-lot="h01"><td class="lot">H01</td><td class="num">330.00</td><td class="num">280.00</td><td class="num">—</td><td class="num">160.00</td><td class="num">270.00</td><td class="num">210.00</td><td class="num">—</td><td class="num"><strong>1,250.00</strong></td></tr>
+                    </tbody><tfoot><tr><td>TOTAL GENERAL</td><td class="num">1,715.00</td><td class="num">1,690.00</td><td class="num">330.00</td><td class="num">710.00</td><td class="num">890.00</td><td class="num">430.00</td><td class="num">400.00</td><td class="num">6,165.00 kg</td></tr></tfoot></table><div class="empty" id="lotEmpty">No se encontró ningún lote con ese nombre.</div></div>
+                </div>
+            </section>
+            <section class="view" id="view-type" data-panel><div class="card"><div class="card-head"><div><h2>Por Tipo y Descarte</h2><p>Esta vista conserva el resumen simplificado mostrado arriba.</p></div></div><div class="note">La columna de porcentaje de volumen y la columna de precio promedio fueron retiradas.</div></div></section>
+            <section class="view" id="view-recent" data-panel><div class="card"><div class="card-head"><div><h2>Últimos Envíos</h2><p>Vista de demostración no modificada por esta propuesta.</p></div></div></div></section>
+        </div>
+    </main>
+</div>
+<script>
+    const tabs = document.querySelectorAll('[data-view]');
+    const panels = document.querySelectorAll('[data-panel]');
+    tabs.forEach(tab => tab.addEventListener('click', () => {
+        const view = tab.dataset.view;
+        tabs.forEach(item => { const active = item === tab; item.classList.toggle('active', active); item.setAttribute('aria-selected', active); });
+        panels.forEach(panel => panel.classList.toggle('active', panel.id === `view-${view}` || (view === 'all' && panel.id === 'view-all')));
+        if (view === 'all') { document.getElementById('view-detail').classList.add('active'); document.getElementById('view-type').classList.add('active'); }
+    }));
+    document.getElementById('lotSearch').addEventListener('input', event => {
+        const query = event.target.value.trim().toLowerCase(); let visible = 0;
+        document.querySelectorAll('#lotsBody tr').forEach(row => { const show = row.dataset.lot.includes(query); row.style.display = show ? '' : 'none'; if (show) visible++; });
+        document.getElementById('lotEmpty').style.display = visible ? 'none' : 'block';
+    });
+</script>
+</body>
+</html>
