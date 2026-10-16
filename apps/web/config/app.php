@@ -123,4 +123,16 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Token de API para Power BI (solo lectura)
+    |--------------------------------------------------------------------------
+    |
+    | Token Bearer estático leído desde la variable de entorno POWERBI_API_TOKEN.
+    | Generar con: php artisan tinker --execute="echo Str::random(64);"
+    | Nunca versionar este valor en Git.
+    |
+    */
+    'powerbi_api_token' => env('POWERBI_API_TOKEN'),
+
 ];
