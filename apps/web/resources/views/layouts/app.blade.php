@@ -5,7 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="Sistema Web de Gestión Agrícola para fundos. Módulo de venta de descarte y reportes.">
+    <meta name="robots" content="@yield('meta_robots', 'index, follow')">
+    <link rel="canonical" href="{{ url()->current() }}">
     <title>@yield('title', 'Sistema Fundo') — Gestión Agrícola</title>
+
+    <!-- Open Graph / Meta Compartir Redes -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="@yield('title', 'Sistema Fundo') — Gestión Agrícola">
+    <meta property="og:description" content="Sistema Web de Gestión Agrícola para fundos. Módulo de venta de descarte y reportes.">
+    <meta property="og:image" content="{{ asset('icons/icon-512.png') }}">
+    <meta property="og:site_name" content="TALSA Fundo">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="@yield('title', 'Sistema Fundo') — Gestión Agrícola">
+    <meta name="twitter:description" content="Sistema Web de Gestión Agrícola para fundos. Módulo de venta de descarte y reportes.">
+    <meta name="twitter:image" content="{{ asset('icons/icon-512.png') }}">
 
     <!-- PWA & Mobile Web App Settings (Android / iPhone) -->
     <meta name="theme-color" content="#166534">
