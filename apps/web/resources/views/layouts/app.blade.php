@@ -83,21 +83,21 @@
                 <main class="page-content" id="main-content" role="main" tabindex="-1">
                     @if(session('success'))
                         <div class="alert alert-success" role="alert">
-                            <span aria-hidden="true">✅</span>
+                            <x-ui-icon name="check" size="18" />
                             <div>{{ session('success') }}</div>
                         </div>
                     @endif
 
                     @if(session('error'))
                         <div class="alert alert-danger" role="alert">
-                            <span aria-hidden="true">⚠️</span>
+                            <x-ui-icon name="alert" size="18" />
                             <div>{{ session('error') }}</div>
                         </div>
                     @endif
 
                     @if($errors->any())
                         <div class="alert alert-danger" role="alert" style="align-items: flex-start;">
-                            <span aria-hidden="true" style="margin-top: 0.15rem;">⚠️</span>
+                            <x-ui-icon name="alert" size="18" style="margin-top:0.15rem;flex-shrink:0;" />
                             <div>
                                 <strong style="display: block; margin-bottom: 0.35rem; font-size: var(--text-sm);">Por favor corrige los siguientes inconvenientes:</strong>
                                 <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.85rem; line-height: 1.5;">
@@ -145,7 +145,7 @@
             <div class="ios-install-backdrop" onclick="closeIosInstallModal()"></div>
             <div class="ios-install-sheet">
                 <div class="ios-install-header">
-                    <h3 id="ios-modal-title" style="margin:0;font-size:var(--text-base);font-weight:700;color:var(--txt-primary);">📲 Instalar TALSA Fundo</h3>
+                    <h3 id="ios-modal-title" style="margin:0;font-size:var(--text-base);font-weight:700;color:var(--txt-primary);display:flex;align-items:center;gap:.45rem;"><x-ui-icon name="mobile" size="18" /> Instalar TALSA Fundo</h3>
                     <button type="button" class="ios-install-close" onclick="closeIosInstallModal()" aria-label="Cerrar">&times;</button>
                 </div>
                 <div class="ios-install-body">
@@ -158,7 +158,7 @@
                     </div>
                     <div class="ios-step-item">
                         <span class="ios-step-badge">2</span>
-                        <span>Desplaza hacia abajo y pulsa en <strong>Añadir a pantalla de inicio</strong> ➕.</span>
+                        <span>Desplaza hacia abajo y pulsa en <strong>Añadir a pantalla de inicio</strong>.</span>
                     </div>
                     <div class="ios-step-item">
                         <span class="ios-step-badge">3</span>

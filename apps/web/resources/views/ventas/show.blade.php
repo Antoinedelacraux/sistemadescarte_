@@ -231,7 +231,7 @@
             </a>
             @if($venta->puedeSerEditadoPor(Auth::user()))
                 <a href="{{ route('ventas.edit', $venta) }}" class="btn btn-primary btn-sm">
-                    ✏️ Editar Registro
+                    <x-ui-icon name="edit" size="15" /> Editar Registro
                 </a>
             @elseif($venta->isCerradoParaEdicion() && !$venta->tieneBorradorSinVencimiento() && !Auth::user()->isAdmin())
                 <span class="badge-cerrado-24h" title="Registro cerrado para edición tras superar 24 horas" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700; background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1;">
@@ -263,7 +263,7 @@
     {{-- 2. ORIGEN Y CLASIFICACIÓN DEL DESCARTE --}}
     <div class="detail-card">
         <div class="detail-card-title">
-            <span aria-hidden="true">🏷️</span> Clasificación y Ubicación en Fundo
+            <x-ui-icon name="tag" size="18" /> Clasificación y Ubicación en Fundo
         </div>
         <div class="detail-grid-3">
             <div class="detail-item">
@@ -305,7 +305,7 @@
     {{-- 3. DATOS COMERCIALES (CLIENTE Y COMPRADOR) --}}
     <div class="detail-card">
         <div class="detail-card-title">
-            <span aria-hidden="true">👥</span> Datos del Comprador
+            <x-ui-icon name="users" size="18" /> Datos del Comprador
         </div>
         <div class="detail-grid-2">
             <div class="detail-item">
@@ -326,7 +326,7 @@
     {{-- 4. DESPACHO, TRANSPORTE Y JABAS --}}
     <div class="detail-card">
         <div class="detail-card-title">
-            <span aria-hidden="true">🚚</span> Despacho, Transporte y Jabas
+            <x-ui-icon name="truck" size="18" /> Despacho, Transporte y Jabas
         </div>
         <div class="detail-grid-3">
             <div class="detail-item">
@@ -365,7 +365,7 @@
     {{-- 5. OBSERVACIONES Y AUDITORÍA --}}
     <div class="detail-card">
         <div class="detail-card-title">
-            <span aria-hidden="true">📝</span> Observaciones y Registro
+            <x-ui-icon name="note" size="18" /> Observaciones y Registro
         </div>
         <div style="margin-bottom: 1.25rem;">
             <span class="detail-label">Observaciones del Pesaje</span>

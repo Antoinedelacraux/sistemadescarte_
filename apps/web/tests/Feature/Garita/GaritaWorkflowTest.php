@@ -117,7 +117,9 @@ class GaritaWorkflowTest extends TestCase
         $response = $this->actingAs($this->garitaUser)->get(route('garita.index'));
         $response->assertStatus(200);
         $response->assertSee('Panel de Salidas de Camiones — Garita');
-        $response->assertSee('Envíos pendientes');
+        $response->assertSee('Pendientes');
+        $response->assertSee('Número de viaje');
+        $response->assertDontSee('Más filtros');
         $response->assertSee('Ver historial de validaciones');
         $response->assertSee('Fecha de producción');
     }
@@ -225,7 +227,7 @@ class GaritaWorkflowTest extends TestCase
         $panel->assertSee('Juan Perez');
         $panel->assertSee('1,800.00 kg');
         $panel->assertSee('Pendiente de validación');
-        $panel->assertSee('Fecha y hora de registro');
+        $panel->assertSee('Registro:');
         $panel->assertSee('Lotes del envío');
         $panel->assertSee('data-viaje="1"', false);
 
@@ -351,7 +353,7 @@ class GaritaWorkflowTest extends TestCase
         $this->assertSame('pendiente', VentaDescarte::withoutGlobalScopes()->findOrFail($primero->id)->estado_garita);
 
         $this->garitaUser->fundos()->attach($otroFundo->id);
-        $this->actingAs($this->garitaUser)->get(route('garita.index'))->assertSee('Cliente Restringido')->assertSee('Todos mis fundos');
+        $this->actingAs($this->garitaUser)->get(route('garita.index'))->assertSee('Cliente Restringido')->assertDontSee('Todos mis fundos');
         $this->actingAs($this->garitaUser)->get(route('garita.historial'))->assertSee('Validado Permitido')->assertSee('Validado Restringido')->assertSee('Fundo');
         $this->actingAs($this->garitaUser)->get(route('garita.index', ['fundo_id' => $otroFundo->id]))
             ->assertSee('Cliente Restringido')->assertDontSee('Cliente Uno');

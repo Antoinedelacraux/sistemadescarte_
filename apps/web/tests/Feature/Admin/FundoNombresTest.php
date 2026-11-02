@@ -115,7 +115,7 @@ class FundoNombresTest extends TestCase
 
         $response->assertOk();
         // En el headbar debe verse el nombre corto del fundo asignado
-        $response->assertSee('🏡 AGRITAC', false);
+        $response->assertSee('AGRITAC');
     }
 
     public function test_sales_registration_shows_clean_fundo_names_in_select(): void

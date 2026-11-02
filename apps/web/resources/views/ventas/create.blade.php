@@ -198,7 +198,7 @@
 
     @if ($errors->any())
         <div class="alert alert-danger" role="alert">
-            <span aria-hidden="true">⚠️</span>
+            <x-ui-icon name="alert" size="18" />
             <div>
                 <strong>Por favor corrige los siguientes errores:</strong>
                 <ul style="margin-left: 1.25rem; margin-top: 0.25rem;">

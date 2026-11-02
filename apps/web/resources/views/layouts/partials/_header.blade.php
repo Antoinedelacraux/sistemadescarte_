@@ -80,15 +80,15 @@
         @endphp
         @if($isGlobal)
             <div class="fundo-chip" title="Acceso a todos los fundos">
-                🌐 Todos los Fundos
+                <x-ui-icon name="globe" size="15" /> Todos los Fundos
             </div>
         @elseif($fundosHeader->count() === 1)
             <div class="fundo-chip" title="{{ $fundosHeader->first()->nombre_completo }}">
-                🏡 {{ $fundosHeader->first()->nombre_corto }}
+                <x-ui-icon name="home" size="15" /> {{ $fundosHeader->first()->nombre_corto }}
             </div>
         @elseif($fundosHeader->count() > 1)
             <div class="fundo-chip" title="Fundos asignados: {{ $fundosHeader->pluck('name')->join(', ') }}">
-                🏡 {{ $fundosHeader->count() }} fundos
+                <x-ui-icon name="home" size="15" /> {{ $fundosHeader->count() }} fundos
             </div>
         @endif
 
@@ -114,7 +114,7 @@
                 <form action="{{ route('logout') }}" method="POST" style="display:block;">
                     @csrf
                     <button type="submit" class="dropdown-item danger" role="menuitem">
-                        <span aria-hidden="true">🔒</span> Cerrar Sesión
+                        <x-ui-icon name="logout" size="15" /> Cerrar Sesión
                     </button>
                 </form>
             </div>

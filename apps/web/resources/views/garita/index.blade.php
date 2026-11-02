@@ -415,6 +415,56 @@
         justify-content: flex-end;
         gap: 0.75rem;
     }
+    /* Ajustes de jerarquía y comportamiento táctil del panel. */
+    .viaje-card.is-pendiente { border-color:var(--brd-base); border-left-width:5px; }
+    .viaje-title { font-size:1.05rem; }
+    .viaje-title-group { flex-direction:column; align-items:flex-start; gap:.25rem; }
+    .viaje-code { font-size:.72rem; color:#64748b; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .viaje-identity { display:flex; align-items:center; flex-wrap:wrap; gap:.55rem; }
+    .viajes-container { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1rem; align-items:start; }
+    .viaje-card { border-radius:14px; }
+    .viaje-header { align-items:flex-start; padding:.85rem 1rem; }
+    .viaje-body { padding:1rem; }
+    .viaje-meta-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:.75rem; padding-bottom:.8rem; margin-bottom:.8rem; }
+    .viaje-meta-item.is-carga { padding:.55rem .65rem; }
+    .viaje-meta-item.is-carga .viaje-meta-val { font-size:1rem; }
+    .viaje-footer { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:.6rem; padding-top:0; }
+    .btn-confirmar-salida, .btn-ver-informacion { min-height:2.65rem; justify-content:center; padding:.55rem .7rem; font-size:.8rem; }
+    .btn-ver-informacion { display:inline-flex; align-items:center; border:1px solid #86a394; border-radius:var(--radius-md); background:#fff; color:#155e3a; cursor:pointer; font-weight:700; }
+    .btn-ver-informacion:hover { background:#f0fdf4; }
+    .viaje-footer .viaje-validado-fecha { grid-column:1 / -1; }
+    .modal-garita-info-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:.9rem; }
+    .modal-garita-info-grid div { min-width:0; }
+    .modal-garita-info-grid dt { color:#64748b; font-size:.7rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+    .modal-garita-info-grid dd { margin:.2rem 0 0; color:#102319; font-size:.95rem; font-weight:700; overflow-wrap:anywhere; }
+    @media (max-width: 1180px) { .viajes-container { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 640px) {
+        .garita-header { margin-bottom:1rem; }
+        .garita-header p { line-height:1.4; }
+        .garita-kpis { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:.7rem; margin-bottom:1rem; }
+        .garita-kpi-card { min-width:0; padding:.8rem; gap:.55rem; }
+        .garita-kpi-icon { width:38px; height:38px; }
+        .garita-kpi-icon svg { width:20px; height:20px; }
+        .garita-kpi-val { font-size:1.25rem; }
+        .garita-kpi-lbl { font-size:.62rem; letter-spacing:.03em; }
+        .garita-simple-nav { align-items:stretch; flex-direction:column; gap:.75rem; margin:1rem 0; padding:.75rem; }
+        .garita-tabs { display:grid; grid-template-columns:1fr 1fr; gap:.35rem; }
+        .garita-tabs a { text-align:center; padding:.65rem .35rem; font-size:.8rem; }
+        .garita-simple-nav > a { text-align:center; padding:.45rem; font-size:.875rem; }
+        .viajes-container { grid-template-columns:1fr; gap:.9rem; }
+        .viaje-header, .viaje-body { padding:1rem; }
+        .viaje-header { align-items:flex-start; }
+        .viaje-meta-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:.75rem; }
+        .viaje-meta-item.is-carga { grid-column:span 1; padding:.6rem; }
+        .viaje-meta-item.is-carga .viaje-meta-val { font-size:1rem; }
+        .viaje-footer { align-items:stretch; }
+        .btn-confirmar-salida { width:100%; min-height:2.9rem; justify-content:center; }
+        .modal-garita { align-items:flex-end; padding:0; }
+        .modal-garita-sheet { max-height:92vh; border-radius:var(--radius-xl) var(--radius-xl) 0 0; overflow:auto; }
+        .modal-garita-footer { position:sticky; bottom:0; justify-content:stretch; padding:.75rem 1rem; }
+        .modal-garita-footer .btn { flex:1; min-height:2.75rem; }
+        .modal-garita-info-grid { grid-template-columns:1fr; gap:.7rem; }
+    }
 </style>
 @endsection
 
@@ -452,8 +502,8 @@
 
     <div class="garita-simple-nav">
         <nav class="garita-tabs" aria-label="Estado de los envíos">
-            <a href="{{ route('garita.index', array_merge(request()->except(['estado', 'viaje']), ['estado' => 'pendiente'])) }}" aria-current="{{ $estadoPanel === 'pendiente' ? 'page' : 'false' }}">Envíos pendientes</a>
-            <a href="{{ route('garita.index', array_merge(request()->except(['estado', 'viaje']), ['estado' => 'validado'])) }}" aria-current="{{ $estadoPanel === 'validado' ? 'page' : 'false' }}">Envíos validados</a>
+            <a href="{{ route('garita.index', array_merge(request()->except(['estado', 'viaje']), ['estado' => 'pendiente'])) }}" aria-current="{{ $estadoPanel === 'pendiente' ? 'page' : 'false' }}">Pendientes <span aria-label="{{ $kpiPendientesHoy }} pendientes hoy">({{ $kpiPendientesHoy }})</span></a>
+            <a href="{{ route('garita.index', array_merge(request()->except(['estado', 'viaje']), ['estado' => 'validado'])) }}" aria-current="{{ $estadoPanel === 'validado' ? 'page' : 'false' }}">Validados <span aria-label="{{ $kpiValidadosHoy }} validados hoy">({{ $kpiValidadosHoy }})</span></a>
         </nav>
         <a href="{{ route('garita.historial') }}">Ver historial de validaciones</a>
     </div>
@@ -465,24 +515,39 @@
         @forelse($viajesAgrupados as $viaje)
             <article class="viaje-card is-{{ $viaje['estado_consolidado'] }}">
                 <header class="viaje-header">
-                    <div class="viaje-title-group"><span class="viaje-title">{{ $viaje['envio_codigo'] ?? 'Viaje N° '.$viaje['viaje'] }}</span><span class="viaje-date">Viaje N° {{ $viaje['viaje'] }} · Producción: {{ $viaje['fecha_produccion']?->format('d/m/Y') ?? '—' }}</span>@if($fundos->count() > 1)<span class="badge-fundo-tag">{{ $viaje['fundo_nombre'] }}</span>@endif</div>
+                    <div class="viaje-title-group">
+                        <div class="viaje-identity">
+                            <span class="viaje-title">Viaje N° {{ $viaje['viaje'] }}</span>
+                            <span class="viaje-placa-badge">{{ $viaje['placa'] }}</span>
+                            @if($fundos->count() > 1)<span class="badge-fundo-tag">{{ $viaje['fundo_nombre'] }}</span>@endif
+                        </div>
+                        <span class="viaje-date">Producción: {{ $viaje['fecha_produccion']?->format('d/m/Y') ?? '—' }} · Registro: {{ $viaje['fecha_hora_registro']?->format('d/m/Y H:i') ?? '—' }}</span>
+                        @if($viaje['envio_codigo'])<span class="viaje-code">{{ $viaje['envio_codigo'] }}</span>@endif
+                    </div>
                     <span class="badge-status {{ $estadoPanel === 'validado' ? 'badge-status-validado' : 'badge-status-pendiente' }}">{{ $estadoPanel === 'validado' ? 'Validado' : 'Pendiente de validación' }}</span>
                 </header>
                 <div class="viaje-body">
                     <div class="viaje-meta-grid">
-                        <div class="viaje-meta-item"><span class="viaje-meta-lbl">Fecha y hora de registro</span><span class="viaje-meta-val">{{ $viaje['fecha_hora_registro']?->format('d/m/Y H:i') ?? '—' }}</span></div>
                         <div class="viaje-meta-item"><span class="viaje-meta-lbl">Cliente</span><span class="viaje-meta-val">{{ $viaje['cliente'] }}</span></div>
                         <div class="viaje-meta-item"><span class="viaje-meta-lbl">Conductor</span><span class="viaje-meta-val">{{ $viaje['conductor'] }}</span></div>
-                        <div class="viaje-meta-item"><span class="viaje-meta-lbl">Placa</span><span class="viaje-meta-val">{{ $viaje['placa'] }}</span></div>
                         <div class="viaje-meta-item is-carga"><span class="viaje-meta-lbl">Jabas</span><span class="viaje-meta-val">{{ number_format($viaje['total_jabas']) }}</span></div>
                         <div class="viaje-meta-item is-carga"><span class="viaje-meta-lbl">Kilogramos</span><span class="viaje-meta-val">{{ number_format($viaje['total_kilos'], 2) }} kg</span></div>
-                        @if($viaje['lotes']->isNotEmpty())
-                        <div class="viaje-meta-item"><span class="viaje-meta-lbl">Lotes del envío</span><span class="viaje-meta-val">{{ $viaje['lotes']->implode(', ') }}</span></div>
-                        @endif
                     </div>
                     <div class="viaje-footer">
+                        <button type="button" class="btn-ver-informacion"
+                            data-envio="{{ $viaje['envio_codigo'] ?? 'Histórico' }}"
+                            data-viaje="{{ $viaje['viaje'] }}"
+                            data-fecha="{{ $viaje['fecha_produccion']?->format('d/m/Y') ?? '—' }}"
+                            data-registro="{{ $viaje['fecha_hora_registro']?->format('d/m/Y H:i') ?? '—' }}"
+                            data-cliente="{{ $viaje['cliente'] }}"
+                            data-conductor="{{ $viaje['conductor'] }}"
+                            data-placa="{{ $viaje['placa'] }}"
+                            data-jabas="{{ number_format($viaje['total_jabas']) }}"
+                            data-kilos="{{ number_format($viaje['total_kilos'], 2) }} kg"
+                            data-lotes="{{ $viaje['lotes']->implode(', ') ?: '—' }}"
+                            onclick="abrirModalInformacion(this)">Ver información</button>
                         @if($estadoPanel === 'pendiente')
-                        <button type="button" class="btn-confirmar-salida" data-envio="{{ $viaje['envio_codigo'] ?? '' }}" data-placa="{{ $viaje['placa'] }}" data-viaje="{{ $viaje['viaje'] }}" data-kilos="{{ number_format($viaje['total_kilos'], 2) }}" data-ids="{{ implode(',', $viaje['ids']) }}" onclick="abrirModalSalida(this)">Confirmar salida — Viaje N° {{ $viaje['viaje'] }}</button>
+                        <button type="button" class="btn-confirmar-salida" data-envio="{{ $viaje['envio_codigo'] ?? '' }}" data-placa="{{ $viaje['placa'] }}" data-viaje="{{ $viaje['viaje'] }}" data-kilos="{{ number_format($viaje['total_kilos'], 2) }}" data-ids="{{ implode(',', $viaje['ids']) }}" onclick="abrirModalSalida(this)">Revisar y validar salida · Viaje N° {{ $viaje['viaje'] }}</button>
                         @else
                         <span class="viaje-validado-fecha">Validado el {{ $viaje['fecha_validacion']?->format('d/m/Y H:i') ?? '—' }}</span>
                         @endif
@@ -490,8 +555,39 @@
                 </div>
             </article>
         @empty
-            <div style="text-align:center;padding:3rem 1rem;background:var(--clr-surface-0);border-radius:var(--radius-lg);border:1px dashed var(--brd-base);"><h3>No hay envíos {{ $estadoPanel === 'validado' ? 'validados' : 'pendientes' }} para esta búsqueda</h3><p>Prueba con otros filtros o revisa los envíos más tarde.</p></div>
+            <div style="text-align:center;padding:3rem 1rem;background:var(--clr-surface-0);border-radius:var(--radius-lg);border:1px dashed var(--brd-base);">
+                <h3>No hay envíos {{ $estadoPanel === 'validado' ? 'validados' : 'pendientes' }} para esta búsqueda</h3>
+                <p>Prueba con otros filtros o revisa los envíos más tarde.</p>
+                <a class="btn btn-secondary" href="{{ route('garita.index', ['estado' => $estadoPanel]) }}">Limpiar filtros</a>
+            </div>
         @endforelse
+    </div>
+</div>
+
+{{-- Modal de información completa del viaje --}}
+<div class="modal-garita" id="modal-informacion-viaje" role="dialog" aria-modal="true" aria-labelledby="modal-informacion-title">
+    <div class="modal-garita-sheet">
+        <div class="modal-garita-header">
+            <h3 id="modal-informacion-title" style="margin:0; font-size:1.125rem; font-weight:800;">Información del viaje</h3>
+            <button type="button" onclick="cerrarModalInformacion()" style="background:none; border:none; color:#ffffff; cursor:pointer; font-size:1.25rem;" aria-label="Cerrar información">&times;</button>
+        </div>
+        <div class="modal-garita-body">
+            <dl class="modal-garita-info-grid">
+                <div><dt>Viaje</dt><dd id="info-viaje"></dd></div>
+                <div><dt>Placa</dt><dd id="info-placa"></dd></div>
+                <div><dt>Fecha de producción</dt><dd id="info-fecha"></dd></div>
+                <div><dt>Fecha y hora de registro</dt><dd id="info-registro"></dd></div>
+                <div><dt>Cliente</dt><dd id="info-cliente"></dd></div>
+                <div><dt>Conductor</dt><dd id="info-conductor"></dd></div>
+                <div><dt>Jabas</dt><dd id="info-jabas"></dd></div>
+                <div><dt>Kilogramos</dt><dd id="info-kilos"></dd></div>
+                <div><dt>Lotes del envío</dt><dd id="info-lotes"></dd></div>
+                <div><dt>Código del envío</dt><dd id="info-envio"></dd></div>
+            </dl>
+        </div>
+        <div class="modal-garita-footer">
+            <button type="button" class="btn btn-secondary" onclick="cerrarModalInformacion()">Cerrar</button>
+        </div>
     </div>
 </div>
 
@@ -535,6 +631,17 @@
 </div>
 
 <script>
+    function abrirModalInformacion(button) {
+        ['envio', 'viaje', 'fecha', 'registro', 'cliente', 'conductor', 'placa', 'jabas', 'kilos', 'lotes'].forEach(function(campo) {
+            document.getElementById('info-' + campo).innerText = button.dataset[campo] || '—';
+        });
+        document.getElementById('modal-informacion-viaje').classList.add('is-open');
+    }
+
+    function cerrarModalInformacion() {
+        document.getElementById('modal-informacion-viaje').classList.remove('is-open');
+    }
+
     function abrirModalSalida(button) {
         var envio = button.dataset.envio;
         var placa = button.dataset.placa;

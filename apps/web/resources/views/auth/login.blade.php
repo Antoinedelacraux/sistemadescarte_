@@ -546,7 +546,7 @@
         {{-- Errores --}}
         @if ($errors->any())
             <div class="alert alert-danger" role="alert">
-                <span aria-hidden="true">⚠️</span>
+                <x-ui-icon name="alert" size="18" />
                 <div>
                     <strong>Error de autenticación:</strong>
                     @foreach ($errors->all() as $error)
@@ -608,7 +608,7 @@
             </div>
 
             <button type="submit" class="btn-login" id="btn-login">
-                <span>🔐</span> Iniciar Sesión
+                <x-ui-icon name="login" size="18" /> Iniciar Sesión
             </button>
         </form>
 
@@ -616,12 +616,12 @@
         @unless(app()->environment('production'))
         <div class="demo-section" aria-label="Cuentas de prueba para demostración">
             <div class="demo-header">
-                <span aria-hidden="true">🧪</span>
+                <x-ui-icon name="flask" size="17" />
                 Cuentas de demostración (clic para llenar)
             </div>
 
             <div class="demo-password-hint">
-                🔑 Contraseña común: <strong>password123</strong>
+                <x-ui-icon name="key" size="15" /> Contraseña común: <strong>password123</strong>
             </div>
 
             <div class="demo-table-wrapper">

@@ -13,7 +13,7 @@ class DashboardAnalyticsService
             'badge' => 'amber',
             'badge_bg' => '#fef3c7',
             'badge_color' => '#92400e',
-            'icon' => '🌾',
+            'icon' => 'wheat',
             'tipos_permitidos' => ['Racimos', 'Granos'],
         ],
         'Campo' => [
@@ -21,7 +21,7 @@ class DashboardAnalyticsService
             'badge' => 'green',
             'badge_bg' => '#d1fae5',
             'badge_color' => '#065f46',
-            'icon' => '🌿',
+            'icon' => 'leaf',
             'tipos_permitidos' => ['Racimos', 'Racimos con plaga', 'Granos'],
         ],
         'Packing' => [
@@ -29,7 +29,7 @@ class DashboardAnalyticsService
             'badge' => 'blue',
             'badge_bg' => '#dbeafe',
             'badge_color' => '#1e40af',
-            'icon' => '📦',
+            'icon' => 'package',
             'tipos_permitidos' => ['Racimos', 'Granos'],
         ],
     ];

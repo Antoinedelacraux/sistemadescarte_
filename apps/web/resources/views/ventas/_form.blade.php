@@ -178,6 +178,11 @@
         Guarda como borrador si aún falta información. Guardar registro exige los datos requeridos para Garita, pero no lo envía todavía.
     </p>
 
+    <div class="form-group" style="margin-top: 1rem; max-width: 24rem;">
+        <label for="viaje" class="form-label">Número de Viaje <small class="text-muted">(Requerido para Garita)</small></label>
+        <input type="number" name="viaje" id="viaje" class="form-control" placeholder="Ej. 1" min="1" step="1" inputmode="numeric" value="{{ old('viaje', $venta?->viaje) }}">
+    </div>
+
     <div class="form-grid-2" style="margin-top: 1rem;">
         <div class="form-group" style="position: relative;">
             <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem;">
@@ -234,10 +239,6 @@
         <div class="form-group">
             <label for="brevete" class="form-label">Número de Brevete <small class="text-muted">(Opcional)</small></label>
             <input type="text" name="brevete" id="brevete" class="form-control" placeholder="Ej. Q12345678" value="{{ old('brevete', $venta?->brevete) }}">
-        </div>
-        <div class="form-group">
-            <label for="viaje" class="form-label">Número de Viaje <small class="text-muted">(Requerido para Garita)</small></label>
-            <input type="number" name="viaje" id="viaje" class="form-control" placeholder="Ej. 1" min="1" step="1" inputmode="numeric" value="{{ old('viaje', $venta?->viaje) }}">
         </div>
     </div>
 

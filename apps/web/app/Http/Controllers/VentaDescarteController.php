@@ -487,16 +487,9 @@ class VentaDescarteController extends Controller
             return $envio->id;
         }
 
-        $camposActualizadosEnEnvio = [];
         foreach (['cliente', 'placa', 'conductor'] as $campo) {
             $nuevo = trim((string) ($datos[$campo] ?? ''));
             $actual = trim((string) ($envio->{$campo} ?? ''));
-            if ($nuevo !== '' && $actual !== '' && mb_strtolower($nuevo, 'UTF-8') !== mb_strtolower($actual, 'UTF-8') && $envio->estado_garita === 'borrador' && (!$ventaActual || mb_strtolower($nuevo, 'UTF-8') !== mb_strtolower(trim((string) ($ventaActual->{$campo} ?? '')), 'UTF-8'))) {
-                $envio->{$campo} = $nuevo;
-                $camposActualizadosEnEnvio[$campo] = $nuevo;
-                continue;
-            }
-
             if ($nuevo !== '' && $actual !== '' && mb_strtolower($nuevo, 'UTF-8') !== mb_strtolower($actual, 'UTF-8')) {
                 // Compatibilidad con envíos históricos que ya tenían lotes inconsistentes:
                 // si el usuario conserva el valor original de este registro, no se bloquea
@@ -505,19 +498,32 @@ class VentaDescarteController extends Controller
                 if ($ventaActual && mb_strtolower($nuevo, 'UTF-8') === mb_strtolower($original, 'UTF-8')) {
                     continue;
                 }
-                throw ValidationException::withMessages([$campo => "El {$campo} no coincide con el envío {$envio->codigo}. Conserva el valor del envío o actualiza todos sus lotes de forma consistente."]);
+                throw ValidationException::withMessages([$campo => "No se puede guardar: el Viaje N° {$envio->numero_viaje} ({$envio->codigo}) ya tiene otro {$campo}. Un mismo viaje conserva el mismo cliente, conductor y vehículo para todos sus lotes. Conserva los datos del viaje o usa otro número de viaje."]);
             }
             if ($nuevo !== '' && $actual === '') {
                 $envio->{$campo} = $nuevo;
             }
         }
-        $envio->save();
 
-        if ($camposActualizadosEnEnvio) {
-            VentaDescarte::withoutGlobalScopes()
+        foreach (['ruc' => 'RUC', 'brevete' => 'número de brevete'] as $campo => $etiqueta) {
+            $nuevo = trim((string) ($datos[$campo] ?? ''));
+            if ($nuevo === '') {
+                continue;
+            }
+
+            $referencia = VentaDescarte::withoutGlobalScopes()
                 ->where('envio_id', $envio->id)
-                ->update(array_merge($camposActualizadosEnEnvio, ['updated_at' => now()]));
+                ->when($ventaActual, fn ($query) => $query->where('id', '!=', $ventaActual->id))
+                ->whereNotNull($campo)
+                ->where($campo, '!=', '')
+                ->orderBy('created_at')
+                ->value($campo);
+
+            if ($referencia !== null && mb_strtolower($nuevo, 'UTF-8') !== mb_strtolower(trim((string) $referencia), 'UTF-8')) {
+                throw ValidationException::withMessages([$campo => "No se puede guardar: el Viaje N° {$envio->numero_viaje} ({$envio->codigo}) ya tiene otro {$etiqueta}. Un mismo viaje conserva el mismo cliente, conductor y vehículo para todos sus lotes. Conserva los datos del viaje o usa otro número de viaje."]);
+            }
         }
+        $envio->save();
 
         return $envio->id;
     }

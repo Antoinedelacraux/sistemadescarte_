@@ -230,7 +230,7 @@
     {{-- Formulario para registrar usuario --}}
     <details class="card" style="margin-bottom: 1.5rem;" {{ $errors->any() ? 'open' : '' }}>
         <summary style="font-size: var(--text-sm); font-weight: 700; color: var(--txt-primary); cursor: pointer; padding: 0.25rem 0;">
-            ➕ Crear Nuevo Usuario
+            <x-ui-icon name="plus" size="16" style="vertical-align:text-bottom;" /> Crear Nuevo Usuario
         </summary>
 
         <form action="{{ route('admin.usuarios.store') }}" method="POST" style="margin-top: 1.25rem; border-top: 1px solid var(--brd-base); padding-top: 1.25rem;">
@@ -338,7 +338,7 @@
                                 {{ $user->role?->display_name ?? 'Sin Rol' }}
                             </span>
                             @if($user->hasCustomModules())
-                                <span class="badge-excepcion" title="Usuario con permisos personalizados para casos excepcionales" style="margin-left: 0.25rem;">⚙️ Excepción</span>
+                                <span class="badge-excepcion" title="Usuario con permisos personalizados para casos excepcionales" style="margin-left: 0.25rem;"><x-ui-icon name="settings" size="13" /> Excepción</span>
                             @endif
                         </td>
                         <td>

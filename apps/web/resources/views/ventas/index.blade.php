@@ -926,7 +926,7 @@
                                 @elseif($venta->isBorradorRegistro())
                                     <div style="margin-top: 0.15rem; font-size: 0.75rem; color: #92400e;"><strong>Borrador</strong>
                                         @if($venta->camposFaltantesGarita())
-                                            <span title="{{ implode(', ', $venta->camposFaltantesGarita()) }}"> · Falta: {{ implode(', ', $venta->camposFaltantesGarita()) }}</span>
+                                            <span> · Falta información</span>
                                         @endif
                                     </div>
                                 @elseif($venta->isBorradorGarita())
@@ -1096,7 +1096,7 @@
                         <tr>
                             <td colspan="12" style="padding: 3rem 1rem; text-align: center;">
                                 <div class="empty-state">
-                                    <div class="empty-icon">📋</div>
+                                    <div class="empty-icon"><x-ui-icon name="clipboard" size="32" /></div>
                                     <div class="empty-title">No hay ventas registradas</div>
                                     <div class="empty-desc">
                                         @if(request()->hasAny(['fundo_id', 'motivo', 'fecha_desde', 'fecha_hasta']))
@@ -1108,7 +1108,7 @@
                                     @if(Auth::user()->canAccessModule('registro'))
                                         <div style="margin-top: 1rem;">
                                             <a href="{{ route('ventas.create') }}" class="btn btn-primary btn-sm">
-                                                ➕ Registrar Primera Venta
+                                                <x-ui-icon name="plus" size="15" /> Registrar Primera Venta
                                             </a>
                                         </div>
                                     @endif

@@ -273,7 +273,7 @@ class VentaDescarteTest extends TestCase
         $this->assertSame($mismoDia[0]->envio->codigo, $apiRegistro['envio_codigo']);
     }
 
-    public function test_un_mismo_viaje_conserva_un_transporte_unico_y_propagado_a_todos_sus_lotes(): void
+    public function test_un_mismo_viaje_rechaza_datos_de_garita_inconsistentes(): void
     {
         $base = [
             'fundo_id' => $this->fundoSofia->id,
@@ -287,18 +287,32 @@ class VentaDescarteTest extends TestCase
             'placa' => 'ABC-123',
             'conductor' => 'Juan Perez',
             'viaje' => 1,
+            'ruc' => '20601452398',
+            'brevete' => 'Q12345678',
         ];
 
         $this->actingAs($this->individualUser)->postJson(route('ventas.store'), $base)->assertCreated();
-        $response = $this->actingAs($this->individualUser)->postJson(route('ventas.store'), array_merge($base, [
-            'placa' => 'XYZ-999',
-        ]));
+        $conflictoCliente = $this->actingAs($this->individualUser)->postJson(route('ventas.store'), array_merge($base, ['cliente' => 'Otro Cliente SAC']));
+        $conflictoCliente
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('cliente')
+            ->assertJsonPath('errors.cliente.0', 'No se puede guardar: el Viaje N° 1 (ENV-20261008-FSOFIA-001) ya tiene otro cliente. Un mismo viaje conserva el mismo cliente, conductor y vehículo para todos sus lotes. Conserva los datos del viaje o usa otro número de viaje.');
+        $this->actingAs($this->individualUser)->postJson(route('ventas.store'), array_merge($base, ['placa' => 'XYZ-999']))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('placa');
+        $this->actingAs($this->individualUser)->postJson(route('ventas.store'), array_merge($base, ['conductor' => 'Maria Perez']))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('conductor');
+        $this->actingAs($this->individualUser)->postJson(route('ventas.store'), array_merge($base, ['ruc' => '20111111111']))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('ruc');
+        $this->actingAs($this->individualUser)->postJson(route('ventas.store'), array_merge($base, ['brevete' => 'A12345678']))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('brevete');
 
-        $response->assertCreated();
-        $this->assertDatabaseCount('ventas_descarte', 2);
+        $this->assertDatabaseCount('ventas_descarte', 1);
         $this->assertDatabaseCount('envios', 1);
-        $this->assertDatabaseHas('envios', ['numero_viaje' => 1, 'placa' => 'XYZ-999']);
-        $this->assertSame(2, VentaDescarte::withoutGlobalScopes()->where('placa', 'XYZ-999')->count());
+        $this->assertDatabaseHas('envios', ['numero_viaje' => 1, 'placa' => 'ABC-123', 'conductor' => 'Juan Perez']);
     }
 
     public function test_editar_registro_oficial_conserva_un_dato_historico_inconsistente_sin_bloquear_otros_cambios(): void

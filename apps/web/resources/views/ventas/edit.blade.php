@@ -241,7 +241,7 @@
         @endphp
         <div id="countdown-edit-banner" class="alert alert-warning" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; border-left: 4px solid #f59e0b; background: #fffbeb; padding: 0.75rem 1rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
             <div style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.8125rem; color: #92400e;">
-                <span style="font-size: 1.25rem; line-height: 1;">⏳</span>
+                <x-ui-icon name="clock" size="20" style="flex-shrink:0;" />
                 <div>
                     <strong>Plazo de edición (24 horas):</strong>
                     <span id="timer-edit-live" style="font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 800; color: #b45309; margin-left: 0.25rem;">
@@ -256,7 +256,7 @@
 
         {{-- Alerta de bloqueo cuando expire el tiempo --}}
         <div id="banner-bloqueado-expirado" class="alert alert-danger" style="display: none; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; border-left: 4px solid #dc2626; background: #fef2f2; padding: 0.85rem 1rem; border-radius: var(--radius-md);">
-            <span style="font-size: 1.5rem; line-height: 1;">🔒</span>
+            <x-ui-icon name="lock" size="22" style="flex-shrink:0;" />
             <div>
                 <strong style="color: #991b1b; font-size: 0.875rem;">¡Plazo de edición de 24 horas finalizado!</strong>
                 <p style="margin: 0.15rem 0 0 0; font-size: 0.78rem; color: #b91c1c;">
@@ -312,7 +312,7 @@
             var submitBtn = form.querySelector('.btn-submit-sale') || form.querySelector('button[type="submit"]');
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '🔒 Plazo de 24h vencido — Formulario bloqueado';
+                submitBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg> Plazo de 24h vencido — Formulario bloqueado';
                 submitBtn.style.background = '#94a3b8';
                 submitBtn.style.cursor = 'not-allowed';
                 submitBtn.style.boxShadow = 'none';

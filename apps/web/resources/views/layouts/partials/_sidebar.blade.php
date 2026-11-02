@@ -63,7 +63,7 @@
         <a href="{{ route('garita.historial') }}"
            class="nav-item {{ request()->routeIs('garita.historial') ? 'active' : '' }}"
            aria-current="{{ request()->routeIs('garita.historial') ? 'page' : 'false' }}">
-            <span class="nav-item-icon" aria-hidden="true">✓</span>
+            <span class="nav-item-icon" aria-hidden="true"><x-ui-icon name="check" size="18" /></span>
             <span class="nav-item-label">Historial de Validaciones</span>
         </a>
         @endif

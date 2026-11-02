@@ -7,9 +7,19 @@
 - **Responsable de aprobaciones:** propietario del proyecto.
 - **Siguiente hito:** Recibir feedback del propietario y anotar observaciones para ajustes en el código.
 
-## Propuesta pendiente
+## Cambios recientes
 
-- **2026-11-02:** Se corrigio la edicion de registros oficiales antes de Garita. Los cambios de cliente, placa o conductor se propagan al envio completo mientras no haya sido enviado o validado; una vez en Garita, la edicion queda bloqueada para todos los roles.
+- **2026-11-02:** Se retiró el filtro de estado de Garita del historial de ventas y el mensaje “Elige una fecha primero” de los filtros de viaje en Garita. El selector sigue deshabilitado hasta definir fecha.
+
+- **2026-11-02:** Se reemplazaron los emojis decorativos de la interfaz por un componente reutilizable de iconos SVG de trazo uniforme. Abarca alertas, selector de fundo, sesión, login, detalle y edición de ventas, listas vacías, administración y navegación. Los selectores nativos conservan texto de estado sin emoji para asegurar compatibilidad móvil y de navegador.
+
+- **2026-11-02:** Garita/Salidas conserva solamente los filtros de fecha y número de viaje. El Historial conserva fecha, viaje, fundo, conductor y cliente en una cuadrícula alineada. Los envíos en Salidas se muestran en tres tarjetas compactas por fila en escritorio, dos en tableta y una en móvil; cada tarjeta permite abrir el detalle completo sin iniciar la validación.
+
+- **2026-11-02:** Se rediseñó el panel Garita sin alterar el flujo operativo: viaje y placa son la identidad principal de cada tarjeta; el código ENV pasa a referencia secundaria; carga, datos y acción se ordenan para lectura rápida. Los filtros de conductor, cliente y fundo quedan bajo “Más filtros”, mientras fecha y viaje permanecen visibles. En móvil los KPIs se compactan en dos columnas, las tarjetas usan dos columnas de datos y el botón de validación usa todo el ancho.
+
+- **2026-11-02:** El historial de ventas muestra los borradores incompletos con la etiqueta breve “Falta información”, sin enumerar campos faltantes ni modificar las reglas de guardado o envío a Garita.
+
+- **2026-11-02:** El número de viaje se ubica primero en los datos de cliente y transporte sin aviso permanente. Para la misma combinación de fundo, fecha y viaje, el servidor rechaza diferencias nuevas de cliente, RUC, placa, conductor o brevete y explica al Registrador que debe conservar los datos del viaje o usar otro número. No propaga cambios de un lote a los demás; los lotes distintos pueden pertenecer al mismo viaje.
 
 - **2026-11-02:** La edicion de registros oficiales queda permitida antes de Garita y bloqueada cuando el registro esta pendiente o validado. Se ajusto la sincronizacion de envios para no bloquear cambios ajenos cuando existe una inconsistencia historica ya almacenada.
 
@@ -24,6 +34,8 @@
 ## Log de avances
 | Fecha | Hecho verificado | Pruebas | Bloqueos | Siguiente acción |
 |---|---|---|---|---|
+| 2026-11-02 | Garita/Salidas muestra solamente fecha y viaje; Historial de ventas ya no ofrece el filtro de estado Garita; se eliminó la instrucción “Elige una fecha primero”. Se incorporaron iconos SVG reutilizables y el panel Garita permite tres tarjetas por fila en escritorio con detalle en modal. | Revisión de diff y `git diff --check`; no se ejecutaron pruebas automáticas para este ajuste final. En cambios anteriores de esta serie: suite de 110 pruebas y 671 aserciones aprobada antes de retirar estos controles visuales. | Ninguno conocido; el selector de viaje se mantiene deshabilitado cuando falta fecha | Recibir feedback visual y funcional del propietario |
+| 2026-11-02 | El viaje se prioriza visualmente y el servidor bloquea diferencias de cliente, RUC, placa, conductor o brevete para la misma combinación de fundo, fecha y viaje; no hay propagación automática entre lotes. | VentaDescarteTest: 22 pruebas, 117 aserciones; GaritaWorkflowTest: 7 pruebas, 95 aserciones; suite completa: 110 pruebas, 668 aserciones; lint PHP y Blade correctos | Registros históricos con diferencias previas conservan compatibilidad si no se altera ese dato | Validar el flujo visual con el propietario |
 | 2026-10-31 | Garita restringida a fundos asignados, incluida la confirmación; filtros por fecha, fundo, viaje, conductor y cliente en Salidas e Historial; vistas de pendientes y validados en Salidas y tabla ajustada. | GaritaWorkflowTest: 5 pruebas, 90 aserciones; FundoIsolationTest: 6 pruebas, 26 aserciones; AdminTest: 6 pruebas, 38 aserciones; Blade y lint PHP correctos | Usuarios Garita sin fundos asignados no verán envíos; inspección visual pendiente porque el navegador no estuvo disponible | Asignar fundos a las cuentas Garita existentes y revisar presentación antes del despliegue |
 | 2026-10-31 | Columna de ventas con solo fecha/hora; fecha agregada a Excel y API v1. Historial tabular con fecha de produccion y viaje; modal recibe el numero correcto y la confirmacion rechaza viajes o fechas mezclados. Sin migracion adicional. | GaritaWorkflowTest: 4 pruebas, 56 aserciones; ExportarExcelCompletoTest: 9 pruebas, 29 aserciones; view:cache, rutas API, PHP lint | Revision visual en navegador pendiente; el arbol ya contenia cambios locales de la implementacion Garita | Revisar visualmente el historial y validar con el propietario antes del despliegue |
 | 2026-10-15 | Runbook final de despliegue documentado en `docs/05-operacion/GUIA_DESPLIEGUE_FINAL.md`, separando instalación nueva y actualización, con respaldo restaurable, rollback, smoke tests y prohibiciones de operaciones destructivas. | Revisión documental contra `composer.json`, `.env.production.example`, `.htaccess`, script de empaquetado y comandos Artisan disponibles | No se ejecutó despliegue real, respaldo de producción ni restauración fuera del entorno local | Completar la checklist en Ferozo y obtener aprobación humana antes de producción |
