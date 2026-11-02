@@ -44,7 +44,7 @@
                 onclick="triggerPwaNotificationTest()"
                 title="Probar notificación en este dispositivo"
                 aria-label="Probar notificación en este dispositivo">
-            <x-ui-icon name="bell" size="15" />
+            <x-ui-icon name="flask" size="15" />
             <span class="btn-pwa-notification-text">Probar notificación</span>
         </button>
         @endif
