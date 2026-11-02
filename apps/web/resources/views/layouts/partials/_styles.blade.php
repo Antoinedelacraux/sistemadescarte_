@@ -553,6 +553,50 @@
             gap: 0.75rem;
         }
 
+        /* Notificaciones Garita Bell */
+        .btn-garita-bell {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-md);
+            color: var(--txt-secondary);
+            background: var(--clr-surface-50);
+            border: 1px solid var(--brd-base);
+            text-decoration: none;
+            transition: all var(--transition-fast);
+        }
+        .btn-garita-bell:hover {
+            color: #b45309;
+            background: #fef3c7;
+            border-color: #fde68a;
+        }
+        .garita-bell-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #dc2626;
+            color: #ffffff;
+            font-size: 0.65rem;
+            font-weight: 800;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            border: 2px solid #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            animation: pulseNotification 2s infinite ease-in-out;
+        }
+        @keyframes pulseNotification {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
         /* Indicador de red */
         .net-indicator {
             display: flex;

@@ -466,6 +466,56 @@
         box-shadow: 0 1px 3px rgba(220, 38, 38, 0.15);
     }
 
+    .badge-garita {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 0.15rem 0.45rem;
+        border-radius: var(--radius-sm);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+    }
+    .badge-garita-pendiente {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fde68a;
+    }
+    .badge-garita-validado {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+    .badge-garita-borrador {
+        background: #f1f5f9;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+    }
+
+    .btn-action-garita-send {
+        background: #fef3c7;
+        color: #b45309;
+        border-color: #fde68a;
+    }
+    .btn-action-garita-send:hover {
+        background: #fde68a;
+        color: #92400e;
+        border-color: #fcd34d;
+        box-shadow: 0 1px 3px rgba(180, 83, 9, 0.2);
+    }
+    .btn-action-garita-cancel {
+        background: #f1f5f9;
+        color: #475569;
+        border-color: #cbd5e1;
+    }
+    .btn-action-garita-cancel:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+        border-color: #94a3b8;
+    }
+
     .badge-anulado {
         background: #fee2e2;
         color: #991b1b;
@@ -852,6 +902,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Fundo</th>
+                        <th scope="col">Envío</th>
                         <th scope="col">Fecha Prod.</th>
                         <th scope="col">Cliente</th>
                         <th scope="col">Lote</th>
@@ -861,6 +912,7 @@
                         <th scope="col" class="text-right">Kilogramos</th>
                         <th scope="col" class="text-right">Precio/Kg</th>
                         <th scope="col" class="text-right">Total (S/)</th>
+                        <th scope="col" style="text-align: center;">Fecha y hora validación</th>
                         <th scope="col" style="text-align: center;">Acción</th>
                     </tr>
                 </thead>
@@ -871,6 +923,26 @@
                                 <strong>{{ $venta->fundo?->name ?? 'N/A' }}</strong>
                                 @if($venta->isAnulado())
                                     <div style="margin-top: 0.15rem;"><span class="badge-motivo badge-anulado">Anulado</span></div>
+                                @elseif($venta->isBorradorRegistro())
+                                    <div style="margin-top: 0.15rem; font-size: 0.75rem; color: #92400e;"><strong>Borrador</strong>
+                                        @if($venta->camposFaltantesGarita())
+                                            <span title="{{ implode(', ', $venta->camposFaltantesGarita()) }}"> · Falta: {{ implode(', ', $venta->camposFaltantesGarita()) }}</span>
+                                        @endif
+                                    </div>
+                                @elseif($venta->isBorradorGarita())
+                                    <div style="margin-top: 0.15rem; font-size: 0.75rem; color: #166534;"><strong>Registro oficial</strong> · listo para enviar
+                                        @if($venta->camposFaltantesGarita())
+                                            <span title="{{ implode(', ', $venta->camposFaltantesGarita()) }}"> · Falta: {{ implode(', ', $venta->camposFaltantesGarita()) }}</span>
+                                        @endif
+                                    </div>
+                                @endif
+                            </td>
+                            <td>
+                                @if($venta->envio)
+                                    <strong style="font-family: monospace; font-size: 0.75rem; color: #166534;">{{ $venta->envio->codigo }}</strong>
+                                    <div style="font-size: 0.6875rem; color: var(--txt-muted);">Viaje {{ $venta->envio->numero_viaje }}</div>
+                                @else
+                                    <span style="color: var(--txt-muted);">Histórico</span>
                                 @endif
                             </td>
                             <td>
@@ -907,6 +979,9 @@
                                 S/ {{ number_format($venta->valor_venta, 2) }}
                             </td>
                             <td style="text-align: center;">
+                                {{ $venta->salida_garita_at?->format('d/m/Y H:i') ?? '—' }}
+                            </td>
+                            <td style="text-align: center;">
                                 <div class="row-actions-btn-group">
                                     {{-- Ver (Modal de visualización) --}}
                                     <button type="button" 
@@ -932,6 +1007,8 @@
                                             data-conductor="{{ $venta->conductor ?: '—' }}"
                                             data-brevete="{{ $venta->brevete ?: '—' }}"
                                             data-viaje="{{ $venta->viaje ?: '—' }}"
+                                            data-envio="{{ $venta->envio?->codigo ?: 'Histórico' }}"
+                                            data-estado-registro="{{ $venta->isBorradorRegistro() ? 'Borrador' : 'Registro oficial' }}"
                                             data-observacion="{{ $venta->observacion ?: '' }}"
                                             data-creado-por="{{ $venta->creator?->name ?? 'Usuario' }}"
                                             data-creado-at="{{ $venta->created_at ? $venta->created_at->format('d/m/Y H:i') : '—' }}"
@@ -941,17 +1018,35 @@
                                             @if($venta->puedeSerEditadoPor(Auth::user()))
                                             data-url-edit="{{ route('ventas.edit', $venta) }}"
                                             @endif
-                                            data-cerrado="{{ $venta->isCerradoParaEdicion() ? '1' : '0' }}"
+                                            data-cerrado="{{ $venta->isCerradoParaEdicion() && !$venta->tieneBorradorSinVencimiento() ? '1' : '0' }}"
                                             onclick="abrirModalDetalle(this)">
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                     </button>
+
+                                    {{-- Enviar a Garita --}}
+                                    @if($venta->puedeEnviarAGarita(Auth::user()))
+                                        <form method="POST" action="{{ route('ventas.enviar-garita', $venta) }}" style="display:inline;" onsubmit="return confirm('¿Ya verificaste el cliente, conductor, placa, número de viaje, jabas, kilogramos y lotes del envío? Confirma para enviarlo a Garita.');">
+                                            @csrf
+                                            <button type="submit" class="btn-action-icon btn-action-garita-send" title="Enviar camión/viaje a Garita" aria-label="Enviar a Garita">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                                            </button>
+                                        </form>
+                                    @elseif($venta->puedeCancelarEnvioGarita(Auth::user()))
+                                        {{-- Cancelar Envío a Garita (para editar si hubo error) --}}
+                                        <form method="POST" action="{{ route('ventas.cancelar-garita', $venta) }}" style="display:inline;" onsubmit="return confirm('¿Deseas CANCELAR el envío a Garita para poder editar este registro?');">
+                                            @csrf
+                                            <button type="submit" class="btn-action-icon btn-action-garita-cancel" title="Cancelar envío a Garita (volver a borrador para editar)" aria-label="Cancelar envío a Garita">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                                            </button>
+                                        </form>
+                                    @endif
 
                                     @if($venta->puedeSerEditadoPor(Auth::user()))
                                         {{-- Editar (Solo activo y dentro de 24h para registradores) --}}
                                         <a href="{{ route('ventas.edit', $venta) }}" 
                                            class="btn-action-icon btn-action-edit btn-row-edit" 
-                                           title="Editar registro" 
-                                           @if(!Auth::user()->isAdmin() && $venta->created_at)
+                                           title="{{ $venta->isBorradorRegistro() ? 'Editar borrador' : 'Editar registro oficial' }}"
+                                           @if(!Auth::user()->isAdmin() && !$venta->isBorradorRegistro() && !$venta->tieneBorradorSinVencimiento() && $venta->created_at)
                                            data-expires-at="{{ ($venta->created_at->timestamp + 86400) * 1000 }}"
                                            data-venta-id="{{ $venta->id }}"
                                            @endif
@@ -966,13 +1061,13 @@
                                               action="{{ route('ventas.anular', $venta) }}" 
                                               class="form-action-anular form-row-anular" 
                                               style="display:inline;"
-                                              @if(!Auth::user()->isAdmin() && $venta->created_at)
+                                              @if(!Auth::user()->isAdmin() && !$venta->isBorradorRegistro() && $venta->created_at)
                                               data-expires-at="{{ ($venta->created_at->timestamp + 86400) * 1000 }}"
                                               data-venta-id="{{ $venta->id }}"
                                               @endif
                                               onsubmit="return confirm('¿Deseas ANULAR este registro de venta? Pasará a estado anulado y se descontará de los totales.');">
                                             @csrf
-                                            <button type="submit" class="btn-action-icon btn-action-anular" title="Anular registro (Paso 1 antes de eliminar)" aria-label="Anular venta">
+                                            <button type="submit" class="btn-action-icon btn-action-anular" title="{{ $venta->isBorradorRegistro() ? 'Descartar borrador' : 'Anular registro (Paso 1 antes de eliminar)' }}" aria-label="{{ $venta->isBorradorRegistro() ? 'Descartar borrador' : 'Anular venta' }}">
                                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
                                             </button>
                                         </form>
@@ -999,7 +1094,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="11" style="padding: 3rem 1rem; text-align: center;">
+                            <td colspan="12" style="padding: 3rem 1rem; text-align: center;">
                                 <div class="empty-state">
                                     <div class="empty-icon">📋</div>
                                     <div class="empty-title">No hay ventas registradas</div>

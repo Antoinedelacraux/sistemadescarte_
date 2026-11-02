@@ -15,6 +15,7 @@ class Role extends Model
     public const REGISTRADOR = 'registrador';
     public const ANALISTA = 'analista';
     public const VENTAS = 'ventas';
+    public const GARITA = 'garita';
 
     // Constantes retrocompatibles
     public const GENERAL = 'jefe_fundo';

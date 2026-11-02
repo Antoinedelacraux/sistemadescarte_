@@ -40,6 +40,9 @@ class DashboardController extends Controller
             if ($user->canAccessModule('admin')) {
                 return redirect()->route('admin.fundos');
             }
+            if ($user->canAccessModule('garita')) {
+                return redirect()->route('garita.index');
+            }
             abort(403, 'No tienes autorización para acceder a los módulos del sistema.');
         }
 

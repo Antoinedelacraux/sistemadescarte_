@@ -203,13 +203,46 @@ CREATE TABLE `clientes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ------------------------------------------------------------------------------
--- 9. TABLA: ventas_descarte (Registro operativo de ventas de descarte)
+-- 9. TABLA: envios (Identidad explicita de cada despacho por fundo, fecha y viaje)
+-- ------------------------------------------------------------------------------
+DROP TABLE IF EXISTS `envios`;
+CREATE TABLE `envios` (
+  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `codigo` varchar(80) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `fundo_id` bigint unsigned NOT NULL,
+  `fecha_produccion` date NOT NULL,
+  `numero_viaje` int unsigned NOT NULL,
+  `cliente` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `placa` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `conductor` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `estado_garita` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'borrador',
+  `enviado_garita_at` timestamp NULL DEFAULT NULL,
+  `salida_garita_at` timestamp NULL DEFAULT NULL,
+  `enviado_garita_by` bigint unsigned DEFAULT NULL,
+  `salida_garita_by` bigint unsigned DEFAULT NULL,
+  `observacion_garita` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `envios_codigo_unique` (`codigo`),
+  UNIQUE KEY `uq_envios_fundo_fecha_viaje` (`fundo_id`,`fecha_produccion`,`numero_viaje`),
+  KEY `idx_envios_fecha_estado` (`fecha_produccion`,`estado_garita`),
+  KEY `envios_enviado_garita_by_foreign` (`enviado_garita_by`),
+  KEY `envios_salida_garita_by_foreign` (`salida_garita_by`),
+  CONSTRAINT `envios_fundo_id_foreign` FOREIGN KEY (`fundo_id`) REFERENCES `fundos` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `envios_enviado_garita_by_foreign` FOREIGN KEY (`enviado_garita_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `envios_salida_garita_by_foreign` FOREIGN KEY (`salida_garita_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------------------------
+-- 10. TABLA: ventas_descarte (Registro operativo de ventas de descarte)
 -- INICIA EN CERO REGISTROS PARA PRODUCCIÓN
 -- ------------------------------------------------------------------------------
 DROP TABLE IF EXISTS `ventas_descarte`;
 CREATE TABLE `ventas_descarte` (
   `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
   `fundo_id` bigint unsigned NOT NULL,
+  `envio_id` char(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `lote_id` bigint unsigned DEFAULT NULL,
   `cuartel_id` bigint unsigned DEFAULT NULL,
   `cuartel_manual` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -229,6 +262,7 @@ CREATE TABLE `ventas_descarte` (
   `observacion` text COLLATE utf8mb4_unicode_ci,
   `cliente` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `estado` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'activo',
+  `estado_registro` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'oficial',
   `anulado_at` datetime DEFAULT NULL,
   `anulado_by` bigint unsigned DEFAULT NULL,
   `motivo_anulacion` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -238,6 +272,7 @@ CREATE TABLE `ventas_descarte` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `ventas_descarte_fundo_id_foreign` (`fundo_id`),
+  KEY `idx_ventas_envio` (`envio_id`),
   KEY `ventas_descarte_lote_id_foreign` (`lote_id`),
   KEY `ventas_descarte_cuartel_id_foreign` (`cuartel_id`),
   KEY `ventas_descarte_created_by_foreign` (`created_by`),
@@ -253,12 +288,13 @@ CREATE TABLE `ventas_descarte` (
   CONSTRAINT `ventas_descarte_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`),
   CONSTRAINT `ventas_descarte_cuartel_id_foreign` FOREIGN KEY (`cuartel_id`) REFERENCES `cuarteles` (`id`) ON DELETE SET NULL,
   CONSTRAINT `ventas_descarte_fundo_id_foreign` FOREIGN KEY (`fundo_id`) REFERENCES `fundos` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ventas_descarte_envio_id_foreign` FOREIGN KEY (`envio_id`) REFERENCES `envios` (`id`) ON DELETE SET NULL,
   CONSTRAINT `ventas_descarte_lote_id_foreign` FOREIGN KEY (`lote_id`) REFERENCES `lotes` (`id`) ON DELETE SET NULL,
   CONSTRAINT `ventas_descarte_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ------------------------------------------------------------------------------
--- 10. TABLAS DE SOPORTE LARAVEL: sessions, cache, jobs
+-- 11. TABLAS DE SOPORTE LARAVEL: sessions, cache, jobs
 -- ------------------------------------------------------------------------------
 DROP TABLE IF EXISTS `sessions`;
 CREATE TABLE `sessions` (

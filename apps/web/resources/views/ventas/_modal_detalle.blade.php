@@ -105,6 +105,18 @@
                 </div>
             </div>
 
+            <div class="modal-section-title" style="margin-top: 1rem;">Envío relacionado</div>
+            <div class="modal-data-grid">
+                <div class="modal-data-item">
+                    <span class="modal-data-label">Código del envío</span>
+                    <span id="modal-envio" class="modal-data-value">Histórico</span>
+                </div>
+                <div class="modal-data-item">
+                    <span class="modal-data-label">Tipo de registro</span>
+                    <span id="modal-estado-registro" class="modal-data-value">Registro oficial</span>
+                </div>
+            </div>
+
             {{-- Observaciones --}}
             <div class="modal-section-title" style="margin-top: 1rem;">Observaciones</div>
             <div class="modal-obs-box" id="modal-observacion">Sin observaciones registradas.</div>
@@ -176,6 +188,9 @@
         document.getElementById('modal-conductor').textContent = d.conductor || '—';
         document.getElementById('modal-brevete').textContent = d.brevete || '—';
         document.getElementById('modal-viaje').textContent = d.viaje || '—';
+
+        document.getElementById('modal-envio').textContent = d.envio || 'Histórico';
+        document.getElementById('modal-estado-registro').textContent = d.estadoRegistro || 'Registro oficial';
 
         var obsEl = document.getElementById('modal-observacion');
         if (d.observacion && d.observacion.trim().length > 0) {

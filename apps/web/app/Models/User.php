@@ -19,6 +19,7 @@ class User extends Authenticatable
         'registro' => 'Registrar Venta',
         'historial' => 'Historial de Ventas',
         'admin' => 'Administración',
+        'garita' => 'Control de Garita',
     ];
 
     protected $fillable = [
@@ -80,6 +81,11 @@ class User extends Authenticatable
         return $this->role?->name === Role::VENTAS;
     }
 
+    public function isGarita(): bool
+    {
+        return $this->role?->name === Role::GARITA;
+    }
+
     // Métodos alias para retrocompatibilidad
     public function isGeneral(): bool
     {
@@ -94,7 +100,7 @@ class User extends Authenticatable
     /**
      * Determina si el usuario tiene acceso irrestricto a todos los fundos del sistema.
      * Roles con acceso a todos los fundos: Administrador, Analista, Ventas.
-     * Jefe de fundo y Registrador están restringidos a sus fundos asignados.
+     * Jefe de fundo, Registrador y Garita están restringidos a sus fundos asignados.
      */
     public function hasAccessToAllFundos(): bool
     {
@@ -116,11 +122,12 @@ class User extends Authenticatable
     public static function getModulosPorDefecto(?string $roleName): array
     {
         return match ($roleName) {
-            Role::ADMIN => ['panel', 'registro', 'historial', 'admin'],
+            Role::ADMIN => ['panel', 'registro', 'historial', 'admin', 'garita'],
             Role::JEFE_FUNDO, 'general' => ['panel', 'historial'],
             Role::REGISTRADOR, 'individual' => ['panel', 'registro', 'historial'],
             Role::ANALISTA => ['historial'],
             Role::VENTAS => ['historial'],
+            Role::GARITA => ['garita'],
             default => [],
         };
     }

@@ -37,7 +37,7 @@ class VentasApiController extends Controller
         $perPage = min((int) $request->query('per_page', 500), 2000);
 
         $query = VentaDescarte::withoutGlobalScopes()
-            ->with(['fundo', 'lote', 'creator'])
+            ->with(['fundo', 'lote', 'envio', 'creator'])
             ->orderBy('fecha_produccion', 'desc')
             ->orderBy('created_at', 'desc');
 
@@ -74,6 +74,8 @@ class VentasApiController extends Controller
             return [
                 // Identificadores
                 'id'               => $v->id,
+                'envio_id'         => $v->envio_id,
+                'envio_codigo'     => $v->envio?->codigo,
 
                 // Fundo / Ubicación
                 'fundo'            => $fundoNombre,
@@ -102,9 +104,11 @@ class VentasApiController extends Controller
 
                 // Estado y auditoría
                 'estado'           => $v->estado ?? 'activo',
+                'estado_registro'  => $v->estado_registro ?? 'oficial',
                 'observacion'      => $v->observacion ?? '',
                 'registrado_por'   => $v->creator?->name ?? 'Sistema',
                 'fecha_registro'   => $v->created_at?->toIso8601String(),
+                'fecha_hora_validacion_garita' => $v->salida_garita_at?->toIso8601String(),
             ];
         });
 

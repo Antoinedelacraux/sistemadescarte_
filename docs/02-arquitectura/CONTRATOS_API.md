@@ -76,10 +76,21 @@
 - **Ruta:** `GET /ventas/exportar`
 - **Autenticación:** Requerida (`auth`).
 - **Parámetros (Filtros activos):** `fundo_id`, `motivo`, `tipo_descarte`, `estado`, `fecha_desde`, `fecha_hasta`, `buscar`.
-- **Formato de Respuesta:** Archivo binario nativo Microsoft Excel OpenXML (`.xlsx`) con Content-Type `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`, 21 columnas con anchos calibrados, tipos contables y fila de totales general destacada.
+- **Formato de Respuesta:** Archivo binario nativo Microsoft Excel OpenXML (`.xlsx`) con Content-Type `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`, 23 columnas con anchos calibrados y tipos contables. Incluye `CÓDIGO DEL ENVÍO` y `FECHA Y HORA VALIDACIÓN GARITA`, vacías mientras no existan.
 
 ### Exportación Contextual desde Panel de Control (Dashboard)
 - **Ruta:** `GET /dashboard/exportar`
 - **Autenticación:** Requerida (`auth`).
 - **Parámetros:** `seccion` (`consolidado` | `segregacion` | `clientes` | `recientes`), `motivo_cliente`, `buscar_cliente`.
 - **Formato de Respuesta:** Archivo binario `.xlsx` respetando los filtros instantáneos aplicados por el usuario.
+
+## 4. API de lectura para Power BI
+
+### Historial de ventas/descarte
+- **RelaciÃ³n explÃ­cita de envÃ­o (v1 compatible):** Los registros nuevos con nÃºmero de viaje exponen `envio_id` y `envio_codigo`. La relaciÃ³n se determina por `fundo_id + fecha_produccion + viaje`, por lo que lotes distintos del mismo despacho comparten un identificador estable y el mismo nÃºmero en otra fecha pertenece a otro envÃ­o. Los registros histÃ³ricos sin migraciÃ³n conservan `null`.
+- **Tipo de registro:** `estado_registro` devuelve `borrador` u `oficial`; los registros existentes se consideran `oficial` para mantener compatibilidad histÃ³rica.
+- **Ruta:** `GET /api/v1/ventas-descarte`
+- **Autenticación:** Token Bearer configurado en `POWERBI_API_TOKEN`.
+- **Compatibilidad:** Se mantiene el contrato v1 y se agrega un campo nullable, sin cambiar ni retirar los campos existentes.
+- **Campos de fecha relevantes:** `fecha_registro` contiene fecha/hora ISO 8601 de creación; `fecha_hora_validacion_garita` contiene fecha/hora ISO 8601 de validación Garita o `null` si aún no se valida.
+- **Identificación de viajes:** Cada registro mantiene `fecha_produccion` y `viaje`; los consumidores deben considerar ambos campos para distinguir, por ejemplo, el viaje 1 de fechas diferentes.

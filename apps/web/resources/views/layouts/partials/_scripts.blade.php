@@ -689,6 +689,38 @@
     });
 
     /* ============================================================
+     * POLLING DE NOTIFICACIONES DE GARITA (LIVE COUNTER)
+     * ============================================================ */
+    var garitaBell = document.getElementById('garita-bell-link');
+    var garitaBadge = document.getElementById('garita-bell-count');
+    if (garitaBell && garitaBadge) {
+        function checkGaritaPendientes() {
+            if (!navigator.onLine) return;
+            fetch('/api/garita/pendientes-count', {
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data && typeof data.count === 'number') {
+                    if (data.count > 0) {
+                        garitaBadge.textContent = data.count > 99 ? '99+' : data.count;
+                        garitaBadge.style.display = 'flex';
+                    } else {
+                        garitaBadge.style.display = 'none';
+                    }
+                }
+            })
+            .catch(function(err) {
+                // silencioso
+            });
+        }
+
+        // Consultar de inmediato y luego cada 30 segundos
+        checkGaritaPendientes();
+        setInterval(checkGaritaPendientes, 30000);
+    }
+
+    /* ============================================================
      * PREFETCH UNIVERSAL DE MÓDULOS (INSTANT NAVIGATION)
      * Anticipa la navegación al contacto táctil o hover del cursor
      * ============================================================ */

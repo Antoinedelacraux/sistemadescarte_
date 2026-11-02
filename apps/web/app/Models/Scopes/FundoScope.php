@@ -27,7 +27,7 @@ class FundoScope implements Scope
             return;
         }
 
-        // Jefe de fundo y Registrador solo ven los fundos a los que están asignados
+        // Los demás roles solo ven los fundos a los que están asignados.
         $fundoIds = $user->fundos()->pluck('fundos.id')->toArray();
 
         $builder->whereIn($model->getTable() . '.fundo_id', $fundoIds);

@@ -4,6 +4,7 @@ namespace Tests\Feature\Ventas;
 
 use App\Models\Cliente;
 use App\Models\Cuartel;
+use App\Models\Envio;
 use App\Models\Fundo;
 use App\Models\Lote;
 use App\Models\Role;
@@ -129,6 +130,223 @@ class VentaDescarteTest extends TestCase
             'valor_venta' => 150.00,
             'created_by' => $this->individualUser->id,
         ]);
+    }
+
+    public function test_registro_rechaza_fecha_futura_y_datos_de_transporte_invalidos(): void
+    {
+        $payload = [
+            'fundo_id' => $this->fundoSofia->id,
+            'fecha_produccion' => now()->addDay()->toDateString(),
+            'motivo' => 'Campo',
+            'tipo_descarte' => 'Racimos',
+            'lote_id' => $this->loteSofia->id,
+            'precio' => 1.50,
+            'kilogramos' => 100.00,
+            'cliente' => '1234',
+            'ruc' => '20601452398',
+            'conductor' => 'Carlos',
+            'viaje' => 'wer',
+        ];
+
+        $response = $this->actingAs($this->individualUser)->postJson(route('ventas.store'), $payload);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['fecha_produccion', 'cliente', 'conductor', 'viaje']);
+    }
+
+    public function test_registro_normaliza_placa_y_espacios_del_cliente(): void
+    {
+        $payload = [
+            'fundo_id' => $this->fundoSofia->id,
+            'fecha_produccion' => now()->toDateString(),
+            'motivo' => 'Campo',
+            'tipo_descarte' => 'Racimos',
+            'lote_id' => $this->loteSofia->id,
+            'precio' => 1.50,
+            'kilogramos' => 100.00,
+            'cliente' => '  Agro   Export  ',
+            'ruc' => '20601452398',
+            'placa' => ' abc-123 ',
+            'conductor' => 'Carlos Mendoza',
+            'viaje' => 1,
+        ];
+
+        $this->actingAs($this->individualUser)->postJson(route('ventas.store'), $payload)->assertCreated();
+
+        $this->assertDatabaseHas('ventas_descarte', ['cliente' => 'Agro Export', 'ruc' => '20601452398', 'placa' => 'ABC-123', 'viaje' => '1']);
+        $this->assertDatabaseHas('clientes', ['nombre' => 'Agro Export']);
+    }
+
+    public function test_registro_completo_exige_datos_necesarios_para_garita(): void
+    {
+        $payload = [
+            'modo_guardado' => 'registro',
+            'fundo_id' => $this->fundoSofia->id,
+            'fecha_produccion' => now()->toDateString(),
+            'motivo' => 'Campo',
+            'tipo_descarte' => 'Racimos',
+            'lote_id' => $this->loteSofia->id,
+            'precio' => 1.50,
+            'kilogramos' => 100.00,
+        ];
+
+        $this->actingAs($this->individualUser)->postJson(route('ventas.store'), $payload)
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['cliente', 'jabas', 'placa', 'conductor', 'viaje']);
+    }
+
+    public function test_borrador_y_registro_oficial_persisten_estados_y_acciones_diferentes(): void
+    {
+        $base = [
+            'fundo_id' => $this->fundoSofia->id,
+            'fecha_produccion' => '2026-10-08',
+            'motivo' => 'Campo',
+            'tipo_descarte' => 'Racimos',
+            'lote_id' => $this->loteSofia->id,
+            'precio' => 1.50,
+            'kilogramos' => 100.00,
+        ];
+
+        $draft = $this->actingAs($this->individualUser)
+            ->postJson(route('ventas.store'), $base + ['modo_guardado' => 'borrador'])
+            ->assertCreated();
+        $draftVenta = VentaDescarte::withoutGlobalScopes()->findOrFail($draft->json('data.id'));
+        $this->assertTrue($draftVenta->isBorradorRegistro());
+        $this->assertTrue($draftVenta->tieneBorradorSinVencimiento());
+        $this->assertFalse($draftVenta->puedeEnviarAGarita($this->individualUser));
+
+        $official = $this->actingAs($this->individualUser)
+            ->postJson(route('ventas.store'), array_merge($base, [
+                'modo_guardado' => 'registro',
+                'cliente' => 'Cliente Oficial SAC',
+                'jabas' => 10,
+                'placa' => 'ABC-123',
+                'conductor' => 'Juan Perez',
+                'viaje' => 1,
+            ]))
+            ->assertCreated();
+        $officialVenta = VentaDescarte::withoutGlobalScopes()->findOrFail($official->json('data.id'));
+        $this->assertTrue($officialVenta->isRegistroOficial());
+        $this->assertFalse($officialVenta->tieneBorradorSinVencimiento());
+        $this->assertTrue($officialVenta->puedeEnviarAGarita($this->individualUser));
+    }
+
+    public function test_registros_del_mismo_viaje_comparten_un_envio_explicito_y_la_fecha_separa_envios(): void
+    {
+        $base = [
+            'fundo_id' => $this->fundoSofia->id,
+            'motivo' => 'Campo',
+            'tipo_descarte' => 'Racimos',
+            'lote_id' => $this->loteSofia->id,
+            'precio' => 1.50,
+            'kilogramos' => 100.00,
+            'cliente' => 'Cliente Envio SAC',
+            'placa' => 'ABC-123',
+            'conductor' => 'Juan Perez',
+            'viaje' => 1,
+        ];
+
+        $this->actingAs($this->individualUser)
+            ->postJson(route('ventas.store'), array_merge($base, ['fecha_produccion' => '2026-10-08']))
+            ->assertCreated();
+        $this->actingAs($this->individualUser)
+            ->postJson(route('ventas.store'), array_merge($base, ['fecha_produccion' => '2026-10-08', 'kilogramos' => 80.00]))
+            ->assertCreated();
+        $this->actingAs($this->individualUser)
+            ->postJson(route('ventas.store'), array_merge($base, ['fecha_produccion' => '2026-10-09']))
+            ->assertCreated();
+
+        $this->assertDatabaseCount('envios', 2);
+        $mismoDia = VentaDescarte::withoutGlobalScopes()->whereDate('fecha_produccion', '2026-10-08')->get();
+        $otroDia = VentaDescarte::withoutGlobalScopes()->whereDate('fecha_produccion', '2026-10-09')->first();
+        $this->assertNotNull($mismoDia[0]->envio_id);
+        $this->assertSame($mismoDia[0]->envio_id, $mismoDia[1]->envio_id);
+        $this->assertNotSame($mismoDia[0]->envio_id, $otroDia->envio_id);
+        $this->assertStringStartsWith('ENV-20261008-FSOFIA-001', $mismoDia[0]->envio->codigo);
+
+        config(['app.powerbi_api_token' => 'envio-test-token']);
+        $api = $this->getJson('/api/v1/ventas-descarte', [
+            'Authorization' => 'Bearer envio-test-token',
+        ])->assertOk();
+        $apiRegistro = collect($api->json('data'))->firstWhere('id', $mismoDia[0]->id);
+        $this->assertSame($mismoDia[0]->envio_id, $apiRegistro['envio_id']);
+        $this->assertSame($mismoDia[0]->envio->codigo, $apiRegistro['envio_codigo']);
+    }
+
+    public function test_un_mismo_viaje_conserva_un_transporte_unico_y_propagado_a_todos_sus_lotes(): void
+    {
+        $base = [
+            'fundo_id' => $this->fundoSofia->id,
+            'fecha_produccion' => '2026-10-08',
+            'motivo' => 'Campo',
+            'tipo_descarte' => 'Racimos',
+            'lote_id' => $this->loteSofia->id,
+            'precio' => 1.50,
+            'kilogramos' => 100.00,
+            'cliente' => 'Cliente Envio SAC',
+            'placa' => 'ABC-123',
+            'conductor' => 'Juan Perez',
+            'viaje' => 1,
+        ];
+
+        $this->actingAs($this->individualUser)->postJson(route('ventas.store'), $base)->assertCreated();
+        $response = $this->actingAs($this->individualUser)->postJson(route('ventas.store'), array_merge($base, [
+            'placa' => 'XYZ-999',
+        ]));
+
+        $response->assertCreated();
+        $this->assertDatabaseCount('ventas_descarte', 2);
+        $this->assertDatabaseCount('envios', 1);
+        $this->assertDatabaseHas('envios', ['numero_viaje' => 1, 'placa' => 'XYZ-999']);
+        $this->assertSame(2, VentaDescarte::withoutGlobalScopes()->where('placa', 'XYZ-999')->count());
+    }
+
+    public function test_editar_registro_oficial_conserva_un_dato_historico_inconsistente_sin_bloquear_otros_cambios(): void
+    {
+        $envio = Envio::withoutGlobalScopes()->create([
+            'codigo' => 'ENV-20261008-FSOFIA-009',
+            'fundo_id' => $this->fundoSofia->id,
+            'fecha_produccion' => '2026-10-08',
+            'numero_viaje' => 9,
+            'cliente' => 'Cliente Canonico SAC',
+            'placa' => 'ABC-123',
+            'conductor' => 'Juan Perez',
+        ]);
+        $venta = VentaDescarte::withoutGlobalScopes()->create([
+            'fundo_id' => $this->fundoSofia->id,
+            'envio_id' => $envio->id,
+            'lote_id' => $this->loteSofia->id,
+            'fecha_produccion' => '2026-10-08',
+            'motivo' => 'Campo',
+            'tipo_descarte' => 'Racimos',
+            'precio' => 1.50,
+            'kilogramos' => 100.00,
+            'valor_venta' => 150.00,
+            'cliente' => 'Cliente Historico SAC',
+            'placa' => 'ABC-123',
+            'conductor' => 'Juan Perez',
+            'viaje' => 9,
+            'estado_registro' => 'oficial',
+            'created_by' => $this->individualUser->id,
+        ]);
+
+        $this->actingAs($this->individualUser)
+            ->put(route('ventas.update', $venta), [
+                'fundo_id' => $this->fundoSofia->id,
+                'lote_id' => $this->loteSofia->id,
+                'fecha_produccion' => '2026-10-08',
+                'motivo' => 'Campo',
+                'tipo_descarte' => 'Racimos',
+                'precio' => 2.00,
+                'kilogramos' => 120.00,
+                'cliente' => 'Cliente Historico SAC',
+                'placa' => 'ABC-123',
+                'conductor' => 'Juan Perez',
+                'viaje' => 9,
+            ])
+            ->assertRedirect(route('ventas.index'));
+
+        $this->assertSame(120.0, (float) $venta->fresh()->kilogramos);
     }
 
     public function test_cuartel_is_mandatory_when_motivo_is_cosecha_nacional(): void
@@ -412,7 +630,7 @@ class VentaDescarteTest extends TestCase
             'precio' => 1.50,
             'kilogramos' => 100.00,
             'cliente' => 'Agroexport del Norte SAC',
-            'ruc' => '20555666777',
+            'ruc' => '20100070970',
         ];
 
         // 1. Guardar primera venta con nuevo cliente
@@ -423,11 +641,11 @@ class VentaDescarteTest extends TestCase
         $this->assertEquals(1, Cliente::count());
         $cliente = Cliente::where('nombre', 'Agroexport del Norte SAC')->first();
         $this->assertNotNull($cliente);
-        $this->assertEquals('20555666777', $cliente->ruc);
+        $this->assertEquals('20100070970', $cliente->ruc);
 
         // 2. Guardar segunda venta con el mismo cliente pero actualizando RUC
         $payload2 = array_merge($payload1, [
-            'ruc' => '20999888111',
+            'ruc' => '20600055551',
             'kilogramos' => 80.00,
         ]);
 
@@ -438,7 +656,7 @@ class VentaDescarteTest extends TestCase
         // No debe duplicar el cliente, debe mantener 1 registro y actualizar su RUC
         $this->assertEquals(1, Cliente::count());
         $clienteActualizado = Cliente::where('nombre', 'Agroexport del Norte SAC')->first();
-        $this->assertEquals('20999888111', $clienteActualizado->ruc);
+        $this->assertEquals('20600055551', $clienteActualizado->ruc);
     }
 
     public function test_ventas_create_and_edit_pass_clientes_to_view(): void

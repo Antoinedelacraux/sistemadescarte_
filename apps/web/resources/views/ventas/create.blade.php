@@ -224,7 +224,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!formVenta) return;
 
     formVenta.addEventListener('submit', async function(e) {
+        if (e.defaultPrevented) return;
         e.preventDefault();
+
+        var modoGuardado = e.submitter?.value || 'borrador';
 
         // 1. Obtención y validación de campos obligatorios
         var fundoId = document.getElementById('fundo_id')?.value;
@@ -272,12 +275,25 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        var btnSubmit = document.getElementById('btn-submit');
-        var originalBtnText = btnSubmit ? btnSubmit.textContent : 'Guardar registro';
-        if (btnSubmit) {
-            btnSubmit.disabled = true;
-            btnSubmit.textContent = 'Guardando registro...';
+        if (modoGuardado === 'registro') {
+            var requeridosGarita = [
+                ['cliente', 'cliente'], ['jabas', 'cantidad de jabas'], ['placa', 'placa'],
+                ['conductor', 'nombre del conductor'], ['viaje', 'número de viaje']
+            ];
+            var faltantes = requeridosGarita.filter(function(item) {
+                var campo = document.getElementById(item[0]);
+                return !campo || !campo.value || campo.value.trim() === '' || (item[0] === 'jabas' && Number(campo.value) <= 0);
+            }).map(function(item) { return item[1]; });
+            if (faltantes.length) {
+                window.FundoOffline.showToast('Para guardar el registro completo falta: ' + faltantes.join(', ') + '.', 'danger');
+                return;
+            }
         }
+
+        var botonesGuardar = Array.from(formVenta.querySelectorAll('button[name="modo_guardado"]'));
+        var textosOriginales = botonesGuardar.map(function(btn) { return btn.textContent; });
+        botonesGuardar.forEach(function(btn) { btn.disabled = true; });
+        if (e.submitter) e.submitter.textContent = modoGuardado === 'registro' ? 'Guardando registro...' : 'Guardando borrador...';
 
         // 2. Construir objeto de datos con UUID v4 permanente
         var saleUuid = window.FundoOffline.generateUUID();
@@ -286,6 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.forEach(function(val, key) {
             payload[key] = val;
         });
+        payload.modo_guardado = modoGuardado;
 
         // Asegurar que campos vacíos no viajen como strings vacíos que rompan validaciones
         if (!payload.cuartel_id) payload.cuartel_id = null;
@@ -349,6 +366,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 var el = document.getElementById(fieldId);
                 if (el) el.value = '';
             });
+            avisarPesoJabas();
+            actualizarContadorObservacion();
             if (window.resetClienteState) {
                 window.resetClienteState();
             }
@@ -367,10 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 kgInput.focus();
             }
 
-            if (btnSubmit) {
-                btnSubmit.disabled = false;
-                btnSubmit.textContent = originalBtnText;
-            }
+            botonesGuardar.forEach(function(btn, index) { btn.disabled = false; btn.textContent = textosOriginales[index]; });
         }
 
         // 3. Caso: Sin conexión a internet (Modo Cuartel / Campo Desconectado)
@@ -399,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (res.status === 201 || res.status === 200) {
                 if (navigator.vibrate) navigator.vibrate(80);
-                window.FundoOffline.showToast('Venta registrada y sincronizada correctamente en el servidor.', 'success', 4000, '¡Venta Registrada!');
+                window.FundoOffline.showToast(modoGuardado === 'registro' ? 'Registro completo guardado y sincronizado.' : 'Borrador guardado y sincronizado.', 'success', 4000, 'Registro guardado');
                 prepararSiguientePesaje();
             } else if (res.status === 422) {
                 var errorData = await res.json();
@@ -410,10 +426,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     msg += errorData.message;
                 }
                 window.FundoOffline.showToast(msg, 'danger', 6000, 'Error de Validación');
-                if (btnSubmit) {
-                    btnSubmit.disabled = false;
-                    btnSubmit.textContent = originalBtnText;
-                }
+                botonesGuardar.forEach(function(btn, index) { btn.disabled = false; btn.textContent = textosOriginales[index]; });
             } else {
                 throw new Error('Servidor retornó estado ' + res.status);
             }

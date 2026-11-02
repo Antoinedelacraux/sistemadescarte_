@@ -117,6 +117,27 @@ class VentaEdicion24HorasTest extends TestCase
         $this->assertEquals(120.00, (float) $venta->fresh()->kilogramos);
     }
 
+    public function test_nuevo_borrador_se_puede_editar_sin_vencimiento_y_historico_conserva_limite(): void
+    {
+        $this->actingAs($this->registradorUser)->postJson(route('ventas.store'), [
+            'fundo_id' => $this->fundo->id, 'lote_id' => $this->lote->id,
+            'fecha_produccion' => now()->toDateString(), 'motivo' => 'Campo',
+            'tipo_descarte' => 'Granos', 'precio' => 2, 'kilogramos' => 100,
+            'placa' => 'abc-123',
+        ])->assertCreated();
+
+        $nuevo = VentaDescarte::withoutGlobalScopes()->where('placa', 'ABC-123')->firstOrFail();
+        $nuevo->created_at = now()->subDays(3);
+        $nuevo->saveQuietly();
+        $this->assertTrue($nuevo->fresh()->tieneBorradorSinVencimiento());
+        $this->assertTrue($nuevo->fresh()->puedeSerEditadoPor($this->registradorUser));
+        $this->actingAs($this->registradorUser)->get(route('ventas.edit', $nuevo))->assertOk()->assertDontSee('timer-edit-live');
+
+        $historico = $this->crearVentaConAntiguedad(72);
+        $this->assertFalse($historico->tieneBorradorSinVencimiento());
+        $this->assertFalse($historico->puedeSerEditadoPor($this->registradorUser));
+    }
+
     public function test_registrador_no_puede_editar_venta_despues_de_las_24_horas(): void
     {
         $venta = $this->crearVentaConAntiguedad(25);

@@ -146,6 +146,30 @@ class ExportarExcelCompletoTest extends TestCase
         $this->assertStringNotContainsString('TOTAL GENERAL', $sheetXml);
     }
 
+    public function test_ventas_excel_incluye_fecha_y_hora_de_validacion_garita(): void
+    {
+        $fechaValidacion = now()->setDate(2026, 10, 31)->setTime(10, 6);
+        $venta = VentaDescarte::first();
+        $venta->update([
+            'estado_garita' => 'validado',
+            'salida_garita_at' => $fechaValidacion,
+        ]);
+
+        $response = $this->actingAs($this->adminUser)->get(route('ventas.exportar'));
+        $response->assertOk();
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'xlsx_garita_');
+        file_put_contents($tmpFile, $response->getContent());
+        $zip = new \ZipArchive();
+        $this->assertTrue($zip->open($tmpFile) === true);
+        $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $zip->close();
+        @unlink($tmpFile);
+
+        $this->assertStringContainsString('FECHA Y HORA VALIDACIÓN GARITA', $sheetXml);
+        $this->assertStringContainsString($fechaValidacion->format('d/m/Y H:i'), $sheetXml);
+    }
+
     public function test_dashboard_exportar_clientes_xlsx(): void
     {
         $response = $this->actingAs($this->adminUser)->get(route('dashboard.exportar', [

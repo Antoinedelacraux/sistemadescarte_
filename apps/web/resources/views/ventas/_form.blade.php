@@ -39,6 +39,7 @@
             name="fecha_produccion"
             class="form-control"
             value="{{ old('fecha_produccion', $isEdit && $venta->fecha_produccion ? $venta->fecha_produccion->format('Y-m-d') : date('Y-m-d')) }}"
+            max="{{ date('Y-m-d') }}"
             required
         >
     </div>
@@ -167,16 +168,20 @@
     </div>
 </div>
 
-{{-- 4. CAMPOS COMPLEMENTARIOS (OPCIONALES) --}}
+{{-- 4. DATOS DE CLIENTE Y TRANSPORTE --}}
 <details class="optional-details" {{ $isEdit ? 'open' : '' }}>
     <summary>
-        Datos de Trazabilidad, Cliente y Transporte (Opcional)
+        Datos de Cliente y Transporte
     </summary>
+
+    <p class="form-hint" style="margin-top: 0.75rem;">
+        Guarda como borrador si aún falta información. Guardar registro exige los datos requeridos para Garita, pero no lo envía todavía.
+    </p>
 
     <div class="form-grid-2" style="margin-top: 1rem;">
         <div class="form-group" style="position: relative;">
             <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem;">
-                <label for="cliente" class="form-label" style="margin-bottom: 0;">Cliente / Razón Social</label>
+                <label for="cliente" class="form-label" style="margin-bottom: 0;">Cliente / Razón Social <small class="text-muted">(Requerido para Garita)</small></label>
                 <span id="cliente_guardado_badge" style="font-size: 0.72rem; color: #16a34a; display: none; font-weight: 600; background: #dcfce7; padding: 2px 8px; border-radius: 9999px;">
                     ✓ Registrado
                 </span>
@@ -198,54 +203,60 @@
             </small>
         </div>
         <div class="form-group">
-            <label for="ruc" class="form-label">RUC del Cliente</label>
-            <input type="text" name="ruc" id="ruc" class="form-control" placeholder="Ej. 20123456789" maxlength="20" value="{{ old('ruc', $venta?->ruc) }}">
+            <label for="ruc" class="form-label">RUC del Cliente <small class="text-muted">(Opcional)</small></label>
+            <input type="text" name="ruc" id="ruc" class="form-control" placeholder="Ej. 20123456789" inputmode="numeric" pattern="[0-9]{11}" maxlength="11" value="{{ old('ruc', $venta?->ruc) }}">
         </div>
     </div>
 
     <div class="form-grid-2">
         <div class="form-group">
-            <label for="jabas" class="form-label">Cantidad de Jabas</label>
-            <input type="number" name="jabas" id="jabas" class="form-control" placeholder="Ej. 50" min="0" value="{{ old('jabas', $venta?->jabas) }}">
+            <label for="jabas" class="form-label">Cantidad de Jabas <small class="text-muted">(Requerido para Garita)</small></label>
+            <input type="number" name="jabas" id="jabas" class="form-control" placeholder="Ej. 50" min="0" value="{{ old('jabas', $venta?->jabas) }}" oninput="avisarPesoJabas()">
         </div>
         <div class="form-group">
-            <label for="peso_jaba" class="form-label">Peso Promedio por Jaba (kg)</label>
-            <input type="number" step="0.01" name="peso_jaba" id="peso_jaba" class="form-control" placeholder="Ej. 18.50" min="0" value="{{ old('peso_jaba', $venta?->peso_jaba) }}">
+            <label for="peso_jaba" class="form-label">Peso Promedio por Jaba (kg) <small class="text-muted">(Opcional)</small></label>
+            <input type="number" step="0.01" name="peso_jaba" id="peso_jaba" class="form-control" placeholder="Ej. 18.50" min="0" value="{{ old('peso_jaba', $venta?->peso_jaba) }}" oninput="avisarPesoJabas()">
         </div>
     </div>
 
     <div class="form-grid-2">
         <div class="form-group">
-            <label for="placa" class="form-label">Placa del Vehículo</label>
-            <input type="text" name="placa" id="placa" class="form-control" placeholder="Ej. ABC-123" value="{{ old('placa', $venta?->placa) }}">
+            <label for="placa" class="form-label">Placa del Vehículo <small class="text-muted">(Requerido para Garita)</small></label>
+            <input type="text" name="placa" id="placa" class="form-control" placeholder="Ej. ABC-123" value="{{ old('placa', $venta?->placa) }}" oninput="this.value = this.value.toUpperCase()">
         </div>
         <div class="form-group">
-            <label for="conductor" class="form-label">Nombre del Conductor</label>
+            <label for="conductor" class="form-label">Nombre del Conductor <small class="text-muted">(Requerido para Garita)</small></label>
             <input type="text" name="conductor" id="conductor" class="form-control" placeholder="Ej. Juan Pérez" value="{{ old('conductor', $venta?->conductor) }}">
         </div>
     </div>
 
     <div class="form-grid-2">
         <div class="form-group">
-            <label for="brevete" class="form-label">Número de Brevete</label>
+            <label for="brevete" class="form-label">Número de Brevete <small class="text-muted">(Opcional)</small></label>
             <input type="text" name="brevete" id="brevete" class="form-control" placeholder="Ej. Q12345678" value="{{ old('brevete', $venta?->brevete) }}">
         </div>
         <div class="form-group">
-            <label for="viaje" class="form-label">Número de Viaje</label>
-            <input type="text" name="viaje" id="viaje" class="form-control" placeholder="Ej. Viaje 1" value="{{ old('viaje', $venta?->viaje) }}">
+            <label for="viaje" class="form-label">Número de Viaje <small class="text-muted">(Requerido para Garita)</small></label>
+            <input type="number" name="viaje" id="viaje" class="form-control" placeholder="Ej. 1" min="1" step="1" inputmode="numeric" value="{{ old('viaje', $venta?->viaje) }}">
         </div>
     </div>
 
     <div class="form-group">
-        <label for="observacion" class="form-label">Observaciones</label>
-        <textarea name="observacion" id="observacion" rows="2" class="form-control" placeholder="Anotaciones adicionales del pesaje o lote...">{{ old('observacion', $venta?->observacion) }}</textarea>
+        <label for="observacion" class="form-label">Observaciones <small class="text-muted">(Opcional)</small></label>
+        <textarea name="observacion" id="observacion" rows="2" maxlength="1000" class="form-control" placeholder="Anotaciones adicionales del pesaje o lote..." oninput="actualizarContadorObservacion()">{{ old('observacion', $venta?->observacion) }}</textarea>
+        <small id="contador-observacion" class="form-hint"></small>
     </div>
 </details>
 
 {{-- BOTÓN SUBMIT --}}
-<div style="margin-top: 1.75rem;">
-    <button type="submit" class="btn-submit-sale" id="btn-submit">
-        {{ $isEdit ? 'Guardar Cambios de la Venta' : 'Guardar registro' }}
+<div style="margin-top: 1.75rem; display:flex; gap:0.75rem; flex-wrap:wrap;">
+    @if(!$isEdit || $venta?->isBorradorRegistro())
+        <button type="submit" class="btn btn-secondary" name="modo_guardado" value="borrador" id="btn-guardar-borrador">
+            {{ $isEdit ? 'Guardar cambios como borrador' : 'Guardar borrador' }}
+        </button>
+    @endif
+    <button type="submit" class="btn-submit-sale" name="modo_guardado" value="registro" id="btn-guardar-registro">
+        {{ $isEdit && $venta?->isRegistroOficial() ? 'Guardar cambios' : ($isEdit ? 'Convertir en registro oficial' : 'Guardar registro oficial') }}
     </button>
 </div>
 
@@ -259,7 +270,40 @@ function calcularTotal() {
     var precio = parseFloat(document.getElementById('precio').value) || 0;
     var total = kg * precio;
     document.getElementById('total-display').textContent = 'S/ ' + total.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    avisarPesoJabas();
 }
+
+function avisarPesoJabas() {
+    // La advertencia se muestra al guardar, cuando el usuario ya terminó de ingresar los valores.
+}
+
+function diferenciaPesoJabas() {
+    var jabas = Number(document.getElementById('jabas')?.value);
+    var peso = Number(document.getElementById('peso_jaba')?.value);
+    var kilos = Number(document.getElementById('kilogramos')?.value);
+    if (jabas > 0 && peso > 0 && kilos > 0 && Math.abs(jabas * peso - kilos) > 0.01) {
+        return { esperado: jabas * peso, registrado: kilos };
+    }
+    return null;
+}
+
+function actualizarContadorObservacion() {
+    var campo = document.getElementById('observacion');
+    var contador = document.getElementById('contador-observacion');
+    if (campo && contador) contador.textContent = campo.value.length + ' / 1000 caracteres';
+}
+document.addEventListener('DOMContentLoaded', function () {
+    actualizarContadorObservacion();
+    var formulario = document.getElementById('form-venta');
+    if (formulario) {
+        formulario.addEventListener('submit', function (event) {
+            var diferencia = diferenciaPesoJabas();
+            if (diferencia && !window.confirm('Revisa el peso antes de guardar.\n\nJabas × peso promedio: ' + diferencia.esperado.toFixed(2) + ' kg\nPeso registrado: ' + diferencia.registrado.toFixed(2) + ' kg\n\n¿Deseas continuar?')) {
+                event.preventDefault();
+            }
+        });
+    }
+});
 
 function actualizarOpcionesTipoDescarte() {
     var motivo = document.getElementById('motivo').value;

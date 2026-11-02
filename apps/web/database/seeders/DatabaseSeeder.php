@@ -43,6 +43,11 @@ class DatabaseSeeder extends Seeder
             ['display_name' => 'Ventas', 'description' => 'Visualización de información de todos los fundos (Historial)']
         );
 
+        $roleGarita = Role::firstOrCreate(
+            ['name' => Role::GARITA],
+            ['display_name' => 'Garita', 'description' => 'Control y confirmación de salida de camiones en garita de control']
+        );
+
         // 2. Fundos Reales del Sistema
         $fundoAgritac = Fundo::firstOrCreate(
             ['code' => 'AGRITAC'],
@@ -98,6 +103,13 @@ class DatabaseSeeder extends Seeder
                 ['email' => 'ventas@fundo.test'],
                 ['name' => 'Ventas Comercial', 'password' => $defaultPassword, 'role_id' => $roleVentas->id, 'is_active' => true]
             );
+
+            // Cuenta Garita
+            $garita = User::firstOrCreate(
+                ['email' => 'garita@fundo.test'],
+                ['name' => 'Control de Garita', 'password' => $defaultPassword, 'role_id' => $roleGarita->id, 'is_active' => true]
+            );
+            $garita->fundos()->syncWithoutDetaching([$fundoAgritac->id, $fundoProcom->id]);
         }
 
         // 4. Catálogos: Lotes exactos por Fundo

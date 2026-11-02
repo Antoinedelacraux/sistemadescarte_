@@ -20,6 +20,7 @@ class VentaDescarte extends Model
     protected $fillable = [
         'id',
         'fundo_id',
+        'envio_id',
         'lote_id',
         'cuartel_id',
         'cuartel_manual',
@@ -37,10 +38,18 @@ class VentaDescarte extends Model
         'placa',
         'conductor',
         'viaje',
+        'borrador_sin_vencimiento',
         'observacion',
         'created_by',
         'updated_by',
         'estado',
+        'estado_registro',
+        'estado_garita',
+        'enviado_garita_at',
+        'enviado_garita_by',
+        'salida_garita_at',
+        'salida_garita_by',
+        'observacion_garita',
         'anulado_at',
         'anulado_by',
         'motivo_anulacion',
@@ -55,7 +64,10 @@ class VentaDescarte extends Model
             'valor_venta' => 'decimal:2',
             'jabas' => 'integer',
             'peso_jaba' => 'decimal:2',
+            'borrador_sin_vencimiento' => 'boolean',
             'anulado_at' => 'datetime',
+            'enviado_garita_at' => 'datetime',
+            'salida_garita_at' => 'datetime',
         ];
     }
 
@@ -70,12 +82,20 @@ class VentaDescarte extends Model
             if (empty($model->estado)) {
                 $model->estado = 'activo';
             }
+            if (empty($model->estado_garita)) {
+                $model->estado_garita = 'borrador';
+            }
         });
     }
 
     public function fundo(): BelongsTo
     {
         return $this->belongsTo(Fundo::class);
+    }
+
+    public function envio(): BelongsTo
+    {
+        return $this->belongsTo(Envio::class, 'envio_id');
     }
 
     public function lote(): BelongsTo
@@ -101,6 +121,56 @@ class VentaDescarte extends Model
     public function anulador(): BelongsTo
     {
         return $this->belongsTo(User::class, 'anulado_by');
+    }
+
+    public function enviadoGaritaPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'enviado_garita_by');
+    }
+
+    public function salidaGaritaPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'salida_garita_by');
+    }
+
+    public function isPendienteGarita(): bool
+    {
+        return ($this->estado_garita ?? 'borrador') === 'pendiente';
+    }
+
+    public function isValidadoGarita(): bool
+    {
+        return ($this->estado_garita ?? 'borrador') === 'validado';
+    }
+
+    public function isBorradorGarita(): bool
+    {
+        return in_array($this->estado_garita ?? 'borrador', ['borrador', null], true);
+    }
+
+    public function isBorradorRegistro(): bool
+    {
+        return ($this->estado_registro ?? 'oficial') === 'borrador';
+    }
+
+    public function isRegistroOficial(): bool
+    {
+        return !$this->isBorradorRegistro();
+    }
+
+    public function tieneBorradorSinVencimiento(): bool
+    {
+        return (bool) $this->borrador_sin_vencimiento && $this->isBorradorGarita();
+    }
+
+    public function scopePendientesGarita($query)
+    {
+        return $query->where('estado_garita', 'pendiente');
+    }
+
+    public function scopeValidadosGarita($query)
+    {
+        return $query->where('estado_garita', 'validado');
     }
 
     public function isActivo(): bool
@@ -172,6 +242,10 @@ class VentaDescarte extends Model
      */
     public function puedeSerEditadoPor(?User $user): bool
     {
+        if ($this->isValidadoGarita() || $this->isPendienteGarita()) {
+            return false;
+        }
+
         if (!$user || !$this->isActivo()) {
             return false;
         }
@@ -186,8 +260,12 @@ class VentaDescarte extends Model
             return false;
         }
 
-        // Para registradores: solo dentro de las primeras 24 horas
-        return !$this->isCerradoParaEdicion();
+        // Para registradores: solo dentro de las primeras 24 horas y mientras no haya sido validado por Garita ni esté pendiente
+        if ($this->isValidadoGarita() || $this->isPendienteGarita()) {
+            return false;
+        }
+
+        return $this->isBorradorRegistro() || $this->tieneBorradorSinVencimiento() || !$this->isCerradoParaEdicion();
     }
 
     /**
@@ -196,7 +274,7 @@ class VentaDescarte extends Model
      * Reglas de negocio:
      * 1. Solo registros activos pueden anularse.
      * 2. Administrador: puede anular en cualquier momento.
-     * 3. Registrador: solo dentro de las primeras 24 horas.
+     * 3. Registrador: solo dentro de las primeras 24 horas y mientras no haya sido validado por Garita.
      */
     public function puedeSerAnuladoPor(?User $user): bool
     {
@@ -212,6 +290,80 @@ class VentaDescarte extends Model
             return false;
         }
 
-        return !$this->isCerradoParaEdicion();
+        if ($this->isValidadoGarita() || $this->isPendienteGarita()) {
+            return false;
+        }
+
+        return $this->isBorradorRegistro() || !$this->isCerradoParaEdicion();
+    }
+
+    /**
+     * Determina si el registrador o admin puede enviar el registro a Garita.
+     */
+    public function puedeEnviarAGarita(?User $user): bool
+    {
+        if (!$user || !$this->isActivo()) {
+            return false;
+        }
+
+        if (!$user->isAdmin() && !$user->canAccessModule('registro')) {
+            return false;
+        }
+
+        return $this->isRegistroOficial() && $this->isBorradorGarita();
+    }
+
+    /** Campos necesarios para que Garita pueda identificar y verificar un envío. */
+    public function camposFaltantesGarita(): array
+    {
+        $faltantes = [];
+        foreach (['cliente' => 'cliente', 'conductor' => 'conductor', 'placa' => 'placa', 'viaje' => 'número de viaje'] as $campo => $etiqueta) {
+            if (trim((string) $this->{$campo}) === '') {
+                $faltantes[] = $etiqueta;
+            }
+        }
+        if (trim((string) $this->cliente) !== '' && !preg_match('/\p{L}/u', (string) $this->cliente)) {
+            $faltantes[] = 'cliente válido';
+        }
+        if (trim((string) $this->conductor) !== '' && !preg_match("/^\\p{L}+(?:[ .'-]+\\p{L}+)+$/u", (string) $this->conductor)) {
+            $faltantes[] = 'conductor con nombre y apellido válidos';
+        }
+        if (trim((string) $this->viaje) !== '' && (!ctype_digit((string) $this->viaje) || (int) $this->viaje < 1)) {
+            $faltantes[] = 'número de viaje válido';
+        }
+        if (trim((string) $this->ruc) !== '' && !preg_match('/^\d{11}$/', (string) $this->ruc)) {
+            $faltantes[] = 'RUC de 11 dígitos';
+        }
+        if ($this->jabas === null || $this->jabas <= 0) {
+            $faltantes[] = 'cantidad de jabas mayor que cero';
+        }
+        if ($this->kilogramos === null || $this->kilogramos <= 0) {
+            $faltantes[] = 'kilogramos mayores que cero';
+        }
+        if (!$this->fundo_id || !$this->lote_id || !$this->fecha_produccion) {
+            $faltantes[] = 'fundo, lote y fecha de producción';
+        }
+        if ($this->fecha_produccion && $this->fecha_produccion->isFuture()) {
+            $faltantes[] = 'fecha de producción no futura';
+        }
+
+        return $faltantes;
+    }
+
+    /**
+     * Determina si se puede cancelar el envío a Garita para retornar a borrador y permitir edición.
+     */
+    public function puedeCancelarEnvioGarita(?User $user): bool
+    {
+        if (!$user || !$this->isActivo()) {
+            return false;
+        }
+
+        if (!$user->isAdmin() && !$user->canAccessModule('registro')) {
+            return false;
+        }
+
+        // Solo se puede cancelar si está pendiente y todavía NO ha sido validado en Garita
+        return $this->isPendienteGarita();
     }
 }

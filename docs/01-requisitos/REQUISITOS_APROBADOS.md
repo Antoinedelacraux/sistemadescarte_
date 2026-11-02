@@ -11,6 +11,8 @@ Sistema web para la gestión agrícola integral enfocada en el registro de pesaj
 - **Individual:** Operador de campo que registra ventas exclusivamente en su fundo asignado.
 - **Analista:** Acceso transversal de solo lectura a todos los fundos para reportería y exportación a Excel.
 
+- **Garita:** Acceso al control y al historial de salidas de los fundos asignados; sin asignaciones, no tiene acceso a envíos.
+
 ## 3. Módulos y Reglas de Negocio Aprobadas
 1. **Multi-tenancy (`FundoScope`):**
    - Filtrado automático por política de acceso a nivel de ORM Eloquent.
@@ -37,6 +39,10 @@ Sistema web para la gestión agrícola integral enfocada en el registro de pesaj
 7. **Administración:**
    - Registro de nuevas sedes agrícolas y conmutación de estado activo/inactivo.
    - Creación de usuarios con roles y asignación multi-fundo.
+8. **Control de Garita:**
+   - Pendientes y validados consultables en Salidas; historial de validaciones en tabla.
+   - Filtros de fecha de producción, fundo asignado, viaje por fecha, conductor y cliente, conservando los totales completos del envío.
+   - La confirmación se limita a registros de los fundos asignados al usuario.
 
 ## 4. Historial de Aprobaciones
 - **2026-10-08:** Aprobado documento de requisitos original y resolución de preguntas abiertas (`PREGUNTAS_ABIERTAS.md`).

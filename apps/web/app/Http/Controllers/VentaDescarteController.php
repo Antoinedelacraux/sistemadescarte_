@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use App\Models\Cuartel;
+use App\Models\Envio;
 use App\Models\Fundo;
 use App\Models\Lote;
 use App\Models\VentaDescarte;
@@ -12,7 +13,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class VentaDescarteController extends Controller
@@ -27,7 +31,7 @@ class VentaDescarteController extends Controller
 
         $user = Auth::user();
 
-        $query = VentaDescarte::with(['fundo', 'lote', 'cuartel', 'creator', 'updater', 'anulador'])
+        $query = VentaDescarte::with(['fundo', 'lote', 'cuartel', 'envio', 'creator', 'updater', 'anulador'])
             ->latest('fecha_produccion');
 
         // Filtro por Estado (activo, anulado, o todos)
@@ -37,6 +41,14 @@ class VentaDescarteController extends Controller
             } elseif ($request->input('estado') === 'anulado') {
                 $query->anulados();
             }
+        }
+
+        // Filtro por Estado Garita
+        if ($request->filled('estado_garita')) {
+            $query->where('estado_garita', $request->input('estado_garita'));
+        }
+        if ($request->filled('estado_registro')) {
+            $query->where('estado_registro', $request->input('estado_registro'));
         }
 
         // Filtro por Fundo
@@ -73,6 +85,7 @@ class VentaDescarteController extends Controller
 
         $headers = [
             'FUNDO',
+            'CÓDIGO DEL ENVÍO',
             'FECHA PRODUCCIÓN',
             'CLIENTE / RAZÓN SOCIAL',
             'RUC',
@@ -93,30 +106,33 @@ class VentaDescarteController extends Controller
             'OBSERVACIONES',
             'REGISTRADO POR',
             'FECHA Y HORA REGISTRO',
+            'FECHA Y HORA VALIDACIÓN GARITA',
         ];
 
         $columnTypes = [
             0 => 'string',   // FUNDO: AGRITAC, PROCOM, EL NEGRO (sin paréntesis)
-            1 => 'date',     // FECHA
-            2 => 'string',   // CLIENTE
-            3 => 'string',   // RUC (tratado como texto explícito sin separador ni exponencial)
-            4 => 'string',   // LOTE
-            5 => 'string',   // CUARTEL
-            6 => 'string',   // MOTIVO
-            7 => 'string',   // TIPO DESCARTE
-            8 => 'decimal',  // KILOS
-            9 => 'decimal',  // PRECIO
-            10 => 'decimal', // TOTAL
-            11 => 'integer', // JABAS
-            12 => 'decimal', // PESO JABA
-            13 => 'string',  // PLACA
-            14 => 'string',  // CONDUCTOR
-            15 => 'string',  // BREVETE
-            16 => 'string',  // VIAJE
-            17 => 'string',  // ESTADO
-            18 => 'string',  // OBSERVACIONES
-            19 => 'string',  // REGISTRADO POR
-            20 => 'date',    // FECHA REGISTRO
+            1 => 'string',   // CÓDIGO DEL ENVÍO
+            2 => 'date',     // FECHA
+            3 => 'string',   // CLIENTE
+            4 => 'string',   // RUC
+            5 => 'string',   // LOTE
+            6 => 'string',   // CUARTEL
+            7 => 'string',   // MOTIVO
+            8 => 'string',   // TIPO DESCARTE
+            9 => 'decimal',  // KILOS
+            10 => 'decimal', // PRECIO
+            11 => 'decimal', // TOTAL
+            12 => 'integer', // JABAS
+            13 => 'decimal', // PESO JABA
+            14 => 'string',  // PLACA
+            15 => 'string',  // CONDUCTOR
+            16 => 'string',  // BREVETE
+            17 => 'string',  // VIAJE
+            18 => 'string',  // ESTADO
+            19 => 'string',  // OBSERVACIONES
+            20 => 'string',  // REGISTRADO POR
+            21 => 'date',    // FECHA REGISTRO
+            22 => 'date',    // FECHA Y HORA VALIDACION GARITA
         ];
 
         $dataRows = [];
@@ -125,6 +141,7 @@ class VentaDescarteController extends Controller
             $fundoNombre = $v->fundo?->nombre_corto ?? $v->fundo?->name ?? 'N/A';
             $dataRows[] = [
                 $fundoNombre,
+                $v->envio?->codigo ?? '',
                 $v->fecha_produccion ? $v->fecha_produccion->format('d/m/Y') : '',
                 $v->cliente ?: 'Venta General',
                 (string) ($v->ruc ?: ''),
@@ -145,6 +162,7 @@ class VentaDescarteController extends Controller
                 (string) ($v->observacion ?? ''),
                 $v->creator?->name ?? 'Sistema',
                 $v->created_at ? $v->created_at->format('d/m/Y H:i') : '',
+                $v->salida_garita_at ? $v->salida_garita_at->format('d/m/Y H:i') : '',
             ];
         });
 
@@ -168,7 +186,7 @@ class VentaDescarteController extends Controller
     {
         $user = Auth::user();
 
-        $query = VentaDescarte::with(['fundo', 'lote', 'cuartel', 'creator', 'updater', 'anulador'])
+        $query = VentaDescarte::with(['fundo', 'lote', 'cuartel', 'envio', 'creator', 'updater', 'anulador'])
             ->latest('fecha_produccion');
 
         // Filtro por Estado (activo, anulado, o todos)
@@ -178,6 +196,14 @@ class VentaDescarteController extends Controller
             } elseif ($request->input('estado') === 'anulado') {
                 $query->anulados();
             }
+        }
+
+        // Filtro por Estado Garita
+        if ($request->filled('estado_garita')) {
+            $query->where('estado_garita', $request->input('estado_garita'));
+        }
+        if ($request->filled('estado_registro')) {
+            $query->where('estado_registro', $request->input('estado_registro'));
         }
 
         // Filtro por Fundo (si tiene permisos)
@@ -218,7 +244,7 @@ class VentaDescarteController extends Controller
      */
     public function show(VentaDescarte $venta): View
     {
-        $venta->load(['fundo', 'lote', 'cuartel', 'creator', 'updater', 'anulador']);
+        $venta->load(['fundo', 'lote', 'cuartel', 'envio', 'creator', 'updater', 'anulador']);
         return view('ventas.show', compact('venta'));
     }
 
@@ -247,6 +273,7 @@ class VentaDescarteController extends Controller
     {
         $user = Auth::user();
         $this->normalizarCuartelInput($request);
+        $this->normalizarDatosTrazabilidad($request);
 
         $fundosAccesibles = $user->hasAccessToAllFundos()
             ? Fundo::pluck('id')->toArray()
@@ -256,6 +283,8 @@ class VentaDescarteController extends Controller
             $this->getVentaValidationRules($request, $fundosAccesibles, true),
             $this->getVentaValidationMessages()
         );
+        $modoGuardado = $validated['modo_guardado'] ?? 'borrador';
+        unset($validated['modo_guardado']);
 
         $validated['valor_venta'] = round((float) $validated['precio'] * (float) $validated['kilogramos'], 2);
         $cuartelNombre = trim((string) ($request->input('cuartel_manual') ?? ''));
@@ -263,13 +292,20 @@ class VentaDescarteController extends Controller
         $validated['cuartel_id'] = null;
         $validated['created_by'] = $user->id;
 
-        $this->syncClienteCatalogo($validated['cliente'] ?? null, $validated['ruc'] ?? null);
-
         // Idempotencia: Si viene con UUID desde la cola offline del cliente, usamos firstOrCreate con captura de colisiones
         try {
-            $venta = !empty($validated['id'])
-                ? VentaDescarte::withoutGlobalScopes()->firstOrCreate(['id' => $validated['id']], $validated)
-                : VentaDescarte::create($validated);
+            $venta = DB::transaction(function () use (&$validated, $modoGuardado) {
+                $validated['envio_id'] = $this->sincronizarEnvio($validated);
+                $validated['estado_registro'] = $modoGuardado === 'registro' ? 'oficial' : 'borrador';
+                if (Schema::hasColumn('ventas_descarte', 'borrador_sin_vencimiento')) {
+                    $validated['borrador_sin_vencimiento'] = $validated['estado_registro'] === 'borrador';
+                }
+                $this->syncClienteCatalogo($validated['cliente'] ?? null, $validated['ruc'] ?? null);
+
+                return !empty($validated['id'])
+                    ? VentaDescarte::withoutGlobalScopes()->firstOrCreate(['id' => $validated['id']], $validated)
+                    : VentaDescarte::create($validated);
+            });
         } catch (\Illuminate\Database\QueryException $e) {
             // Manejo tolerante a fallos si dos llamadas concurrentes intentaron insertar el mismo UUID
             if ($e->getCode() == 23000 || str_contains($e->getMessage(), 'Duplicate entry') || str_contains($e->getMessage(), '1062')) {
@@ -287,7 +323,9 @@ class VentaDescarteController extends Controller
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Venta de descarte registrada y sincronizada exitosamente.',
+                'message' => $modoGuardado === 'registro'
+                    ? 'Registro completo guardado y sincronizado exitosamente.'
+                    : 'Borrador guardado y sincronizado exitosamente.',
                 'data' => [
                     'id' => $venta->id,
                     'valor_venta' => $venta->valor_venta,
@@ -298,7 +336,9 @@ class VentaDescarteController extends Controller
         }
 
         return redirect()->route('ventas.index')
-            ->with('success', 'Venta de descarte registrada exitosamente.');
+            ->with('success', $modoGuardado === 'registro'
+                ? 'Registro completo guardado exitosamente.'
+                : 'Borrador guardado exitosamente.');
     }
 
     /**
@@ -342,6 +382,7 @@ class VentaDescarteController extends Controller
         }
 
         $this->normalizarCuartelInput($request);
+        $this->normalizarDatosTrazabilidad($request);
 
         $fundosAccesibles = $user->hasAccessToAllFundos()
             ? Fundo::pluck('id')->toArray()
@@ -351,6 +392,8 @@ class VentaDescarteController extends Controller
             $this->getVentaValidationRules($request, $fundosAccesibles, false),
             $this->getVentaValidationMessages()
         );
+        $modoGuardado = $validated['modo_guardado'] ?? ($venta->isRegistroOficial() ? 'registro' : 'borrador');
+        unset($validated['modo_guardado']);
 
         $validated['valor_venta'] = round((float) $validated['precio'] * (float) $validated['kilogramos'], 2);
         $cuartelNombre = trim((string) ($request->input('cuartel_manual') ?? ''));
@@ -358,12 +401,22 @@ class VentaDescarteController extends Controller
         $validated['cuartel_id'] = null;
         $validated['updated_by'] = $user->id;
 
-        $this->syncClienteCatalogo($validated['cliente'] ?? null, $validated['ruc'] ?? null);
-
-        $venta->update($validated);
+        DB::transaction(function () use (&$validated, $venta, $modoGuardado) {
+            $validated['envio_id'] = $this->sincronizarEnvio($validated, $venta->envio_id, $venta);
+            $validated['estado_registro'] = $venta->isRegistroOficial() || $modoGuardado === 'registro'
+                ? 'oficial'
+                : 'borrador';
+            if (Schema::hasColumn('ventas_descarte', 'borrador_sin_vencimiento')) {
+                $validated['borrador_sin_vencimiento'] = $validated['estado_registro'] === 'borrador';
+            }
+            $this->syncClienteCatalogo($validated['cliente'] ?? null, $validated['ruc'] ?? null);
+            $venta->update($validated);
+        });
 
         return redirect()->route('ventas.index')
-            ->with('success', 'Registro de venta actualizado correctamente.');
+            ->with('success', $modoGuardado === 'registro'
+                ? 'Registro completo actualizado correctamente.'
+                : 'Borrador actualizado correctamente.');
     }
 
     /**
@@ -379,6 +432,96 @@ class VentaDescarteController extends Controller
         }
     }
 
+    /** Normaliza texto operativo sin alterar campos vacíos de un borrador. */
+    private function normalizarDatosTrazabilidad(Request $request): void
+    {
+        $normalizados = [];
+        foreach (['cliente', 'conductor'] as $campo) {
+            if ($request->filled($campo)) {
+                $normalizados[$campo] = preg_replace('/\s+/u', ' ', trim((string) $request->input($campo)));
+            }
+        }
+        if ($request->filled('placa')) {
+            $normalizados['placa'] = mb_strtoupper(trim((string) $request->input('placa')), 'UTF-8');
+        }
+        foreach (['ruc', 'viaje', 'brevete', 'observacion'] as $campo) {
+            if ($request->filled($campo)) {
+                $normalizados[$campo] = trim((string) $request->input($campo));
+            }
+        }
+        if ($normalizados) {
+            $request->merge($normalizados);
+        }
+    }
+
+    /** Crea o reutiliza un envío explícito para que los lotes compartan una relación real. */
+    private function sincronizarEnvio(array $datos, ?string $envioActual = null, ?VentaDescarte $ventaActual = null): ?string
+    {
+        $numero = $datos['viaje'] ?? null;
+        if ($numero === null || $numero === '') {
+            return null;
+        }
+
+        $envio = Envio::withoutGlobalScopes()
+            ->where('fundo_id', $datos['fundo_id'])
+            ->whereDate('fecha_produccion', $datos['fecha_produccion'])
+            ->where('numero_viaje', (int) $numero)
+            ->first();
+
+        if ($envio && $envioActual && $envio->id !== $envioActual) {
+            throw ValidationException::withMessages(['viaje' => 'El número de viaje ya está asociado a otro envío para esa fecha y fundo.']);
+        }
+
+        if (!$envio) {
+            $fundo = Fundo::withoutGlobalScopes()->findOrFail($datos['fundo_id']);
+            $codigo = sprintf('ENV-%s-%s-%03d', date('Ymd', strtotime((string) $datos['fecha_produccion'])), $fundo->code, (int) $numero);
+            $envio = Envio::withoutGlobalScopes()->create([
+                'codigo' => $codigo,
+                'fundo_id' => $datos['fundo_id'],
+                'fecha_produccion' => $datos['fecha_produccion'],
+                'numero_viaje' => (int) $numero,
+                'cliente' => $datos['cliente'] ?? null,
+                'placa' => $datos['placa'] ?? null,
+                'conductor' => $datos['conductor'] ?? null,
+            ]);
+            return $envio->id;
+        }
+
+        $camposActualizadosEnEnvio = [];
+        foreach (['cliente', 'placa', 'conductor'] as $campo) {
+            $nuevo = trim((string) ($datos[$campo] ?? ''));
+            $actual = trim((string) ($envio->{$campo} ?? ''));
+            if ($nuevo !== '' && $actual !== '' && mb_strtolower($nuevo, 'UTF-8') !== mb_strtolower($actual, 'UTF-8') && $envio->estado_garita === 'borrador' && (!$ventaActual || mb_strtolower($nuevo, 'UTF-8') !== mb_strtolower(trim((string) ($ventaActual->{$campo} ?? '')), 'UTF-8'))) {
+                $envio->{$campo} = $nuevo;
+                $camposActualizadosEnEnvio[$campo] = $nuevo;
+                continue;
+            }
+
+            if ($nuevo !== '' && $actual !== '' && mb_strtolower($nuevo, 'UTF-8') !== mb_strtolower($actual, 'UTF-8')) {
+                // Compatibilidad con envíos históricos que ya tenían lotes inconsistentes:
+                // si el usuario conserva el valor original de este registro, no se bloquea
+                // la edición de otros campos. Una nueva discrepancia sí continúa bloqueada.
+                $original = trim((string) ($ventaActual?->{$campo} ?? ''));
+                if ($ventaActual && mb_strtolower($nuevo, 'UTF-8') === mb_strtolower($original, 'UTF-8')) {
+                    continue;
+                }
+                throw ValidationException::withMessages([$campo => "El {$campo} no coincide con el envío {$envio->codigo}. Conserva el valor del envío o actualiza todos sus lotes de forma consistente."]);
+            }
+            if ($nuevo !== '' && $actual === '') {
+                $envio->{$campo} = $nuevo;
+            }
+        }
+        $envio->save();
+
+        if ($camposActualizadosEnEnvio) {
+            VentaDescarte::withoutGlobalScopes()
+                ->where('envio_id', $envio->id)
+                ->update(array_merge($camposActualizadosEnEnvio, ['updated_at' => now()]));
+        }
+
+        return $envio->id;
+    }
+
     /**
      * Registra o actualiza el cliente en el catálogo para el autocompletado del sistema.
      */
@@ -388,10 +531,14 @@ class VentaDescarteController extends Controller
             $clienteNombre = trim($cliente);
             if ($clienteNombre !== '') {
                 $clienteRuc = !empty($ruc) ? trim($ruc) : null;
-                Cliente::updateOrCreate(
-                    ['nombre' => $clienteNombre],
-                    ['ruc' => $clienteRuc]
-                );
+                $clienteExistente = Cliente::whereRaw('LOWER(nombre) = ?', [mb_strtolower($clienteNombre, 'UTF-8')])->first();
+                if ($clienteExistente) {
+                    if ($clienteRuc && $clienteExistente->ruc !== $clienteRuc) {
+                        $clienteExistente->update(['ruc' => $clienteRuc]);
+                    }
+                    return;
+                }
+                Cliente::create(['nombre' => $clienteNombre, 'ruc' => $clienteRuc]);
             }
         }
     }
@@ -401,9 +548,11 @@ class VentaDescarteController extends Controller
      */
     private function getVentaValidationRules(Request $request, array $fundosAccesibles, bool $isCreate = false): array
     {
+        $esRegistroCompleto = $request->input('modo_guardado', 'borrador') === 'registro';
         $rules = [
+            'modo_guardado' => ['nullable', Rule::in(['borrador', 'registro'])],
             'fundo_id' => ['required', 'integer', Rule::in($fundosAccesibles)],
-            'fecha_produccion' => ['required', 'date'],
+            'fecha_produccion' => ['required', 'date', 'before_or_equal:today'],
             'motivo' => ['required', 'string', Rule::in(['Campo', 'Packing', 'Cosecha Nacional'])],
             'tipo_descarte' => [
                 'required',
@@ -430,16 +579,24 @@ class VentaDescarteController extends Controller
                 'string',
                 'max:100',
             ],
-            'precio' => ['required', 'numeric', 'min:0.01'],
-            'kilogramos' => ['required', 'numeric', 'min:0.01'],
-            'jabas' => ['nullable', 'integer', 'min:0'],
-            'peso_jaba' => ['nullable', 'numeric', 'min:0'],
+            'precio' => ['required', 'numeric', 'decimal:0,2', 'min:0.01'],
+            'kilogramos' => ['required', 'numeric', 'decimal:0,2', 'min:0.01'],
+            'jabas' => [Rule::requiredIf($esRegistroCompleto), 'nullable', 'integer', $esRegistroCompleto ? 'min:1' : 'min:0'],
+            'peso_jaba' => ['nullable', 'numeric', 'decimal:0,2', 'min:0'],
             'brevete' => ['nullable', 'string', 'max:50'],
-            'ruc' => ['nullable', 'string', 'max:20'],
-            'cliente' => ['nullable', 'string', 'max:150'],
-            'placa' => ['nullable', 'string', 'max:20'],
-            'conductor' => ['nullable', 'string', 'max:150'],
-            'viaje' => ['nullable', 'string', 'max:50'],
+            'ruc' => ['nullable', 'digits:11'],
+            'cliente' => [Rule::requiredIf($esRegistroCompleto), 'nullable', 'string', 'max:150', function ($attribute, $value, $fail) {
+                if (trim((string) $value) !== '' && !preg_match('/\p{L}/u', (string) $value)) {
+                    $fail('El cliente debe contener al menos una letra.');
+                }
+            }],
+            'placa' => [Rule::requiredIf($esRegistroCompleto), 'nullable', 'string', 'max:20'],
+            'conductor' => [Rule::requiredIf($esRegistroCompleto), 'nullable', 'string', 'max:150', function ($attribute, $value, $fail) {
+                if (trim((string) $value) !== '' && !preg_match("/^\\p{L}+(?:[ .'-]+\\p{L}+)+$/u", (string) $value)) {
+                    $fail('El conductor debe incluir al menos nombre y apellido, usando solo letras y separadores válidos.');
+                }
+            }],
+            'viaje' => [Rule::requiredIf($esRegistroCompleto), 'nullable', 'integer', 'min:1'],
             'observacion' => ['nullable', 'string', 'max:1000'],
         ];
 
@@ -464,8 +621,18 @@ class VentaDescarteController extends Controller
             'cuartel_manual.required' => 'El cuartel es obligatorio cuando el motivo es Cosecha Nacional.',
             'precio.required' => 'El precio por kilogramo es obligatorio.',
             'kilogramos.required' => 'Los kilogramos totales son obligatorios.',
+            'cliente.required' => 'El cliente es obligatorio para guardar el registro completo.',
+            'jabas.required' => 'La cantidad de jabas es obligatoria para guardar el registro completo.',
+            'placa.required' => 'La placa es obligatoria para guardar el registro completo.',
+            'conductor.required' => 'El conductor es obligatorio para guardar el registro completo.',
+            'viaje.required' => 'El número de viaje es obligatorio para guardar el registro completo.',
+            'fecha_produccion.before_or_equal' => 'La fecha de producción no puede ser futura.',
+            'ruc.digits' => 'El RUC debe tener exactamente 11 dígitos.',
+            'viaje.integer' => 'El número de viaje debe ser un número entero positivo.',
+            'viaje.min' => 'El número de viaje debe ser mayor que cero.',
         ];
     }
+
 
     /**
      * Endpoint API para obtener lotes y cuarteles al cambiar de fundo.
@@ -568,5 +735,124 @@ class VentaDescarteController extends Controller
 
         return redirect()->route('ventas.index')
             ->with('success', 'Registro eliminado definitivamente de la base de datos.');
+    }
+
+    /**
+     * Enviar registro(s) a Garita para autorización de salida.
+     * Si se pasa 'enviar_viaje=1', envía todos los registros que compartan viaje, fecha y placa.
+     */
+    public function enviarAGarita(Request $request, VentaDescarte $venta): RedirectResponse
+    {
+        $user = Auth::user();
+
+        if (!$venta->puedeEnviarAGarita($user)) {
+            return redirect()->back()
+                ->with('error', 'El registro no cumple con las condiciones para ser enviado a Garita.');
+        }
+
+        $enviarViajeCompleto = $request->boolean('enviar_viaje', true);
+
+        if ($enviarViajeCompleto && !empty($venta->viaje)) {
+            $resultado = DB::transaction(function () use ($venta, $user) {
+                $registrosQuery = VentaDescarte::activos()->where('estado_garita', 'borrador');
+                if ($venta->envio_id) {
+                    $registrosQuery->where('envio_id', $venta->envio_id);
+                } else {
+                    $registrosQuery->where('fundo_id', $venta->fundo_id)
+                        ->whereDate('fecha_produccion', $venta->fecha_produccion)
+                        ->where('viaje', $venta->viaje)
+                        ->where('placa', $venta->placa);
+                }
+                $registros = $registrosQuery->lockForUpdate()->get();
+                if (!$registros->contains('id', $venta->id)) {
+                    return 'El registro ya no está disponible para enviar. Actualiza la página.';
+                }
+                $faltantes = $registros->flatMap(fn ($registro) => $registro->camposFaltantesGarita())->unique()->values();
+                if ($faltantes->isNotEmpty()) {
+                    return 'No se puede enviar a Garita. Completa en todos los registros del viaje: '.$faltantes->implode(', ').'.';
+                }
+                VentaDescarte::whereIn('id', $registros->modelKeys())->update([
+                    'estado_garita' => 'pendiente', 'enviado_garita_at' => now(),
+                    'enviado_garita_by' => $user->id, 'updated_at' => now(),
+                ]);
+                if ($venta->envio_id) {
+                    Envio::withoutGlobalScopes()->whereKey($venta->envio_id)->update([
+                        'estado_garita' => 'pendiente', 'enviado_garita_at' => now(), 'enviado_garita_by' => $user->id,
+                    ]);
+                }
+                return null;
+            });
+            if ($resultado !== null) {
+                return redirect()->back()->with('error', $resultado);
+            }
+
+            return redirect()->back()
+                ->with('success', "Viaje N° {$venta->viaje} enviado correctamente a Garita para control de salida.");
+        }
+
+        $faltantes = $venta->camposFaltantesGarita();
+        if ($faltantes) {
+            return redirect()->back()->with('error', 'No se puede enviar a Garita. Completa: '.implode(', ', $faltantes).'.');
+        }
+
+        $venta->update([
+            'estado_garita' => 'pendiente',
+            'enviado_garita_at' => now(),
+            'enviado_garita_by' => $user->id,
+        ]);
+
+        return redirect()->back()
+            ->with('success', 'Registro enviado correctamente a Garita.');
+    }
+
+    /**
+     * Cancelar envío a Garita (retorna el registro a borrador para permitir edición antes de salida).
+     */
+    public function cancelarEnvioGarita(Request $request, VentaDescarte $venta): RedirectResponse
+    {
+        $user = Auth::user();
+
+        if (!$venta->puedeCancelarEnvioGarita($user)) {
+            return redirect()->back()
+                ->with('error', 'No es posible cancelar el envío a Garita (el camión ya pudo haber sido validado o no tienes permisos).');
+        }
+
+        $cancelarViajeCompleto = $request->boolean('cancelar_viaje', true);
+
+        if ($cancelarViajeCompleto && !empty($venta->viaje)) {
+            $cancelQuery = VentaDescarte::activos()->where('estado_garita', 'pendiente');
+            if ($venta->envio_id) {
+                $cancelQuery->where('envio_id', $venta->envio_id);
+            } else {
+                $cancelQuery->where('fundo_id', $venta->fundo_id)
+                    ->whereDate('fecha_produccion', $venta->fecha_produccion)
+                    ->where('viaje', $venta->viaje)
+                    ->where('placa', $venta->placa);
+            }
+            $cancelQuery
+                ->update([
+                    'estado_garita' => 'borrador',
+                    'enviado_garita_at' => null,
+                    'enviado_garita_by' => null,
+                    'updated_at' => now(),
+                ]);
+            if ($venta->envio_id) {
+                Envio::withoutGlobalScopes()->whereKey($venta->envio_id)->update([
+                    'estado_garita' => 'borrador', 'enviado_garita_at' => null, 'enviado_garita_by' => null,
+                ]);
+            }
+
+            return redirect()->back()
+                ->with('success', "Envío a Garita del Viaje N° {$venta->viaje} cancelado. Ahora puedes editar los registros.");
+        }
+
+        $venta->update([
+            'estado_garita' => 'borrador',
+            'enviado_garita_at' => null,
+            'enviado_garita_by' => null,
+        ]);
+
+        return redirect()->back()
+            ->with('success', 'Envío a Garita cancelado con éxito.');
     }
 }

@@ -37,6 +37,27 @@
             </select>
         </div>
 
+        {{-- Filtro por Estado Garita --}}
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="estado_garita" class="form-label text-xs">Garita</label>
+            <select name="estado_garita" id="estado_garita" class="form-control" style="height: 38px;">
+                <option value="">Todos</option>
+                <option value="borrador" {{ request('estado_garita') == 'borrador' ? 'selected' : '' }}>⚪ Borrador</option>
+                <option value="pendiente" {{ request('estado_garita') == 'pendiente' ? 'selected' : '' }}>🟡 En Garita</option>
+                <option value="validado" {{ request('estado_garita') == 'validado' ? 'selected' : '' }}>🟢 Salida Validada</option>
+            </select>
+        </div>
+
+        {{-- Filtro por tipo de registro --}}
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="estado_registro" class="form-label text-xs">Tipo de registro</label>
+            <select name="estado_registro" id="estado_registro" class="form-control" style="height: 38px;">
+                <option value="">Todos</option>
+                <option value="borrador" {{ request('estado_registro') == 'borrador' ? 'selected' : '' }}>Borradores</option>
+                <option value="oficial" {{ request('estado_registro') == 'oficial' ? 'selected' : '' }}>Oficiales</option>
+            </select>
+        </div>
+
         {{-- Filtro por Fecha Desde --}}
         <div class="form-group" style="margin-bottom: 0;">
             <label for="fecha_desde" class="form-label text-xs">Desde</label>
@@ -54,7 +75,7 @@
             <button type="submit" class="btn btn-secondary" style="height: 38px; flex: 1;">
                 Filtrar
             </button>
-            @if(request()->hasAny(['fundo_id', 'motivo', 'estado', 'fecha_desde', 'fecha_hasta']))
+            @if(request()->hasAny(['fundo_id', 'motivo', 'estado', 'estado_garita', 'estado_registro', 'fecha_desde', 'fecha_hasta']))
                 <a href="{{ route('ventas.index') }}" class="btn btn-ghost" style="height: 38px;" title="Limpiar filtros">
                     ✕
                 </a>

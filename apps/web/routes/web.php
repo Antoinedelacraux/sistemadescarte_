@@ -30,6 +30,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/ventas/{venta}/anular', [VentaDescarteController::class, 'anular'])->name('ventas.anular');
         Route::post('/ventas/{venta}/reactivar', [VentaDescarteController::class, 'reactivar'])->name('ventas.reactivar');
         Route::delete('/ventas/{venta}', [VentaDescarteController::class, 'destroy'])->name('ventas.destroy');
+        Route::post('/ventas/{venta}/enviar-garita', [VentaDescarteController::class, 'enviarAGarita'])->name('ventas.enviar-garita');
+        Route::post('/ventas/{venta}/cancelar-garita', [VentaDescarteController::class, 'cancelarEnvioGarita'])->name('ventas.cancelar-garita');
     });
 
     // Módulo Historial: Visualización y exportación de ventas
@@ -60,6 +62,16 @@ Route::middleware('auth')->group(function () {
         Route::post('/administracion/usuarios/{user}/toggle', [\App\Http\Controllers\AdminController::class, 'toggleUsuario'])->name('admin.usuarios.toggle');
         Route::delete('/administracion/usuarios/{user}', [\App\Http\Controllers\AdminController::class, 'destroyUsuario'])->name('admin.usuarios.destroy');
     });
+
+    // Módulo Garita: Control y confirmación de salidas de camiones
+    Route::middleware('modulo:garita')->group(function () {
+        Route::get('/garita', [\App\Http\Controllers\GaritaController::class, 'index'])->name('garita.index');
+        Route::get('/garita/historial', [\App\Http\Controllers\GaritaController::class, 'historial'])->name('garita.historial');
+        Route::post('/garita/confirmar-salida', [\App\Http\Controllers\GaritaController::class, 'confirmarSalida'])->name('garita.confirmar-salida');
+    });
+
+    // Notificaciones Garita (accesible para usuarios con módulo garita)
+    Route::get('/api/garita/pendientes-count', [\App\Http\Controllers\GaritaController::class, 'pendientesCount'])->name('garita.pendientes-count');
 });
 
 if (!app()->environment('production')) {

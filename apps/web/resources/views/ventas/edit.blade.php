@@ -235,7 +235,7 @@
     </div>
 
     {{-- Banner de tiempo restante para registradores (Límite 24h) --}}
-    @if(!Auth::user()->isAdmin())
+    @if(!Auth::user()->isAdmin() && !$venta->tieneBorradorSinVencimiento())
         @php
             $segundosRestantes = max(0, 86400 - (now()->timestamp - $venta->created_at->timestamp));
         @endphp
@@ -273,7 +273,7 @@
     </form>
 </div>
 
-@if(!Auth::user()->isAdmin())
+@if(!Auth::user()->isAdmin() && !$venta->tieneBorradorSinVencimiento())
 <script>
 (function() {
     // Timestamp exacto de vencimiento (24h desde created_at)

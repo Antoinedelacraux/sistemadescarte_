@@ -10,7 +10,7 @@ class CheckDevDatabaseTest extends TestCase
 {
     public function test_modulos_constant_contains_expected_keys(): void
     {
-        $expected = ['panel', 'registro', 'historial', 'admin'];
+        $expected = ['panel', 'registro', 'historial', 'admin', 'garita'];
         $this->assertEquals($expected, array_keys(User::MODULOS));
     }
 
@@ -21,5 +21,6 @@ class CheckDevDatabaseTest extends TestCase
         $this->assertEquals('registrador', Role::REGISTRADOR);
         $this->assertEquals('analista', Role::ANALISTA);
         $this->assertEquals('ventas', Role::VENTAS);
+        $this->assertEquals('garita', Role::GARITA);
     }
 }
