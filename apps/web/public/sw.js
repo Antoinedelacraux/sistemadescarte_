@@ -1,9 +1,10 @@
-// Service Worker — Sistema Fundo PWA (v9)
+// Service Worker — Sistema Fundo PWA (v10)
 // Soporte offline-first, alta velocidad de navegación y sincronización de ventas
-const CACHE_NAME = 'fundo-pwa-v9';
+const CACHE_NAME = 'fundo-pwa-v10';
 
 const PRECACHE_ASSETS = [
     '/manifest.json',
+    '/favicon.ico',
     '/offline.html',
     '/apple-touch-icon.png',
     '/icons/icon-192.png',
@@ -109,6 +110,7 @@ self.addEventListener('fetch', (event) => {
     if (
         url.pathname.startsWith('/icons/') ||
         url.pathname.startsWith('/images/') ||
+        url.pathname === '/favicon.ico' ||
         url.hostname.includes('fonts.googleapis.com') ||
         url.hostname.includes('fonts.gstatic.com')
     ) {
@@ -140,8 +142,12 @@ self.addEventListener('fetch', (event) => {
                 }
                 return networkResponse;
             })
-            .catch(() => {
-                return caches.match(req);
+            .catch(async () => {
+                // respondWith siempre debe recibir un Response; caches.match puede dar undefined.
+                return (await caches.match(req)) || new Response('', {
+                    status: 503,
+                    statusText: 'Offline Resource Unavailable'
+                });
             })
     );
 });
