@@ -37,6 +37,18 @@
             <span class="btn-pwa-text">Instalar App</span>
         </button>
 
+        @if(app()->environment('local'))
+        <button type="button"
+                id="btn-pwa-notification-test"
+                class="btn-pwa-notification-test"
+                onclick="triggerPwaNotificationTest()"
+                title="Probar notificación en este dispositivo"
+                aria-label="Probar notificación en este dispositivo">
+            <x-ui-icon name="bell" size="15" />
+            <span class="btn-pwa-notification-text">Probar notificación</span>
+        </button>
+        @endif
+
         {{-- Botón / Contador de sincronización offline --}}
         <button type="button"
                 id="btn-sync-pending"
@@ -54,6 +66,15 @@
 
         {{-- Notificaciones de Garita (Camiones pendientes de salida) --}}
         @if(Auth::check() && Auth::user()->canAccessModule('garita'))
+        <button type="button"
+            class="btn-garita-notifications"
+            id="btn-garita-notifications"
+            onclick="activarAvisosGarita()"
+            title="Activar avisos de salidas pendientes"
+            aria-label="Activar avisos de salidas pendientes">
+            <x-ui-icon name="bell" size="17" />
+            <span class="garita-notifications-text">Activar avisos</span>
+        </button>
         <a href="{{ route('garita.index') }}" 
            class="btn-garita-bell" 
            id="garita-bell-link" 

@@ -1,6 +1,6 @@
-// Service Worker — Sistema Fundo PWA (v10)
+// Service Worker — Sistema Fundo PWA (v11)
 // Soporte offline-first, alta velocidad de navegación y sincronización de ventas
-const CACHE_NAME = 'fundo-pwa-v10';
+const CACHE_NAME = 'fundo-pwa-v11';
 
 const PRECACHE_ASSETS = [
     '/manifest.json',
@@ -48,6 +48,21 @@ self.addEventListener('activate', (event) => {
         })
     );
     self.clients.claim();
+});
+
+// Al tocar una notificación, abrir o enfocar la PWA en la ruta indicada.
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const targetUrl = event.notification.data && event.notification.data.url
+        ? event.notification.data.url
+        : '/';
+
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+            const existingClient = clients.find((client) => new URL(client.url).pathname === targetUrl);
+            return existingClient ? existingClient.focus() : self.clients.openWindow(targetUrl);
+        })
+    );
 });
 
 // Interceptor de peticiones

@@ -389,6 +389,48 @@
         });
     }
 
+    function showPwaNotificationTestMessage(message, type, title) {
+        if (window.FundoOffline && typeof window.FundoOffline.showToast === 'function') {
+            window.FundoOffline.showToast(message, type, 5000, title);
+            return;
+        }
+        window.alert(message);
+    }
+
+    // Prueba manual disponible solo en desarrollo: no registra suscripciones ni envía datos al servidor.
+    window.triggerPwaNotificationTest = async function() {
+        if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+            showPwaNotificationTestMessage('Este navegador no permite notificaciones para la aplicación.', 'warning', 'Notificación no disponible');
+            return;
+        }
+
+        var permission = Notification.permission;
+        if (permission === 'default') {
+            permission = await Notification.requestPermission();
+        }
+
+        if (permission !== 'granted') {
+            showPwaNotificationTestMessage('No se concedió el permiso. Actívalo en los permisos del sitio para volver a probar.', 'warning', 'Permiso pendiente');
+            return;
+        }
+
+        try {
+            var registration = await navigator.serviceWorker.ready;
+            await registration.showNotification('TALSA Fundo', {
+                body: 'Notificación de prueba recibida correctamente.',
+                icon: '/icons/icon-192.png',
+                badge: '/icons/icon-192.png',
+                tag: 'fundo-pwa-notification-test',
+                renotify: true,
+                data: { url: '/' }
+            });
+            showPwaNotificationTestMessage('La notificación fue enviada a este dispositivo.', 'success', 'Prueba enviada');
+        } catch (error) {
+            console.warn('[PWA] No se pudo mostrar la notificación de prueba:', error);
+            showPwaNotificationTestMessage('No se pudo mostrar la notificación. Verifica que la PWA esté instalada y que Chrome tenga permiso.', 'danger', 'Prueba no enviada');
+        }
+    };
+
     // Captura del evento estándar de instalación (Android / Chrome / Edge / Desktop)
     window.addEventListener('beforeinstallprompt', function(e) {
         // Prevenir el banner automático intrusivo por defecto
@@ -689,11 +731,102 @@
     });
 
     /* ============================================================
-     * POLLING DE NOTIFICACIONES DE GARITA (LIVE COUNTER)
+     * AVISOS DE GARITA: CONTADOR Y NOTIFICACIONES MIENTRAS LA PWA ESTÁ ACTIVA
      * ============================================================ */
     var garitaBell = document.getElementById('garita-bell-link');
     var garitaBadge = document.getElementById('garita-bell-count');
+    var garitaNotificationsButton = document.getElementById('btn-garita-notifications');
     if (garitaBell && garitaBadge) {
+        var GARITA_PENDING_SEEN_KEY = 'fundo_garita_pending_seen_v1';
+        var GARITA_PENDING_READY_KEY = 'fundo_garita_pending_ready_v1';
+        var announceCurrentGaritaPendientes = false;
+
+        function showGaritaToast(message, type, title) {
+            if (window.FundoOffline && typeof window.FundoOffline.showToast === 'function') {
+                window.FundoOffline.showToast(message, type, 5000, title);
+                return;
+            }
+            window.alert(message);
+        }
+
+        function getSeenGaritaPendientes() {
+            try {
+                return JSON.parse(localStorage.getItem(GARITA_PENDING_SEEN_KEY) || '[]');
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function saveSeenGaritaPendientes(fingerprints) {
+            try {
+                localStorage.setItem(GARITA_PENDING_SEEN_KEY, JSON.stringify(fingerprints));
+                localStorage.setItem(GARITA_PENDING_READY_KEY, '1');
+            } catch (error) {
+                // La aplicación conserva el contador si el navegador restringe almacenamiento local.
+            }
+        }
+
+        function updateGaritaNotificationButton() {
+            if (!garitaNotificationsButton || !('Notification' in window)) return;
+
+            var active = Notification.permission === 'granted';
+            garitaNotificationsButton.classList.toggle('is-active', active);
+            garitaNotificationsButton.title = active
+                ? 'Avisos de Garita activados'
+                : 'Activar avisos de salidas pendientes';
+            garitaNotificationsButton.setAttribute('aria-label', garitaNotificationsButton.title);
+            var label = garitaNotificationsButton.querySelector('.garita-notifications-text');
+            if (label) label.textContent = active ? 'Avisos activos' : 'Activar avisos';
+        }
+
+        async function showGaritaNotification(title, body) {
+            if (!('Notification' in window) || Notification.permission !== 'granted' || !('serviceWorker' in navigator)) {
+                return;
+            }
+
+            try {
+                var registration = await navigator.serviceWorker.ready;
+                await registration.showNotification(title, {
+                    body: body,
+                    icon: '/icons/icon-192.png',
+                    badge: '/icons/icon-192.png',
+                    tag: 'garita-pendientes',
+                    renotify: true,
+                    data: { url: '/garita' }
+                });
+            } catch (error) {
+                console.warn('[Garita] No se pudo mostrar la notificación:', error);
+            }
+        }
+
+        function processGaritaPendientes(data) {
+            var pendientes = Array.isArray(data.pendientes) ? data.pendientes : [];
+            var fingerprints = pendientes.map(function(pendiente) { return pendiente.fingerprint; });
+            var initialized = localStorage.getItem(GARITA_PENDING_READY_KEY) === '1';
+            var seen = getSeenGaritaPendientes();
+
+            if (!initialized) {
+                saveSeenGaritaPendientes(fingerprints);
+                if (announceCurrentGaritaPendientes && pendientes.length > 0) {
+                    showGaritaNotification('Garita: salidas pendientes', 'Tienes ' + pendientes.length + ' salida(s) pendiente(s) de validación.');
+                }
+                announceCurrentGaritaPendientes = false;
+                return;
+            }
+
+            var nuevos = pendientes.filter(function(pendiente) {
+                return !seen.includes(pendiente.fingerprint);
+            });
+            saveSeenGaritaPendientes(fingerprints);
+
+            if (nuevos.length === 1) {
+                var pendiente = nuevos[0];
+                showGaritaNotification('Nueva salida pendiente', 'Viaje N° ' + pendiente.viaje + ' · ' + pendiente.placa + ' · ' + pendiente.fundo);
+            } else if (nuevos.length > 1) {
+                showGaritaNotification('Nuevas salidas pendientes', 'Tienes ' + nuevos.length + ' nuevas salidas por validar en Garita.');
+            }
+        }
+
         function checkGaritaPendientes() {
             if (!navigator.onLine) return;
             fetch('/api/garita/pendientes-count', {
@@ -708,6 +841,7 @@
                     } else {
                         garitaBadge.style.display = 'none';
                     }
+                    processGaritaPendientes(data);
                 }
             })
             .catch(function(err) {
@@ -718,6 +852,35 @@
         // Consultar de inmediato y luego cada 30 segundos
         checkGaritaPendientes();
         setInterval(checkGaritaPendientes, 30000);
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') checkGaritaPendientes();
+        });
+
+        window.activarAvisosGarita = async function() {
+            if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+                showGaritaToast('Este navegador no permite avisos para la PWA.', 'warning', 'Avisos no disponibles');
+                return;
+            }
+
+            var permission = Notification.permission;
+            if (permission === 'default') permission = await Notification.requestPermission();
+
+            updateGaritaNotificationButton();
+            if (permission !== 'granted') {
+                showGaritaToast('No se concedió el permiso. Actívalo en los permisos del sitio para recibir avisos.', 'warning', 'Permiso pendiente');
+                return;
+            }
+
+            announceCurrentGaritaPendientes = true;
+            try {
+                localStorage.removeItem(GARITA_PENDING_READY_KEY);
+                checkGaritaPendientes();
+                showGaritaToast('Los avisos de nuevas salidas pendientes están activos mientras uses la PWA.', 'success', 'Avisos activados');
+            } catch (error) {
+                showGaritaToast('No se pudieron activar los avisos.', 'danger', 'Error de avisos');
+            }
+        };
+        updateGaritaNotificationButton();
     }
 
     /* ============================================================

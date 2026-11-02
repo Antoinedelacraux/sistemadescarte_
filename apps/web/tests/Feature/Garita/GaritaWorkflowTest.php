@@ -119,6 +119,7 @@ class GaritaWorkflowTest extends TestCase
         $response->assertSee('Panel de Salidas de Camiones — Garita');
         $response->assertSee('Pendientes');
         $response->assertSee('Número de viaje');
+        $response->assertSee('Activar avisos');
         $response->assertDontSee('Más filtros');
         $response->assertSee('Ver historial de validaciones');
         $response->assertSee('Fecha de producción');
@@ -233,7 +234,13 @@ class GaritaWorkflowTest extends TestCase
 
         // 4. API de notificaciones cuenta 1 camión pendiente
         $api = $this->actingAs($this->garitaUser)->get(route('garita.pendientes-count'));
-        $api->assertJson(['count' => 1]);
+        $api->assertJson(['count' => 1])
+            ->assertJsonStructure([
+                'count', 'timestamp',
+                'pendientes' => [['fingerprint', 'viaje', 'placa', 'fundo', 'enviado_at']],
+            ])
+            ->assertJsonPath('pendientes.0.viaje', '1')
+            ->assertJsonPath('pendientes.0.placa', 'ABC-123');
 
         // 5. Registrador cancela el envío para editar
         $cancel = $this->actingAs($this->registradorUser)
@@ -343,7 +350,9 @@ class GaritaWorkflowTest extends TestCase
         ]));
         $panelValidados->assertOk()->assertSee('Validado Permitido')->assertSee('Validado el')->assertDontSee('Validado Restringido');
         $panelValidados->assertDontSee('data-ids=', false);
-        $this->actingAs($this->garitaUser)->get(route('garita.pendientes-count'))->assertJson(['count' => 1]);
+        $this->actingAs($this->garitaUser)->get(route('garita.pendientes-count'))
+            ->assertJson(['count' => 1])
+            ->assertJsonMissing(['placa' => 'ZZZ-999']);
 
         $this->actingAs($this->garitaUser)->post(route('garita.confirmar-salida'), ['venta_ids' => [$ajeno->id]])
             ->assertSessionHas('error');

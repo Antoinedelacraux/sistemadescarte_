@@ -90,6 +90,7 @@ class GaritaController extends Controller
                 'fecha_produccion' => $first->fecha_produccion,
                 'fundo_nombre' => $first->fundo?->name ?? '—',
                 'fecha_hora_registro' => $items->min('created_at'),
+                'enviado_garita_at' => $items->max('enviado_garita_at'),
                 'fecha_validacion' => $items->max('salida_garita_at'),
                 'viaje' => $numeroViaje !== '' ? $numeroViaje : '—',
                 'placa' => $first->placa ?: '—',
@@ -192,9 +193,23 @@ class GaritaController extends Controller
             $query->whereIn('fundo_id', $user->fundos()->pluck('fundos.id'));
         }
 
+        $pendientes = $this->agruparViajes($query->with(['fundo', 'envio'])->get())->values();
+
         return response()->json([
-            'count' => $this->contarViajes($query),
+            'count' => $pendientes->count(),
             'timestamp' => now()->toISOString(),
+            'pendientes' => $pendientes->map(function (array $envio): array {
+                $enviadoAt = $envio['enviado_garita_at'];
+
+                return [
+                    // La huella evita volver a avisar el mismo envío y cambia si se reenvía a Garita.
+                    'fingerprint' => hash('sha256', $envio['clave'].'|'.($enviadoAt?->toIso8601String() ?? '')),
+                    'viaje' => $envio['viaje'],
+                    'placa' => $envio['placa'],
+                    'fundo' => $envio['fundo_nombre'],
+                    'enviado_at' => $enviadoAt?->toIso8601String(),
+                ];
+            })->values(),
         ]);
     }
 }

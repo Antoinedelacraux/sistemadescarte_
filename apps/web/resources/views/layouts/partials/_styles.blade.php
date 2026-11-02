@@ -573,6 +573,36 @@
             background: #fef3c7;
             border-color: #fde68a;
         }
+
+        .btn-garita-notifications {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            min-height: 36px;
+            padding: 0.35rem 0.625rem;
+            border-radius: var(--radius-md);
+            color: var(--clr-primary-800);
+            background: var(--clr-primary-50);
+            border: 1px solid var(--clr-primary-200);
+            font: inherit;
+            font-size: var(--text-xs);
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+        }
+
+        .btn-garita-notifications:hover {
+            color: #ffffff;
+            background: var(--clr-primary-700);
+            border-color: var(--clr-primary-700);
+        }
+
+        .btn-garita-notifications.is-active {
+            color: #166534;
+            background: #dcfce7;
+            border-color: #86efac;
+        }
         .garita-bell-badge {
             position: absolute;
             top: -4px;
@@ -595,6 +625,18 @@
         @keyframes pulseNotification {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.15); }
+        }
+
+        @media (max-width: 640px) {
+            .btn-garita-notifications {
+                width: 36px;
+                padding: 0;
+                justify-content: center;
+            }
+
+            .garita-notifications-text {
+                display: none;
+            }
         }
 
         /* Indicador de red */
@@ -1766,11 +1808,35 @@
             flex-shrink: 0;
         }
 
+        .btn-pwa-notification-test {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: var(--radius-full);
+            background: var(--clr-surface-0);
+            color: var(--clr-primary-800);
+            border: 1px solid var(--clr-primary-200);
+            font-size: var(--text-xs);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .btn-pwa-notification-test:hover {
+            color: #ffffff;
+            background: var(--clr-primary-700);
+            border-color: var(--clr-primary-700);
+        }
+
         @media (max-width: 480px) {
-            .btn-pwa-install .btn-pwa-text {
+            .btn-pwa-install .btn-pwa-text,
+            .btn-pwa-notification-test .btn-pwa-notification-text {
                 display: none;
             }
-            .btn-pwa-install {
+            .btn-pwa-install,
+            .btn-pwa-notification-test {
                 padding: 0.35rem;
                 width: 32px;
                 height: 32px;

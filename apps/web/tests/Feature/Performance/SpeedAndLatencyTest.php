@@ -178,11 +178,12 @@ class SpeedAndLatencyTest extends TestCase
         $this->assertFileExists($swPath);
         $swContent = file_get_contents($swPath);
 
-        $this->assertStringContainsString('fundo-pwa-v10', $swContent);
+        $this->assertStringContainsString('fundo-pwa-v11', $swContent);
         $this->assertStringContainsString('/ventas/registrar', $swContent);
         $this->assertStringContainsString('/ventas', $swContent);
         $this->assertStringContainsString("url.pathname === '/favicon.ico'", $swContent);
         $this->assertStringContainsString('Offline Resource Unavailable', $swContent);
+        $this->assertStringContainsString("addEventListener('notificationclick'", $swContent);
     }
 
     /**
