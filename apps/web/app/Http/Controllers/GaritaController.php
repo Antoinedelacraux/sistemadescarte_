@@ -114,9 +114,9 @@ class GaritaController extends Controller
         $fecha = $venta->fecha_produccion?->format('Y-m-d') ?? 'sin-fecha';
         $numeroViaje = trim((string) $venta->viaje);
         $numeroViaje = $numeroViaje !== '' ? $numeroViaje : 'sin-viaje';
-        $placa = strtoupper(trim($venta->placa ?: 'SIN-PLACA'));
-
-        return json_encode([$fecha, $venta->fundo_id, $numeroViaje, $placa], JSON_THROW_ON_ERROR);
+        // La identidad del viaje no depende de la placa: la placa es un dato
+        // que debe coincidir entre lotes, no una forma de separar el envío.
+        return json_encode([$fecha, $venta->fundo_id, $numeroViaje], JSON_THROW_ON_ERROR);
     }
 
     private function contarViajes($query): int
@@ -141,42 +141,80 @@ class GaritaController extends Controller
         $ids = $request->input('venta_ids');
         $observacion = $request->input('observacion_garita');
 
-        $items = VentaDescarte::query()
-            ->whereIn('id', $ids)
-            ->where('estado', 'activo')
-            ->where('estado_garita', 'pendiente')
-            ->get(['id', 'envio_id', 'fecha_produccion', 'fundo_id', 'viaje', 'placa']);
-
-        if ($items->count() !== count(array_unique($ids))) {
-            return redirect()->back()->with('error', 'El envío cambió o ya fue validado. Actualiza la pantalla e inténtalo nuevamente.');
-        }
-
-        $clavesViaje = $items->map(fn (VentaDescarte $item) => $this->claveViaje($item))->unique();
-
-        if ($clavesViaje->count() !== 1) {
-            return redirect()->back()->with('error', 'Solo se pueden validar juntos los registros del mismo fundo, fecha, número de viaje y placa.');
-        }
-
-        DB::transaction(function () use ($ids, $user, $observacion, $items) {
-            VentaDescarte::query()
+        $resultado = DB::transaction(function () use ($ids, $user, $observacion) {
+            $items = VentaDescarte::query()
+                ->activos()
                 ->whereIn('id', $ids)
-                ->where('estado', 'activo')
+                ->where('estado_garita', 'pendiente')
+                ->lockForUpdate()
+                ->get(['id', 'envio_id', 'fecha_produccion', 'fundo_id', 'viaje', 'placa']);
+
+            if ($items->count() !== count(array_unique($ids))) {
+                return 'El envío cambió o ya fue validado. Actualiza la pantalla e inténtalo nuevamente.';
+            }
+
+            $clavesViaje = $items->map(fn (VentaDescarte $item) => $this->claveViaje($item))->unique();
+            if ($clavesViaje->count() !== 1) {
+                return 'Solo se pueden validar juntos los registros del mismo fundo, fecha y número de viaje.';
+            }
+
+            $primero = $items->first();
+            $envioQuery = VentaDescarte::query()->activos();
+            if ($primero->envio_id) {
+                $envioQuery->where('envio_id', $primero->envio_id);
+            } else {
+                $envioQuery->where('fundo_id', $primero->fundo_id)
+                    ->whereDate('fecha_produccion', $primero->fecha_produccion)
+                    ->where('viaje', $primero->viaje);
+            }
+            $registrosEnvio = $envioQuery->lockForUpdate()->get([
+                'id', 'estado_registro', 'cliente', 'conductor', 'placa', 'ruc', 'brevete',
+            ]);
+            if ($registrosEnvio->contains(fn (VentaDescarte $registro) => $registro->isBorradorRegistro())) {
+                return 'No se puede validar: este viaje aún tiene registros con información faltante.';
+            }
+            foreach (['cliente' => 'cliente', 'conductor' => 'conductor', 'placa' => 'placa', 'ruc' => 'RUC', 'brevete' => 'brevete'] as $campo => $etiqueta) {
+                $valores = $registrosEnvio->pluck($campo)
+                    ->map(fn ($valor) => mb_strtolower(trim((string) $valor), 'UTF-8'))
+                    ->filter(fn ($valor) => $valor !== '')
+                    ->unique();
+                if ($valores->count() > 1) {
+                    return "No se puede validar: los registros del viaje tienen datos distintos de {$etiqueta}.";
+                }
+            }
+
+            $idsSolicitados = collect($ids)->unique()->sort()->values()->all();
+            $idsDelEnvio = $registrosEnvio->modelKeys();
+            sort($idsDelEnvio);
+            if ($idsSolicitados !== $idsDelEnvio) {
+                return 'No se puede validar el viaje por partes. Actualiza la tarjeta y confirma todos los lotes pendientes del envío.';
+            }
+
+            $ahora = now();
+            VentaDescarte::query()
+                ->whereIn('id', $idsSolicitados)
                 ->where('estado_garita', 'pendiente')
                 ->update([
                     'estado_garita' => 'validado',
-                    'salida_garita_at' => now(),
+                    'salida_garita_at' => $ahora,
                     'salida_garita_by' => $user->id,
                     'observacion_garita' => $observacion,
-                    'updated_at' => now(),
+                    'updated_at' => $ahora,
                 ]);
             $envioIds = $items->pluck('envio_id')->filter()->unique()->values();
             if ($envioIds->isNotEmpty()) {
                 Envio::withoutGlobalScopes()->whereIn('id', $envioIds)->update([
-                    'estado_garita' => 'validado', 'salida_garita_at' => now(), 'salida_garita_by' => $user->id,
+                    'estado_garita' => 'validado', 'salida_garita_at' => $ahora, 'salida_garita_by' => $user->id,
                     'observacion_garita' => $observacion,
                 ]);
             }
+
+            return null;
         });
+
+        if ($resultado !== null) {
+            return redirect()->back()->with('error', $resultado);
+        }
 
         return redirect()->back()->with('success', 'Salida del camión confirmada con éxito.');
     }
@@ -184,9 +222,7 @@ class GaritaController extends Controller
     public function pendientesCount(): JsonResponse
     {
         $user = Auth::user();
-        if (!$user || !$user->canAccessModule('garita')) {
-            return response()->json(['count' => 0]);
-        }
+        abort_unless($user && $user->isGarita(), 403, 'Solo el rol Garita puede consultar avisos de viajes pendientes.');
 
         $query = VentaDescarte::activos()->where('estado_garita', 'pendiente');
         if (!$user->hasAccessToAllFundos()) {

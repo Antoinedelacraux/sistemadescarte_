@@ -70,7 +70,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/garita/confirmar-salida', [\App\Http\Controllers\GaritaController::class, 'confirmarSalida'])->name('garita.confirmar-salida');
     });
 
-    // Notificaciones Garita (accesible para usuarios con módulo garita)
+    // Notificaciones móviles: el controlador restringe el endpoint al rol Garita.
     Route::get('/api/garita/pendientes-count', [\App\Http\Controllers\GaritaController::class, 'pendientesCount'])->name('garita.pendientes-count');
 });
 

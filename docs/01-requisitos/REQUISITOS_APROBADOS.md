@@ -43,6 +43,7 @@ Sistema web para la gestión agrícola integral enfocada en el registro de pesaj
    - Pendientes y validados consultables en Salidas; historial de validaciones en tabla.
    - Filtros de fecha de producción, fundo asignado, viaje por fecha, conductor y cliente, conservando los totales completos del envío.
    - La confirmación se limita a registros de los fundos asignados al usuario.
+   - Los avisos móviles de nuevos viajes pendientes son exclusivos de las cuentas cuyo rol es Garita. Cada cuenta conserva de forma independiente los viajes ya notificados en su dispositivo.
 
 ## 4. Historial de Aprobaciones
 - **2026-10-08:** Aprobado documento de requisitos original y resolución de preguntas abiertas (`PREGUNTAS_ABIERTAS.md`).

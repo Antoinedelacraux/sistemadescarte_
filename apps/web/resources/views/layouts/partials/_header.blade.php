@@ -1,5 +1,5 @@
 {{-- HEADER DE LA APLICACIÓN --}}
-<header class="app-header" role="banner">
+<header class="app-header{{ Auth::user()->isGarita() ? ' app-header-garita' : '' }}" role="banner">
     {{-- Botón hamburguesa --}}
     <button class="header-toggle"
             id="sidebar-toggle"
@@ -37,19 +37,8 @@
             <span class="btn-pwa-text">Instalar App</span>
         </button>
 
-        @if(app()->environment('local'))
-        <button type="button"
-                id="btn-pwa-notification-test"
-                class="btn-pwa-notification-test"
-                onclick="triggerPwaNotificationTest()"
-                title="Probar notificación en este dispositivo"
-                aria-label="Probar notificación en este dispositivo">
-            <x-ui-icon name="flask" size="15" />
-            <span class="btn-pwa-notification-text">Probar notificación</span>
-        </button>
-        @endif
-
         {{-- Botón / Contador de sincronización offline --}}
+        @unless(Auth::user()->isGarita())
         <button type="button"
                 id="btn-sync-pending"
                 class="btn-sync-pending"
@@ -63,29 +52,21 @@
             <span id="sync-pending-count">0</span>
             <span class="sync-pending-label">pendientes</span>
         </button>
+        @endunless
 
         {{-- Notificaciones de Garita (Camiones pendientes de salida) --}}
-        @if(Auth::check() && Auth::user()->canAccessModule('garita'))
+        @if(Auth::check() && Auth::user()->isGarita())
         <button type="button"
             class="btn-garita-notifications"
             id="btn-garita-notifications"
+            data-user-id="{{ Auth::id() }}"
             onclick="activarAvisosGarita()"
             title="Activar avisos de salidas pendientes"
             aria-label="Activar avisos de salidas pendientes">
             <x-ui-icon name="bell" size="17" />
             <span class="garita-notifications-text">Activar avisos</span>
-        </button>
-        <a href="{{ route('garita.index') }}" 
-           class="btn-garita-bell" 
-           id="garita-bell-link" 
-           title="Camiones pendientes de autorizar en garita"
-           aria-label="Notificaciones de garita">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
             <span class="garita-bell-badge" id="garita-bell-count" style="display:none;">0</span>
-        </a>
+        </button>
         @endif
 
         {{-- Indicador de red --}}

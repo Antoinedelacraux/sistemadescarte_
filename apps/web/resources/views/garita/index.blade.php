@@ -420,6 +420,7 @@
     .viaje-title { font-size:1.05rem; }
     .viaje-title-group { flex-direction:column; align-items:flex-start; gap:.25rem; }
     .viaje-code { font-size:.72rem; color:#64748b; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .viaje-mobile-summary { display:none; }
     .viaje-identity { display:flex; align-items:center; flex-wrap:wrap; gap:.55rem; }
     .viajes-container { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1rem; align-items:start; }
     .viaje-card { border-radius:14px; }
@@ -439,26 +440,37 @@
     .modal-garita-info-grid dd { margin:.2rem 0 0; color:#102319; font-size:.95rem; font-weight:700; overflow-wrap:anywhere; }
     @media (max-width: 1180px) { .viajes-container { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 640px) {
-        .garita-header { margin-bottom:1rem; }
-        .garita-header p { line-height:1.4; }
-        .garita-kpis { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:.7rem; margin-bottom:1rem; }
-        .garita-kpi-card { min-width:0; padding:.8rem; gap:.55rem; }
-        .garita-kpi-icon { width:38px; height:38px; }
-        .garita-kpi-icon svg { width:20px; height:20px; }
+        .garita-header { display:none; }
+        .garita-kpis { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:.55rem; margin-bottom:.65rem; }
+        .garita-kpi-card { min-width:0; min-height:3.3rem; padding:.55rem .7rem; gap:.5rem; justify-content:center; }
+        .garita-kpi-card:hover { transform:none; }
+        .garita-kpi-icon { width:32px; height:32px; }
+        .garita-kpi-icon svg { width:18px; height:18px; }
         .garita-kpi-val { font-size:1.25rem; }
-        .garita-kpi-lbl { font-size:.62rem; letter-spacing:.03em; }
-        .garita-simple-nav { align-items:stretch; flex-direction:column; gap:.75rem; margin:1rem 0; padding:.75rem; }
+        .garita-kpi-lbl { display:block; font-size:.6rem; letter-spacing:.025em; line-height:1.2; }
+        .garita-simple-nav { align-items:stretch; flex-direction:column; gap:.45rem; margin:.65rem 0; padding:.55rem; }
         .garita-tabs { display:grid; grid-template-columns:1fr 1fr; gap:.35rem; }
-        .garita-tabs a { text-align:center; padding:.65rem .35rem; font-size:.8rem; }
-        .garita-simple-nav > a { text-align:center; padding:.45rem; font-size:.875rem; }
-        .viajes-container { grid-template-columns:1fr; gap:.9rem; }
-        .viaje-header, .viaje-body { padding:1rem; }
-        .viaje-header { align-items:flex-start; }
-        .viaje-meta-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:.75rem; }
-        .viaje-meta-item.is-carga { grid-column:span 1; padding:.6rem; }
-        .viaje-meta-item.is-carga .viaje-meta-val { font-size:1rem; }
-        .viaje-footer { align-items:stretch; }
-        .btn-confirmar-salida { width:100%; min-height:2.9rem; justify-content:center; }
+        .garita-tabs a { text-align:center; padding:.55rem .3rem; font-size:.78rem; }
+        .viajes-container { grid-template-columns:1fr; gap:.7rem; }
+        .viaje-card { border-left-width:4px !important; }
+        .viaje-header { align-items:center; padding:.75rem; gap:.5rem; }
+        .viaje-title-group { min-width:0; flex:1; }
+        .viaje-identity { flex-wrap:nowrap; gap:.45rem; width:100%; }
+        .viaje-title { font-size:.95rem; white-space:nowrap; }
+        .viaje-placa-badge { padding:.28rem .48rem; font-size:.88rem; white-space:nowrap; }
+        .viaje-identity .badge-fundo-tag, .viaje-date, .viaje-title-group > .viaje-code { display:none; }
+        .badge-status { width:2rem; height:2rem; padding:0; flex:0 0 2rem; justify-content:center; border-radius:50%; }
+        .badge-status-text { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0, 0, 0, 0); white-space:nowrap; }
+        .viaje-mobile-summary { display:grid; grid-template-columns:1fr; gap:.22rem; width:100%; margin-top:.3rem; color:#64748b; font-size:.72rem; }
+        .viaje-mobile-summary strong { color:#334155; font-weight:700; }
+        .viaje-mobile-summary .viaje-code { overflow-wrap:anywhere; }
+        .viaje-body { padding:.65rem .75rem .75rem; }
+        .viaje-meta-grid { display:none; }
+        .viaje-footer { display:flex; justify-content:flex-end; align-items:center; gap:.5rem; }
+        .btn-confirmar-salida, .btn-ver-informacion { width:2.8rem; height:2.8rem; min-height:2.8rem; flex:0 0 2.8rem; justify-content:center; padding:0; }
+        .btn-confirmar-salida svg, .btn-ver-informacion svg { width:18px; height:18px; }
+        .viaje-validado-fecha { margin-right:auto; font-size:.75rem; }
+        .btn-action-label { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0, 0, 0, 0); white-space:nowrap; border:0; }
         .modal-garita { align-items:flex-end; padding:0; }
         .modal-garita-sheet { max-height:92vh; border-radius:var(--radius-xl) var(--radius-xl) 0 0; overflow:auto; }
         .modal-garita-footer { position:sticky; bottom:0; justify-content:stretch; padding:.75rem 1rem; }
@@ -505,7 +517,6 @@
             <a href="{{ route('garita.index', array_merge(request()->except(['estado', 'viaje']), ['estado' => 'pendiente'])) }}" aria-current="{{ $estadoPanel === 'pendiente' ? 'page' : 'false' }}">Pendientes <span aria-label="{{ $kpiPendientesHoy }} pendientes hoy">({{ $kpiPendientesHoy }})</span></a>
             <a href="{{ route('garita.index', array_merge(request()->except(['estado', 'viaje']), ['estado' => 'validado'])) }}" aria-current="{{ $estadoPanel === 'validado' ? 'page' : 'false' }}">Validados <span aria-label="{{ $kpiValidadosHoy }} validados hoy">({{ $kpiValidadosHoy }})</span></a>
         </nav>
-        <a href="{{ route('garita.historial') }}">Ver historial de validaciones</a>
     </div>
 
     @include('garita._filtros', ['rutaFiltros' => 'garita.index'])
@@ -523,8 +534,16 @@
                         </div>
                         <span class="viaje-date">Producción: {{ $viaje['fecha_produccion']?->format('d/m/Y') ?? '—' }} · Registro: {{ $viaje['fecha_hora_registro']?->format('d/m/Y H:i') ?? '—' }}</span>
                         @if($viaje['envio_codigo'])<span class="viaje-code">{{ $viaje['envio_codigo'] }}</span>@endif
+                        <span class="viaje-mobile-summary">
+                            <span><strong>Fundo:</strong> {{ $viaje['fundo_nombre'] }}</span>
+                            <span><strong>Producción:</strong> {{ $viaje['fecha_produccion']?->format('d/m/Y') ?? '—' }} · <strong>Registro:</strong> {{ $viaje['fecha_hora_registro']?->format('d/m/Y H:i') ?? '—' }}</span>
+                            <span class="viaje-code">{{ $viaje['envio_codigo'] ?? 'Histórico' }}</span>
+                        </span>
                     </div>
-                    <span class="badge-status {{ $estadoPanel === 'validado' ? 'badge-status-validado' : 'badge-status-pendiente' }}">{{ $estadoPanel === 'validado' ? 'Validado' : 'Pendiente de validación' }}</span>
+                    <span class="badge-status {{ $estadoPanel === 'validado' ? 'badge-status-validado' : 'badge-status-pendiente' }}" title="{{ $estadoPanel === 'validado' ? 'Validado' : 'Pendiente de validación' }}">
+                        <x-ui-icon :name="$estadoPanel === 'validado' ? 'check' : 'clock'" size="16" />
+                        <span class="badge-status-text">{{ $estadoPanel === 'validado' ? 'Validado' : 'Pendiente de validación' }}</span>
+                    </span>
                 </header>
                 <div class="viaje-body">
                     <div class="viaje-meta-grid">
@@ -535,6 +554,8 @@
                     </div>
                     <div class="viaje-footer">
                         <button type="button" class="btn-ver-informacion"
+                            title="Ver información del viaje"
+                            aria-label="Ver información del Viaje N° {{ $viaje['viaje'] }}"
                             data-envio="{{ $viaje['envio_codigo'] ?? 'Histórico' }}"
                             data-viaje="{{ $viaje['viaje'] }}"
                             data-fecha="{{ $viaje['fecha_produccion']?->format('d/m/Y') ?? '—' }}"
@@ -542,12 +563,17 @@
                             data-cliente="{{ $viaje['cliente'] }}"
                             data-conductor="{{ $viaje['conductor'] }}"
                             data-placa="{{ $viaje['placa'] }}"
+                            data-fundo="{{ $viaje['fundo_nombre'] }}"
                             data-jabas="{{ number_format($viaje['total_jabas']) }}"
                             data-kilos="{{ number_format($viaje['total_kilos'], 2) }} kg"
                             data-lotes="{{ $viaje['lotes']->implode(', ') ?: '—' }}"
-                            onclick="abrirModalInformacion(this)">Ver información</button>
+                            onclick="abrirModalInformacion(this)"><x-ui-icon name="note" size="16" /> <span class="btn-action-label">Ver información</span></button>
                         @if($estadoPanel === 'pendiente')
-                        <button type="button" class="btn-confirmar-salida" data-envio="{{ $viaje['envio_codigo'] ?? '' }}" data-placa="{{ $viaje['placa'] }}" data-viaje="{{ $viaje['viaje'] }}" data-kilos="{{ number_format($viaje['total_kilos'], 2) }}" data-ids="{{ implode(',', $viaje['ids']) }}" onclick="abrirModalSalida(this)">Revisar y validar salida · Viaje N° {{ $viaje['viaje'] }}</button>
+                        <button type="button" class="btn-confirmar-salida"
+                            title="Revisar y validar salida"
+                            aria-label="Revisar y validar salida del Viaje N° {{ $viaje['viaje'] }}"
+                            data-ids="{{ implode(',', $viaje['ids']) }}"
+                            onclick="abrirModalSalida(this)"><x-ui-icon name="check" size="16" /> <span class="btn-action-label">Revisar y validar salida</span></button>
                         @else
                         <span class="viaje-validado-fecha">Validado el {{ $viaje['fecha_validacion']?->format('d/m/Y H:i') ?? '—' }}</span>
                         @endif
@@ -575,14 +601,15 @@
             <dl class="modal-garita-info-grid">
                 <div><dt>Viaje</dt><dd id="info-viaje"></dd></div>
                 <div><dt>Placa</dt><dd id="info-placa"></dd></div>
+                <div><dt>Fundo</dt><dd id="info-fundo"></dd></div>
                 <div><dt>Fecha de producción</dt><dd id="info-fecha"></dd></div>
                 <div><dt>Fecha y hora de registro</dt><dd id="info-registro"></dd></div>
+                <div><dt>Código del envío</dt><dd id="info-envio"></dd></div>
                 <div><dt>Cliente</dt><dd id="info-cliente"></dd></div>
                 <div><dt>Conductor</dt><dd id="info-conductor"></dd></div>
                 <div><dt>Jabas</dt><dd id="info-jabas"></dd></div>
                 <div><dt>Kilogramos</dt><dd id="info-kilos"></dd></div>
                 <div><dt>Lotes del envío</dt><dd id="info-lotes"></dd></div>
-                <div><dt>Código del envío</dt><dd id="info-envio"></dd></div>
             </dl>
         </div>
         <div class="modal-garita-footer">
@@ -604,15 +631,6 @@
             </div>
 
             <div class="modal-garita-body">
-                <p style="margin-bottom: 1rem; font-size: 0.875rem; color: var(--txt-secondary);">
-                    ¿Confirmas la salida física del camión con placa <strong id="modal-salida-placa" style="color: #1e293b;"></strong> para el <strong>Viaje N° <span id="modal-salida-viaje"></span></strong> (<span id="modal-salida-envio"></span>)?
-                </p>
-
-                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 0.75rem 1rem; border-radius: var(--radius-md); margin-bottom: 1rem;">
-                    <span style="font-size: 0.75rem; color: #166534; font-weight: 600; text-transform: uppercase;">Total de Carga a Despachar</span>
-                    <div id="modal-salida-kilos" style="font-size: 1.35rem; font-weight: 800; color: #15803d;"></div>
-                </div>
-
                 <div style="display: flex; flex-direction: column; gap: 0.35rem;">
                     <label for="observacion_garita" style="font-size: 0.8125rem; font-weight: 600; color: var(--txt-secondary);">Observación de Garita (Opcional):</label>
                     <textarea name="observacion_garita" id="observacion_garita" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid var(--brd-base); border-radius: var(--radius-md); font-size: 0.8125rem;" placeholder="Ej. Camión inspeccionado, precinto conforme, salida autorizada..."></textarea>
@@ -632,7 +650,7 @@
 
 <script>
     function abrirModalInformacion(button) {
-        ['envio', 'viaje', 'fecha', 'registro', 'cliente', 'conductor', 'placa', 'jabas', 'kilos', 'lotes'].forEach(function(campo) {
+        ['envio', 'viaje', 'fecha', 'registro', 'cliente', 'conductor', 'placa', 'fundo', 'jabas', 'kilos', 'lotes'].forEach(function(campo) {
             document.getElementById('info-' + campo).innerText = button.dataset[campo] || '—';
         });
         document.getElementById('modal-informacion-viaje').classList.add('is-open');
@@ -643,16 +661,8 @@
     }
 
     function abrirModalSalida(button) {
-        var envio = button.dataset.envio;
-        var placa = button.dataset.placa;
-        var viaje = button.dataset.viaje;
-        var kilos = button.dataset.kilos;
         var ids = button.dataset.ids.split(',').filter(Boolean);
-        document.getElementById('modal-salida-placa').innerText = placa;
-        document.getElementById('modal-salida-viaje').innerText = viaje;
-        document.getElementById('modal-salida-envio').innerText = envio || 'relación histórica';
-        document.getElementById('modal-salida-kilos').innerText = kilos + ' kg';
-        
+
         var hiddenContainer = document.getElementById('modal-hidden-inputs');
         hiddenContainer.innerHTML = '';
         ids.forEach(function(id) {
@@ -663,7 +673,10 @@
             hiddenContainer.appendChild(input);
         });
 
+        var observacion = document.getElementById('observacion_garita');
+        observacion.value = '';
         document.getElementById('modal-confirmar-salida').classList.add('is-open');
+        requestAnimationFrame(function() { observacion.focus(); });
     }
 
     function cerrarModalSalida() {

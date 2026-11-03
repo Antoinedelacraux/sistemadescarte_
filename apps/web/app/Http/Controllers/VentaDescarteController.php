@@ -466,6 +466,7 @@ class VentaDescarteController extends Controller
             ->where('fundo_id', $datos['fundo_id'])
             ->whereDate('fecha_produccion', $datos['fecha_produccion'])
             ->where('numero_viaje', (int) $numero)
+            ->lockForUpdate()
             ->first();
 
         if ($envio && $envioActual && $envio->id !== $envioActual) {
@@ -487,40 +488,52 @@ class VentaDescarteController extends Controller
             return $envio->id;
         }
 
-        foreach (['cliente', 'placa', 'conductor'] as $campo) {
-            $nuevo = trim((string) ($datos[$campo] ?? ''));
-            $actual = trim((string) ($envio->{$campo} ?? ''));
-            if ($nuevo !== '' && $actual !== '' && mb_strtolower($nuevo, 'UTF-8') !== mb_strtolower($actual, 'UTF-8')) {
-                // Compatibilidad con envíos históricos que ya tenían lotes inconsistentes:
-                // si el usuario conserva el valor original de este registro, no se bloquea
-                // la edición de otros campos. Una nueva discrepancia sí continúa bloqueada.
-                $original = trim((string) ($ventaActual?->{$campo} ?? ''));
-                if ($ventaActual && mb_strtolower($nuevo, 'UTF-8') === mb_strtolower($original, 'UTF-8')) {
-                    continue;
-                }
-                throw ValidationException::withMessages([$campo => "No se puede guardar: el Viaje N° {$envio->numero_viaje} ({$envio->codigo}) ya tiene otro {$campo}. Un mismo viaje conserva el mismo cliente, conductor y vehículo para todos sus lotes. Conserva los datos del viaje o usa otro número de viaje."]);
-            }
-            if ($nuevo !== '' && $actual === '') {
-                $envio->{$campo} = $nuevo;
-            }
-        }
+        $hermanos = VentaDescarte::withoutGlobalScopes()
+            ->activos()
+            ->where('envio_id', $envio->id)
+            ->when($ventaActual, fn ($query) => $query->where('id', '!=', $ventaActual->id))
+            ->get();
 
-        foreach (['ruc' => 'RUC', 'brevete' => 'número de brevete'] as $campo => $etiqueta) {
+        foreach (['cliente', 'placa', 'conductor', 'ruc', 'brevete'] as $campo) {
             $nuevo = trim((string) ($datos[$campo] ?? ''));
             if ($nuevo === '') {
                 continue;
             }
 
-            $referencia = VentaDescarte::withoutGlobalScopes()
-                ->where('envio_id', $envio->id)
-                ->when($ventaActual, fn ($query) => $query->where('id', '!=', $ventaActual->id))
-                ->whereNotNull($campo)
-                ->where($campo, '!=', '')
-                ->orderBy('created_at')
-                ->value($campo);
+            $valoresHermanos = $hermanos->pluck($campo)
+                ->map(fn ($valor) => trim((string) $valor))
+                ->filter(fn ($valor) => $valor !== '')
+                ->unique(fn ($valor) => mb_strtolower($valor, 'UTF-8'))
+                ->values();
+            $claveNuevo = mb_strtolower($nuevo, 'UTF-8');
+            $original = trim((string) ($ventaActual?->{$campo} ?? ''));
+            $conservaOriginal = $ventaActual && $claveNuevo === mb_strtolower($original, 'UTF-8');
 
-            if ($referencia !== null && mb_strtolower($nuevo, 'UTF-8') !== mb_strtolower(trim((string) $referencia), 'UTF-8')) {
-                throw ValidationException::withMessages([$campo => "No se puede guardar: el Viaje N° {$envio->numero_viaje} ({$envio->codigo}) ya tiene otro {$etiqueta}. Un mismo viaje conserva el mismo cliente, conductor y vehículo para todos sus lotes. Conserva los datos del viaje o usa otro número de viaje."]);
+            if ($valoresHermanos->count() > 1) {
+                // En datos históricos discordantes se permite corregir campos ajenos
+                // conservando el valor de esta fila o alineándola a un valor ya usado.
+                // Nunca se agrega un tercer valor ni se propaga el cambio a otros lotes.
+                $coincideConLoteHermano = $valoresHermanos->contains(
+                    fn ($valor) => mb_strtolower($valor, 'UTF-8') === $claveNuevo
+                );
+                if ($ventaActual && ($conservaOriginal || $coincideConLoteHermano)) {
+                    if (in_array($campo, ['cliente', 'placa', 'conductor'], true) && !$conservaOriginal) {
+                        $envio->{$campo} = $nuevo;
+                    }
+                    continue;
+                }
+                throw ValidationException::withMessages([$campo => "No se puede guardar: los lotes existentes del Viaje N° {$envio->numero_viaje} ({$envio->codigo}) ya tienen datos distintos de {$campo}. Conserva el dato de este registro o solicita corregir el envío completo."]);
+            }
+
+            $referencia = $valoresHermanos->first();
+            if ($referencia !== null && mb_strtolower($referencia, 'UTF-8') !== $claveNuevo) {
+                throw ValidationException::withMessages([$campo => "No se puede guardar: el Viaje N° {$envio->numero_viaje} ({$envio->codigo}) ya tiene otro {$campo}. Un mismo viaje conserva los mismos datos de cliente y transporte en todos sus lotes."]);
+            }
+
+            // Los lotes activos son la fuente de verdad. Si no hay hermanos, o
+            // esta fila era la única inconsistente, su corrección actualiza el envío.
+            if (in_array($campo, ['cliente', 'placa', 'conductor'], true)) {
+                $envio->{$campo} = $nuevo;
             }
         }
         $envio->save();
@@ -756,22 +769,37 @@ class VentaDescarteController extends Controller
                 ->with('error', 'El registro no cumple con las condiciones para ser enviado a Garita.');
         }
 
-        $enviarViajeCompleto = $request->boolean('enviar_viaje', true);
-
-        if ($enviarViajeCompleto && !empty($venta->viaje)) {
+        // El número de viaje representa el camión completo: no se permite enviar
+        // una sola fila de un envío que contiene varios lotes.
+        if (!empty($venta->viaje)) {
             $resultado = DB::transaction(function () use ($venta, $user) {
-                $registrosQuery = VentaDescarte::activos()->where('estado_garita', 'borrador');
+                $envioQuery = VentaDescarte::activos();
                 if ($venta->envio_id) {
-                    $registrosQuery->where('envio_id', $venta->envio_id);
+                    $envioQuery->where('envio_id', $venta->envio_id);
                 } else {
-                    $registrosQuery->where('fundo_id', $venta->fundo_id)
+                    $envioQuery->where('fundo_id', $venta->fundo_id)
                         ->whereDate('fecha_produccion', $venta->fecha_produccion)
-                        ->where('viaje', $venta->viaje)
-                        ->where('placa', $venta->placa);
+                        ->where('viaje', $venta->viaje);
                 }
-                $registros = $registrosQuery->lockForUpdate()->get();
+                $envioRegistros = $envioQuery->lockForUpdate()->get();
+                $registros = $envioRegistros->filter(fn ($registro) => $registro->isBorradorGarita());
                 if (!$registros->contains('id', $venta->id)) {
                     return 'El registro ya no está disponible para enviar. Actualiza la página.';
+                }
+                if ($envioRegistros->contains(fn ($registro) => $registro->isBorradorRegistro())) {
+                    return 'No se puede enviar el viaje: hay registros con información faltante. Completa o anula esos registros antes de enviar a Garita.';
+                }
+                if ($registros->count() !== $envioRegistros->count()) {
+                    return 'No se puede enviar el viaje completo porque algunos de sus registros ya fueron enviados o validados. Actualiza la página y revisa el estado del envío.';
+                }
+                foreach (['cliente' => 'cliente', 'conductor' => 'conductor', 'placa' => 'placa', 'ruc' => 'RUC', 'brevete' => 'brevete'] as $campo => $etiqueta) {
+                    $valores = $envioRegistros->pluck($campo)
+                        ->map(fn ($valor) => mb_strtolower(trim((string) $valor), 'UTF-8'))
+                        ->filter(fn ($valor) => $valor !== '')
+                        ->unique();
+                    if ($valores->count() > 1) {
+                        return "No se puede enviar el viaje: sus lotes tienen datos distintos de {$etiqueta}. Corrige los registros para que todos coincidan antes de enviar a Garita.";
+                    }
                 }
                 $faltantes = $registros->flatMap(fn ($registro) => $registro->camposFaltantesGarita())->unique()->values();
                 if ($faltantes->isNotEmpty()) {
@@ -832,8 +860,7 @@ class VentaDescarteController extends Controller
             } else {
                 $cancelQuery->where('fundo_id', $venta->fundo_id)
                     ->whereDate('fecha_produccion', $venta->fecha_produccion)
-                    ->where('viaje', $venta->viaje)
-                    ->where('placa', $venta->placa);
+                    ->where('viaje', $venta->viaje);
             }
             $cancelQuery
                 ->update([

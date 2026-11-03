@@ -58,5 +58,5 @@
     .garita-filter-actions { display:flex; gap:.5rem; flex-wrap:wrap; }
     .garita-filter-actions .btn { min-height:2.65rem; display:inline-flex; align-items:center; justify-content:center; }
     @media(max-width:1100px) { .garita-filter-bar--historial { grid-template-columns:repeat(3, minmax(150px, 1fr)); } }
-    @media(max-width:700px) { .garita-filter-bar { grid-template-columns:repeat(2, minmax(0, 1fr)); padding:1rem; gap:.75rem; } .garita-filter-field { min-width:0; } .garita-filter-actions { grid-column:1 / -1; width:100%; } .garita-filter-actions .btn { flex:1; } }
+    @media(max-width:700px) { .garita-filter-bar { grid-template-columns:repeat(2, minmax(0, 1fr)); padding:1rem; gap:.75rem; } .garita-filter-bar--panel { display:none; } .garita-filter-field { min-width:0; } .garita-filter-actions { grid-column:1 / -1; width:100%; } .garita-filter-actions .btn { flex:1; } }
 </style>

@@ -100,6 +100,75 @@ class GaritaWorkflowTest extends TestCase
         $this->assertSame('borrador', $segunda->fresh()->estado_garita);
     }
 
+    public function test_viaje_no_se_envia_si_contiene_un_borrador_de_registro(): void
+    {
+        $datos = [
+            'fundo_id' => $this->fundo->id, 'lote_id' => $this->loteA->id,
+            'fecha_produccion' => now()->toDateString(), 'motivo' => 'Campo',
+            'tipo_descarte' => 'Granos', 'precio' => 2, 'kilogramos' => 100,
+            'valor_venta' => 200, 'jabas' => 5, 'cliente' => 'Cliente prueba',
+            'conductor' => 'Juan Perez', 'placa' => 'ABC-123', 'viaje' => '3',
+            'created_by' => $this->registradorUser->id,
+        ];
+        $oficial = VentaDescarte::create(array_merge($datos, ['estado_registro' => 'oficial']));
+        $borrador = VentaDescarte::create(array_merge($datos, [
+            'lote_id' => $this->loteB->id, 'estado_registro' => 'borrador', 'cliente' => null,
+        ]));
+
+        $this->actingAs($this->registradorUser)
+            ->post(route('ventas.enviar-garita', $oficial), ['enviar_viaje' => true])
+            ->assertSessionHas('error', fn ($mensaje) => str_contains($mensaje, 'información faltante'));
+
+        $this->assertSame('borrador', $oficial->fresh()->estado_garita);
+        $this->assertSame('borrador', $borrador->fresh()->estado_garita);
+    }
+
+    public function test_garita_no_puede_validar_solo_parte_de_un_viaje(): void
+    {
+        $datos = [
+            'fundo_id' => $this->fundo->id, 'lote_id' => $this->loteA->id,
+            'fecha_produccion' => now()->toDateString(), 'motivo' => 'Campo',
+            'tipo_descarte' => 'Granos', 'precio' => 2, 'kilogramos' => 100,
+            'valor_venta' => 200, 'jabas' => 5, 'cliente' => 'Cliente prueba',
+            'conductor' => 'Juan Perez', 'placa' => 'ABC-123', 'viaje' => '4',
+            'created_by' => $this->registradorUser->id, 'estado_garita' => 'pendiente',
+        ];
+        $primero = VentaDescarte::create($datos);
+        $segundo = VentaDescarte::create(array_merge($datos, [
+            'lote_id' => $this->loteB->id, 'kilogramos' => 80, 'valor_venta' => 160,
+        ]));
+
+        $this->actingAs($this->garitaUser)
+            ->post(route('garita.confirmar-salida'), ['venta_ids' => [$primero->id]])
+            ->assertSessionHas('error', fn ($mensaje) => str_contains($mensaje, 'por partes'));
+
+        $this->assertSame('pendiente', $primero->fresh()->estado_garita);
+        $this->assertSame('pendiente', $segundo->fresh()->estado_garita);
+    }
+
+    public function test_no_envia_viaje_legacy_con_datos_de_transporte_discordantes(): void
+    {
+        $datos = [
+            'fundo_id' => $this->fundo->id, 'lote_id' => $this->loteA->id,
+            'fecha_produccion' => now()->toDateString(), 'motivo' => 'Campo',
+            'tipo_descarte' => 'Granos', 'precio' => 2, 'kilogramos' => 100,
+            'valor_venta' => 200, 'jabas' => 5, 'cliente' => 'Cliente prueba',
+            'conductor' => 'Juan Perez', 'placa' => 'ABC-123', 'viaje' => '5',
+            'created_by' => $this->registradorUser->id,
+        ];
+        $primero = VentaDescarte::create($datos);
+        $segundo = VentaDescarte::create(array_merge($datos, [
+            'lote_id' => $this->loteB->id, 'placa' => 'XYZ-999',
+        ]));
+
+        $this->actingAs($this->registradorUser)
+            ->post(route('ventas.enviar-garita', $primero), ['enviar_viaje' => true])
+            ->assertSessionHas('error', fn ($mensaje) => str_contains($mensaje, 'datos distintos de placa'));
+
+        $this->assertSame('borrador', $primero->fresh()->estado_garita);
+        $this->assertSame('borrador', $segundo->fresh()->estado_garita);
+    }
+
     public function test_garita_user_is_redirected_to_garita_panel_from_home(): void
     {
         $response = $this->actingAs($this->garitaUser)->get('/');
@@ -121,8 +190,37 @@ class GaritaWorkflowTest extends TestCase
         $response->assertSee('Número de viaje');
         $response->assertSee('Activar avisos');
         $response->assertDontSee('Más filtros');
-        $response->assertSee('Ver historial de validaciones');
+        $response->assertDontSee('Ver historial de validaciones');
         $response->assertSee('Fecha de producción');
+        $response->assertSee('id="btn-garita-notifications"', false);
+        $response->assertSee('data-user-id="'.$this->garitaUser->id.'"', false);
+        $response->assertSee('id="garita-bell-count"', false);
+        $response->assertDontSee('id="garita-bell-link"', false);
+        $response->assertDontSee('id="btn-pwa-notification-test"', false);
+    }
+
+    public function test_avisos_de_pendientes_son_exclusivos_del_rol_garita(): void
+    {
+        $this->registradorUser->update(['modulos_personalizados' => ['garita']]);
+
+        $this->actingAs($this->registradorUser)
+            ->get(route('garita.index'))
+            ->assertOk()
+            ->assertDontSee('id="btn-garita-notifications"', false)
+            ->assertDontSee('id="garita-bell-link"', false);
+
+        $this->actingAs($this->registradorUser)
+            ->get(route('garita.pendientes-count'))
+            ->assertForbidden();
+
+        $this->actingAs($this->adminUser)
+            ->get(route('garita.pendientes-count'))
+            ->assertForbidden();
+
+        $this->actingAs($this->garitaUser)
+            ->get(route('garita.pendientes-count'))
+            ->assertOk()
+            ->assertJsonStructure(['count', 'timestamp', 'pendientes']);
     }
 
     public function test_registrador_can_send_trip_to_garita_and_cancel_it(): void
@@ -231,6 +329,14 @@ class GaritaWorkflowTest extends TestCase
         $panel->assertSee('Registro:');
         $panel->assertSee('Lotes del envío');
         $panel->assertSee('data-viaje="1"', false);
+        $panel->assertSee('class="viaje-mobile-summary"', false);
+        $panel->assertSee('data-fundo="'.$this->fundo->name.'"', false);
+        $panel->assertDontSee('id="modal-salida-fundo"', false);
+        $panel->assertDontSee('Total de Carga a Despachar');
+        $panel->assertSee('Observación de Garita (Opcional)');
+        $panel->assertSee('class="btn-action-label"', false);
+        $panel->assertSee('aria-label="Ver información del Viaje N° 1"', false);
+        $panel->assertSee('aria-label="Revisar y validar salida del Viaje N° 1"', false);
 
         // 4. API de notificaciones cuenta 1 camión pendiente
         $api = $this->actingAs($this->garitaUser)->get(route('garita.pendientes-count'));

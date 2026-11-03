@@ -87,6 +87,16 @@ class VentaDescarteTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Historial de Ventas de Descarte');
+        $response->assertSee('filter-card--registrador', false);
+        $response->assertSee('Más filtros');
+        $response->assertSee('aria-expanded="false"', false);
+        $response->assertSee('id="ventas-filtros-avanzados"', false);
+
+        $this->actingAs($this->individualUser)
+            ->get(route('ventas.index', ['motivo' => 'Campo']))
+            ->assertOk()
+            ->assertSee('filter-advanced-fields is-open', false)
+            ->assertSee('aria-expanded="true"', false);
     }
 
     public function test_user_can_view_create_form(): void
@@ -296,7 +306,7 @@ class VentaDescarteTest extends TestCase
         $conflictoCliente
             ->assertUnprocessable()
             ->assertJsonValidationErrors('cliente')
-            ->assertJsonPath('errors.cliente.0', 'No se puede guardar: el Viaje N° 1 (ENV-20261008-FSOFIA-001) ya tiene otro cliente. Un mismo viaje conserva el mismo cliente, conductor y vehículo para todos sus lotes. Conserva los datos del viaje o usa otro número de viaje.');
+            ->assertJsonPath('errors.cliente.0', 'No se puede guardar: el Viaje N° 1 (ENV-20261008-FSOFIA-001) ya tiene otro cliente. Un mismo viaje conserva los mismos datos de cliente y transporte en todos sus lotes.');
         $this->actingAs($this->individualUser)->postJson(route('ventas.store'), array_merge($base, ['placa' => 'XYZ-999']))
             ->assertUnprocessable()
             ->assertJsonValidationErrors('placa');
@@ -361,6 +371,99 @@ class VentaDescarteTest extends TestCase
             ->assertRedirect(route('ventas.index'));
 
         $this->assertSame(120.0, (float) $venta->fresh()->kilogramos);
+    }
+
+    public function test_borrador_puede_corregir_sus_datos_de_viaje_si_no_hay_otros_lotes(): void
+    {
+        $respuesta = $this->actingAs($this->individualUser)->postJson(route('ventas.store'), [
+            'modo_guardado' => 'borrador',
+            'fundo_id' => $this->fundoSofia->id,
+            'fecha_produccion' => '2026-10-08',
+            'motivo' => 'Campo',
+            'tipo_descarte' => 'Racimos',
+            'lote_id' => $this->loteSofia->id,
+            'precio' => 1.50,
+            'kilogramos' => 100,
+            'cliente' => 'Cliente Incorrecto SAC',
+            'placa' => 'AAA-111',
+            'conductor' => 'Juan Perez',
+            'viaje' => 3,
+        ])->assertCreated();
+
+        $venta = VentaDescarte::withoutGlobalScopes()->findOrFail($respuesta->json('data.id'));
+        $this->actingAs($this->individualUser)->put(route('ventas.update', $venta), [
+            'modo_guardado' => 'borrador',
+            'fundo_id' => $this->fundoSofia->id,
+            'fecha_produccion' => '2026-10-08',
+            'motivo' => 'Campo',
+            'tipo_descarte' => 'Racimos',
+            'lote_id' => $this->loteSofia->id,
+            'precio' => 1.50,
+            'kilogramos' => 100,
+            'cliente' => 'Cliente Correcto SAC',
+            'placa' => 'ABC-123',
+            'conductor' => 'Juan Perez',
+            'viaje' => 3,
+        ])->assertRedirect(route('ventas.index'));
+
+        $this->assertSame('Cliente Correcto SAC', $venta->fresh()->cliente);
+        $this->assertSame('ABC-123', $venta->fresh()->envio->placa);
+        $this->assertSame('Cliente Correcto SAC', $venta->fresh()->envio->cliente);
+    }
+
+    public function test_registro_inconsistente_puede_alinearse_con_lotes_hermanos_sin_propagarlos(): void
+    {
+        $envio = Envio::withoutGlobalScopes()->create([
+            'codigo' => 'ENV-20261008-FSOFIA-008',
+            'fundo_id' => $this->fundoSofia->id,
+            'fecha_produccion' => '2026-10-08',
+            'numero_viaje' => 8,
+            'cliente' => 'Cliente Canonico SAC',
+            'placa' => 'ABC-123',
+            'conductor' => 'Juan Perez',
+        ]);
+        $base = [
+            'fundo_id' => $this->fundoSofia->id,
+            'envio_id' => $envio->id,
+            'fecha_produccion' => '2026-10-08',
+            'motivo' => 'Campo',
+            'tipo_descarte' => 'Racimos',
+            'precio' => 1.50,
+            'kilogramos' => 100,
+            'valor_venta' => 150,
+            'jabas' => 10,
+            'viaje' => 8,
+            'estado_registro' => 'oficial',
+            'created_by' => $this->individualUser->id,
+        ];
+        $incorrecta = VentaDescarte::withoutGlobalScopes()->create(array_merge($base, [
+            'lote_id' => $this->loteSofia->id,
+            'cliente' => 'Cliente Incorrecto SAC', 'placa' => 'AAA-111', 'conductor' => 'Juan Perez',
+        ]));
+        $hermana = VentaDescarte::withoutGlobalScopes()->create(array_merge($base, [
+            'lote_id' => Lote::withoutGlobalScopes()->create([
+                'fundo_id' => $this->fundoSofia->id, 'nombre' => 'Lote 02 Sur',
+            ])->id,
+            'cliente' => 'Cliente Canonico SAC', 'placa' => 'ABC-123', 'conductor' => 'Juan Perez',
+        ]));
+
+        $this->actingAs($this->individualUser)->put(route('ventas.update', $incorrecta), [
+            'fundo_id' => $this->fundoSofia->id,
+            'fecha_produccion' => '2026-10-08',
+            'motivo' => 'Campo',
+            'tipo_descarte' => 'Racimos',
+            'lote_id' => $this->loteSofia->id,
+            'precio' => 1.50,
+            'kilogramos' => 120,
+            'jabas' => 10,
+            'cliente' => 'Cliente Canonico SAC',
+            'placa' => 'ABC-123',
+            'conductor' => 'Juan Perez',
+            'viaje' => 8,
+        ])->assertRedirect(route('ventas.index'));
+
+        $this->assertSame('Cliente Canonico SAC', $incorrecta->fresh()->cliente);
+        $this->assertSame(100.0, (float) $hermana->fresh()->kilogramos);
     }
 
     public function test_cuartel_is_mandatory_when_motivo_is_cosecha_nacional(): void

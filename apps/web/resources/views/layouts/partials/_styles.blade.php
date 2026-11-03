@@ -553,28 +553,8 @@
             gap: 0.75rem;
         }
 
-        /* Notificaciones Garita Bell */
-        .btn-garita-bell {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            border-radius: var(--radius-md);
-            color: var(--txt-secondary);
-            background: var(--clr-surface-50);
-            border: 1px solid var(--brd-base);
-            text-decoration: none;
-            transition: all var(--transition-fast);
-        }
-        .btn-garita-bell:hover {
-            color: #b45309;
-            background: #fef3c7;
-            border-color: #fde68a;
-        }
-
         .btn-garita-notifications {
+            position: relative;
             display: inline-flex;
             align-items: center;
             gap: 0.375rem;
@@ -1618,6 +1598,12 @@
                 padding: 0.25rem 0.5rem;
             }
 
+            /* En Garita el fundo ya se muestra en el panel. Se libera espacio
+               para el título, los avisos y los controles táctiles esenciales. */
+            .app-header-garita .fundo-chip {
+                display: none;
+            }
+
             .page-content {
                 padding: 1.125rem 0.875rem;
             }
@@ -1714,6 +1700,14 @@
 
             .header-actions {
                 gap: 0.35rem;
+            }
+
+            .app-header-garita .header-breadcrumb {
+                min-width: 0;
+            }
+
+            .app-header-garita .header-user {
+                padding: 0;
             }
 
             .net-indicator {

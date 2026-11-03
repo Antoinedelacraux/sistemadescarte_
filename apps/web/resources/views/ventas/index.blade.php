@@ -21,6 +21,20 @@
         align-items: flex-end;
     }
 
+    .filter-date-fields,
+    .filter-advanced-fields {
+        display: contents;
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .filter-more-toggle {
+        display: none;
+    }
+
     .badge-motivo {
         display: inline-flex;
         align-items: center;
@@ -268,6 +282,67 @@
     }
 
     @media (max-width: 640px) {
+        .filter-card--registrador {
+            padding: 0.75rem;
+        }
+        .filter-card--registrador .filter-grid {
+            display: block;
+        }
+        .filter-card--registrador .filter-date-fields {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.625rem;
+        }
+        .filter-card--registrador .filter-date-fields .form-group,
+        .filter-card--registrador .filter-date-fields .form-control {
+            min-width: 0;
+            width: 100%;
+        }
+        .filter-card--registrador .filter-advanced-fields {
+            display: none;
+            grid-template-columns: 1fr;
+            gap: 0.625rem;
+            padding-top: 0.75rem;
+            margin-top: 0.75rem;
+            border-top: 1px solid var(--brd-base);
+        }
+        .filter-card--registrador .filter-advanced-fields.is-open {
+            display: grid;
+        }
+        .filter-card--registrador .filter-more-toggle {
+            display: inline-flex;
+            width: 100%;
+            margin-top: 0.75rem;
+            min-height: 2.375rem;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0.45rem 0.65rem;
+            border: 1px solid var(--brd-base);
+            border-radius: var(--radius-md);
+            background: var(--clr-surface-0);
+            color: var(--txt-secondary);
+            font: inherit;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .filter-card--registrador .filter-more-toggle svg {
+            transition: transform var(--transition-fast);
+        }
+        .filter-card--registrador .filter-more-toggle.is-open svg,
+        .filter-card--registrador .filter-more-toggle[aria-expanded="true"] svg {
+            transform: rotate(180deg);
+        }
+        .filter-card--registrador .filter-actions {
+            display: flex;
+            min-width: 0;
+            margin-top: 0.75rem;
+        }
+        .filter-card--registrador .filter-actions .btn {
+            min-width: 0;
+            justify-content: center;
+        }
         .index-top-bar {
             flex-direction: column;
             align-items: stretch;

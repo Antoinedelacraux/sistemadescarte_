@@ -733,12 +733,16 @@
     /* ============================================================
      * AVISOS DE GARITA: CONTADOR Y NOTIFICACIONES MIENTRAS LA PWA ESTÁ ACTIVA
      * ============================================================ */
-    var garitaBell = document.getElementById('garita-bell-link');
     var garitaBadge = document.getElementById('garita-bell-count');
     var garitaNotificationsButton = document.getElementById('btn-garita-notifications');
-    if (garitaBell && garitaBadge) {
-        var GARITA_PENDING_SEEN_KEY = 'fundo_garita_pending_seen_v1';
-        var GARITA_PENDING_READY_KEY = 'fundo_garita_pending_ready_v1';
+    if (garitaNotificationsButton && garitaBadge) {
+        // Cada cuenta Garita conserva sus propios viajes vistos aunque varias
+        // personas utilicen el mismo dispositivo.
+        var garitaNotificationUserId = garitaNotificationsButton
+            ? garitaNotificationsButton.dataset.userId
+            : 'unknown';
+        var GARITA_PENDING_SEEN_KEY = 'fundo_garita_pending_seen_v1_' + garitaNotificationUserId;
+        var GARITA_PENDING_READY_KEY = 'fundo_garita_pending_ready_v1_' + garitaNotificationUserId;
         var announceCurrentGaritaPendientes = false;
 
         function showGaritaToast(message, type, title) {
