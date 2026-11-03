@@ -141,6 +141,22 @@
         box-shadow: 0 4px 12px rgba(22,101,52,0.25);
     }
 
+    .sale-form-actions {
+        display: grid;
+        grid-template-columns: minmax(180px, 0.8fr) minmax(260px, 1.2fr);
+        gap: 0.75rem;
+        margin-top: 1.75rem;
+        align-items: stretch;
+    }
+
+    .sale-form-actions > .btn,
+    .sale-form-actions > .btn-submit-sale {
+        width: 100%;
+        min-height: 48px;
+        height: 48px;
+        justify-content: center;
+    }
+
     .btn-submit-sale:hover {
         background: linear-gradient(135deg, var(--clr-primary-800), var(--clr-primary-900));
         transform: translateY(-1px);
@@ -177,6 +193,12 @@
         }
         .total-title {
             font-size: 0.75rem;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .sale-form-actions {
+            grid-template-columns: 1fr;
         }
     }
 </style>

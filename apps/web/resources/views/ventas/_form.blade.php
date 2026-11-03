@@ -250,7 +250,7 @@
 </details>
 
 {{-- BOTÓN SUBMIT --}}
-<div style="margin-top: 1.75rem; display:flex; gap:0.75rem; flex-wrap:wrap;">
+<div class="sale-form-actions" role="group" aria-label="Opciones de guardado">
     @if(!$isEdit || $venta?->isBorradorRegistro())
         <button type="submit" class="btn btn-secondary" name="modo_guardado" value="borrador" id="btn-guardar-borrador">
             {{ $isEdit ? 'Guardar cambios como borrador' : 'Guardar borrador' }}

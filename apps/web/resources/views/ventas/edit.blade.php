@@ -146,6 +146,22 @@
         transition: all var(--transition-base);
     }
 
+    .sale-form-actions {
+        display: grid;
+        grid-template-columns: minmax(180px, 0.8fr) minmax(260px, 1.2fr);
+        gap: 0.75rem;
+        margin-top: 1.75rem;
+        align-items: stretch;
+    }
+
+    .sale-form-actions > .btn,
+    .sale-form-actions > .btn-submit-sale {
+        width: 100%;
+        min-height: 48px;
+        height: 48px;
+        justify-content: center;
+    }
+
     .btn-submit-sale:hover {
         background: linear-gradient(135deg, var(--clr-primary-800), var(--clr-primary-900));
         transform: translateY(-1px);
@@ -203,6 +219,12 @@
         .audit-box {
             flex-direction: column;
             gap: 0.375rem;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .sale-form-actions {
+            grid-template-columns: 1fr;
         }
     }
 </style>
