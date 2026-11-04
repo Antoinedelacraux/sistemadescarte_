@@ -1,6 +1,6 @@
-// Service Worker — Sistema Fundo PWA (v11)
+// Service Worker — Sistema Fundo PWA (v12)
 // Soporte offline-first, alta velocidad de navegación y sincronización de ventas
-const CACHE_NAME = 'fundo-pwa-v11';
+const CACHE_NAME = 'fundo-pwa-v12';
 
 const PRECACHE_ASSETS = [
     '/manifest.json',

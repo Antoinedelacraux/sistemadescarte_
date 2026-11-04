@@ -25,10 +25,11 @@
 
     <!-- PWA & Mobile Web App Settings (Android / iPhone) -->
     <meta name="theme-color" content="#166534">
+    <meta name="application-name" content="Descarte">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="TALSA Fundo">
+    <meta name="apple-mobile-web-app-title" content="Descarte">
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
@@ -145,7 +146,7 @@
             <div class="ios-install-backdrop" onclick="closeIosInstallModal()"></div>
             <div class="ios-install-sheet">
                 <div class="ios-install-header">
-                    <h3 id="ios-modal-title" style="margin:0;font-size:var(--text-base);font-weight:700;color:var(--txt-primary);display:flex;align-items:center;gap:.45rem;"><x-ui-icon name="mobile" size="18" /> Instalar TALSA Fundo</h3>
+                    <h3 id="ios-modal-title" style="margin:0;font-size:var(--text-base);font-weight:700;color:var(--txt-primary);display:flex;align-items:center;gap:.45rem;"><x-ui-icon name="mobile" size="18" /> Instalar Descarte</h3>
                     <button type="button" class="ios-install-close" onclick="closeIosInstallModal()" aria-label="Cerrar">&times;</button>
                 </div>
                 <div class="ios-install-body">
