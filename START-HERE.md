@@ -1,6 +1,6 @@
 # INICIO — Sistema Web del Fundo en Antigravity
 
-**Versión actual:** 1.0.4 (Release Listo para Producción en DonWeb Ferozo).
+**Versión actual:** 1.1.43 (lista para feedback y validación de despliegue).
 
 ---
 

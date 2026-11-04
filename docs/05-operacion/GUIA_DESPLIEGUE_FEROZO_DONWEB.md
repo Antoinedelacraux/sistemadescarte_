@@ -33,14 +33,14 @@ Verifica en tu panel de control Ferozo:
 ### Paso 2: Generar el Paquete de Producción
 En tu equipo local de desarrollo:
 1. Abre la carpeta del proyecto.
-2. Ejecuta el script de empaquetado:
-   - Haciendo doble clic directamente en **`empaquetar_produccion.bat`** (en la raíz del proyecto)
-   - O en PowerShell:
-     ```powershell
-     .\scripts\empaquetar_produccion_ferozo.ps1
+2. Ejecuta el empaquetador:
+   - Haciendo doble clic directamente en **`empaquetar_produccion.bat`** (en la raíz del proyecto, funciona en CMD estándar sin requerir permisos de administrador ni PowerShell).
+   - O abriendo tu ventana de **CMD** (Símbolo del sistema) y ejecutando:
+     ```cmd
+     empaquetar_produccion.bat
      ```
-3. El script ejecutará automáticamente las pruebas (`php artisan test`) y generará el archivo:
-   `dist/sistema-fundo-ferozo.zip` (incluye toda la aplicación, librerías de producción `vendor`, archivo de blindaje `.htaccess` y el esquema SQL limpio).
+3. El script ejecutará automáticamente las pruebas (`php artisan test`), incluirá el `.env` listo para producción, purgará archivos innecesarios (.md, .txt, tests, mocks) y generará el archivo:
+   `dist/sistema-fundo-ferozo.zip` (incluye toda la aplicación, librerías `vendor`, `.env` preconfigurado, `.htaccess` y el esquema SQL limpio).
 
 ---
 

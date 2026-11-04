@@ -1,106 +1,171 @@
-# Sistema Web del Fundo — TALSA Grape Farms (Gestión Agrícola y Venta de Descarte)
+# Sistema Web del Fundo — TALSA Grape Farms
 
-Sistema web empresarial y progresivo (PWA) para el registro, control, análisis y exportación de ventas de descarte agrícola en fundos, diseñado para operar en campo tanto en dispositivos móviles (Android / iOS) como en estaciones de escritorio.
+Aplicación web empresarial y PWA para registrar, controlar, analizar y exportar ventas de descarte agrícola. Está diseñada para operación en campo desde celulares y para gestión desde equipos de escritorio.
 
-- **Versión:** 1.0.4 (Release Listo para Producción en DonWeb Ferozo)
-- **Framework & Backend:** Laravel 12
-- **Frontend & UI:** Blade + Vanilla CSS moderno con Design Tokens (sin dependencias Node.js en servidor) + JavaScript Vanilla
-- **Base de Datos:** SQLite local (desarrollo) / MySQL 8.0 (producción en DonWeb Ferozo)
-- **Cobertura de Pruebas:** 84 pruebas automatizadas PHPUnit pasando (418 aserciones)
-- **Ubicación de la App:** `apps/web/`
+## Estado actual
 
----
+- **Versión documentada:** 1.1.43
+- **Estado:** módulos funcionales completos, en etapa de feedback y validación móvil.
+- **Aplicación:** `apps/web/`
+- **Backend:** PHP 8.3+ y Laravel 13.
+- **Frontend:** Blade, CSS responsive y JavaScript sin compilación obligatoria para ejecutar la interfaz actual.
+- **Datos:** SQLite en desarrollo y MySQL 8.0 en producción.
+- **PWA:** instalable en Android, iOS y escritorio, con soporte de caché y captura offline.
+- **Calidad:** 120 pruebas automatizadas y 771 aserciones aprobadas en la última ejecución completa.
 
-## Módulos y Funcionalidades Implementadas
+> La aplicación aún requiere validación visual final en Android y completar el procedimiento de despliegue antes de considerarse liberada en producción.
 
-1. **Autenticación y Control de Acceso por Roles (RBAC):**
-   - 5 roles oficiales con permisos diferenciados: `Administrador`, `Jefe de fundo`, `Registrador`, `Analista` y `Ventas`.
-   - Cuentas activas/inactivas con bloqueo automático y sesión segura.
-   - Branding corporativo TALSA Grape Farms (emblemas oficiales en blanco con transparencia pura) con fondo panorámico de viñedos en [login](file:///apps/web/resources/views/auth/login.blade.php).
+## Roles y acceso
 
-2. **Aislamiento Multi-Tenant (`FundoScope`):**
-   - Filtrado transparente y seguro a nivel de base de datos (`Eloquent Global Scope`).
-   - Fundos oficiales del negocio configurados con nombres diferenciados (operativos vs. razones sociales):
-     - **AGRITAC** (`AGRICOLA TAMBO COLORADO`)
-     - **PROCOM** (`AGRICOLA PROCOM`)
-     - **EL NEGRO** (`TALSA GRAPE FARMS`)
-   - El rol `Registrador` y `Jefe de fundo` operan sobre sus fundos asignados.
-   - `Administrador`, `Analista` y `Ventas` poseen acceso transversal a todos los fundos.
+El sistema dispone de seis roles oficiales:
 
-3. **Catálogos Dinámicos de Campo:**
-   - Carga reactiva de Lotes y Cuarteles por Fundo (`GET /api/catalogo/lotes`).
-   - 34 lotes oficiales precargados (AGRITAC: 18 lotes, PROCOM: 9 lotes, EL NEGRO: 7 lotes).
-   - Catálogo de Cuarteles dinámico: opcional en general y obligatorio para Cosecha Nacional, aprendiendo y guardando automáticamente cuarteles nuevos.
+| Rol | Alcance principal |
+|---|---|
+| Administrador | Configuración, usuarios, fundos y acceso integral. |
+| Jefe de fundo | Consulta de los fundos asignados. |
+| Registrador | Registro, edición permitida e historial de ventas de sus fundos. |
+| Analista | Consulta transversal, API y exportaciones. |
+| Ventas | Consulta comercial e historial transversal. |
+| Garita | Control y confirmación de salidas en los fundos asignados. |
 
-4. **Registro y Edición de Venta de Descarte:**
-   - Validación estricta por motivo: `Campo`, `Packing` y `Cosecha Nacional`.
-   - Regla de Cosecha Nacional: exige obligatoriamente Cuartel y está restringida exclusivamente a dos Tipos de Descarte: *Racimos* y *Granos*.
-   - Campo admite *Racimos*, *Racimos con plaga* y *Granos*; Packing admite *Racimos* y *Granos*.
-   - Cálculo automático en tiempo real del valor total (`Precio (S/) × Kilogramos`).
-   - Campo de Cliente / Razón Social para trazabilidad comercial directa.
-   - Auditoría completa de creación (`created_by`), edición (`updated_by`) y marcas de tiempo.
+Los permisos de módulos se controlan mediante RBAC. `FundoScope` y las verificaciones del servidor restringen los datos según los fundos asignados al usuario.
 
-5. **Historial de Ventas y Ciclo de Vida en 2 Pasos:**
-   - Filtros en tiempo real por Fundo, Motivo, Estado y Rango de fechas.
-   - **Doble Paginación (Opción A):** Botonera compacta superior en cabecera de tabla (`Anterior`, `Pág. X de Y`, botones directos y `Siguiente`) para navegación inmediata en laptops y smartphones sin deslizar hacia abajo, más paginación inferior completa.
-   - **Ciclo de eliminación seguro:** Primero *Anular* (descuenta totales sin destruir datos) y solo tras anular se habilita la *Eliminación física* definitiva.
-   - Botón *Ver* con modal emergente accesible para inspección detallada sin recargar página, y ficha técnica standalone.
+## Funcionalidades principales
 
-6. **Panel de Control Analítico (Dashboard):**
-   - KPIs consolidados en tiempo real.
-   - Tabla de segregación operativa (Venta Nacional, Campo y Packing por tipos de descarte con volúmenes, porcentajes y precios promedio).
-   - Tabla dinámica e interactiva por Cliente con filtros instantáneos por motivo/tipo, búsqueda reactiva y modo drill-down agrupado.
-   - Selector de pestañas interactivas ("Todas", "Por Tipo y Descarte", "Por Cliente", "Últimos Envíos") con persistencia en `localStorage`.
+### Registro de descarte
 
-7. **Exportación Nativa a Microsoft Excel (.xlsx):**
-   - Descarga directa en formato binario OpenXML `.xlsx` estructurado (no simple CSV).
-   - Exportación desde Historial de Ventas (`/ventas/exportar`) con los 21 campos operativos, nombres limpios de fundos, RUCs protegidos como texto, formato contable y fila de TOTAL GENERAL bold.
-   - Exportación contextual desde Panel de Control (`/dashboard/exportar`) respetando filtros activos en tiempo real.
+- Registro por fundo, fecha, lote, cuartel, motivo y tipo de descarte.
+- Motivos admitidos: Campo, Packing y Cosecha Nacional.
+- Cálculo automático de kilogramos, precio y total liquidado.
+- Catálogos dinámicos de lotes, clientes y RUC.
+- Guardado como **borrador** cuando todavía falta información.
+- Guardado como **registro oficial** cuando cumple los datos requeridos.
+- Datos del viaje, cliente, carga y vehículo organizados en una cuadrícula compacta que se adapta a tabletas y celulares.
+- RUC validado por longitud de 11 dígitos.
+- Advertencia por diferencias entre el peso registrado y `jabas × peso promedio`.
+- Auditoría de creación, modificación y marcas de tiempo.
 
-8. **Progresive Web App (PWA) & Modo Offline:**
-   - [manifest.json](file:///apps/web/public/manifest.json) e iconos en formato WebP optimizados para instalación en Android, iPhone y PC.
-   - Service Worker ([sw.js](file:///apps/web/public/sw.js)) con estrategia de caché offline para recursos estáticos y resiliencia en campo.
+### Viajes y relación entre lotes
 
-9. **Módulo de Administración:**
-   - Gestión de Fundos: creación de sedes con asignación inmediata de lotes y conmutación de estado.
-   - Gestión de Usuarios: creación y edición con asignación de roles y vinculación multi-fundo.
+Un viaje se identifica por la combinación:
 
-10. **Optimización Responsive Integral y Selects Controlados:**
-    - Motor `initCustomSelect` con altura máxima contenida (max-height: 200px), scroll vertical suave ("ir bajando") y buscador en tiempo real para listas con >6 opciones.
-    - Tipografía fluida con `clamp()`, espaciado generoso anti-colisión en bordes curvados y aceleración GPU (60 FPS) en menú lateral.
-
----
-
-## Ejecución Local
-
-```bash
-# Acceder a la aplicación
-cd apps/web
-
-# Iniciar servidor local
-php artisan serve
-
-# Ejecutar la suite completa de 84 pruebas automatizadas
-php artisan test
+```text
+fundo + fecha de producción + número de viaje
 ```
 
-Acceder en el navegador a: `http://127.0.0.1:8000`
+- Un viaje puede incluir descarte procedente de varios lotes.
+- Todos sus registros deben conservar el mismo cliente, RUC, conductor, brevete y placa.
+- El servidor rechaza registros contradictorios para el mismo viaje.
+- Cada envío dispone de un código estable con el formato `ENV-AAAAMMDD-FUNDO-VIAJE`.
+- Los borradores incompletos o los lotes discordantes impiden enviar el viaje a Garita.
 
----
+### Flujo Registrador–Garita
 
-## Empaquetado y Despliegue en DonWeb Ferozo
+1. El Registrador guarda uno o más lotes como borrador u oficial.
+2. Completa los datos requeridos y envía el viaje completo a Garita.
+3. Garita recibe el pendiente únicamente si pertenece a uno de sus fundos asignados.
+4. Garita revisa el detalle y confirma la salida, con una observación opcional.
+5. La validación se aplica de forma transaccional a todos los registros activos del envío.
+6. La fecha y hora de validación quedan disponibles en historial, API y exportación Excel.
 
-1. **Empaquetar para Producción:** Ejecuta el archivo `empaquetar_produccion.bat` en la raíz del proyecto para generar `dist/sistema-fundo-ferozo.zip`.
-2. **Guía de Despliegue:** Consulta la [Guía Maestra de Despliegue en Ferozo](file:///docs/05-operacion/GUIA_DESPLIEGUE_FEROZO_DONWEB.md) para subirlo e inicializar la base de datos limpia con 0 ventas.
+Una venta oficial puede editarse antes de enviarse a Garita. Cuando el viaje está pendiente o validado, queda bloqueado para proteger la coherencia del despacho.
 
----
+### Panel de Garita
 
-## Estructura de Documentación (`docs/`)
+- Pestañas de pendientes y validados.
+- Filtros principales por fecha y número de viaje.
+- Tres tarjetas por fila en escritorio, dos en tableta y una en móvil.
+- Vista móvil compacta con acciones táctiles accesibles.
+- Historial tabular con fecha, viaje, cliente, conductor, placa, jabas, kilogramos, lotes y validación.
+- Avisos PWA exclusivos del rol Garita cuando aparecen viajes pendientes.
 
-- [docs/00-gestion/](file:///docs/00-gestion/): Estado actual ([ESTADO_PROYECTO.md](file:///docs/00-gestion/ESTADO_PROYECTO.md)), [BACKLOG.md](file:///docs/00-gestion/BACKLOG.md), [REGISTRO_CAMBIOS.md](file:///docs/00-gestion/REGISTRO_CAMBIOS.md).
-- [docs/01-requisitos/](file:///docs/01-requisitos/): Requisitos aprobados, matrices de requerimientos y trazabilidad.
-- [docs/02-arquitectura/](file:///docs/02-arquitectura/): ADRs, contratos API y modelo ER de datos.
-- [docs/03-diseno/](file:///docs/03-diseno/): Guía de UI/UX, tokens CSS y wireframes.
-- [docs/04-calidad/](file:///docs/04-calidad/): Matriz de pruebas automatizadas y checklist de release.
-- [docs/05-operacion/](file:///docs/05-operacion/): Plan de despliegue para VPS DonWeb, Runbook y seguridad.
-- [docs/06-mantenimiento/](file:///docs/06-mantenimiento/): Procedimiento de gestión de cambios posteriores.
+Los avisos actuales consultan pendientes cada 30 segundos mientras la PWA está activa o vuelve al primer plano. Recibir notificaciones con la aplicación completamente cerrada requiere una futura implementación de Web Push con VAPID.
+
+### Historial, análisis e integraciones
+
+- Historial de ventas con filtros, paginación y detalle.
+- Exportación de los historiales de ventas y validaciones de Garita a Excel, conservando filtros, orden de columnas y formato tabular.
+- Columna de acciones compacta: detalle y acción principal visibles; edición, anulación y otras operaciones secundarias bajo un menú contextual.
+- En móvil, el Registrador conserva visibles las fechas y abre los demás criterios desde **Más filtros**.
+- Panel analítico con indicadores y matrices por tipo, descarte y cliente.
+- Exportación nativa a archivos `.xlsx`.
+- API v1 protegida por token para consumo analítico, incluido el campo de validación de Garita.
+
+### PWA y operación sin conexión
+
+- Manifest e iconos para instalación en dispositivos.
+- Service Worker con caché de recursos y respuestas de contingencia válidas.
+- Cola local para registros sin conexión e idempotencia para evitar duplicados al sincronizar.
+- Separación por cuenta de los viajes ya notificados en dispositivos compartidos.
+
+## Instalación local
+
+Requisitos:
+
+- PHP 8.3 o superior con extensiones requeridas por Laravel.
+- Composer.
+- SQLite para desarrollo o una conexión MySQL 8.0 configurada.
+
+Desde la raíz del repositorio:
+
+```bash
+cd apps/web
+composer install
+php -r "file_exists('.env') || copy('.env.example', '.env');"
+php artisan key:generate
+php artisan migrate
+php artisan serve
+```
+
+La aplicación quedará disponible en `http://127.0.0.1:8000`.
+
+Para trabajar con Vite en modo desarrollo:
+
+```bash
+npm install
+npm run dev
+```
+
+## Verificación
+
+```bash
+cd apps/web
+
+# Suite completa
+php artisan test
+
+# Pruebas enfocadas en el flujo operativo
+php artisan test tests/Feature/Ventas/VentaDescarteTest.php
+php artisan test tests/Feature/Garita/GaritaWorkflowTest.php
+
+# Validar la compilación de vistas
+php artisan view:cache
+```
+
+La última ejecución completa registrada aprobó 120 pruebas y 771 aserciones.
+
+## Despliegue
+
+La documentación operativa distingue entre instalación limpia y actualización con conservación de datos. Antes de desplegar:
+
+1. Verificar las notas de la versión y migraciones pendientes.
+2. Generar y comprobar un respaldo restaurable.
+3. Ensayar el despliegue en un entorno de pruebas.
+4. Ejecutar migraciones solamente mediante el procedimiento documentado.
+5. Completar smoke tests y disponer de un plan de reversión.
+
+Consulta la [Guía de despliegue en DonWeb Ferozo](docs/05-operacion/GUIA_DESPLIEGUE_FEROZO_DONWEB.md) y el [plan de despliegue](docs/05-operacion/PLAN_DESPLIEGUE.md).
+
+## Documentación del proyecto
+
+- [Estado del proyecto](docs/00-gestion/ESTADO_PROYECTO.md)
+- [Registro de cambios](docs/00-gestion/REGISTRO_CAMBIOS.md)
+- [Requisitos aprobados](docs/01-requisitos/REQUISITOS_APROBADOS.md)
+- [Decisiones de arquitectura](docs/02-arquitectura/DECISIONES.md)
+- [Documentación de calidad](docs/04-calidad/)
+- [Documentación operativa](docs/05-operacion/)
+- [Procedimientos de mantenimiento](docs/06-mantenimiento/)
+
+## Protección de datos
+
+El código puede evolucionar, pero la información real del cliente debe mantenerse íntegra, protegida y disponible. No se deben ejecutar reinicios, semillas ficticias, eliminaciones históricas ni migraciones destructivas sobre producción sin autorización, respaldo verificado y plan de recuperación.

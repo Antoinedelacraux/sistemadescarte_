@@ -2,12 +2,44 @@
 
 - **Fase:** 6 — Módulos Completados (Listo para Feedback y Ajustes del Propietario).
 - **Requisitos funcionales:** Confirmados al 100% en `MATRIZ_REQUISITOS_V1.md`.
-- **Stack / base de datos / hosting:** Laravel 12 (PHP 8.4), SQLite local (MySQL 8.0 VPS), Blade, PWA.
+- **Stack / base de datos / hosting:** Laravel 13 (PHP 8.3+), SQLite local (MySQL 8.0 VPS), Blade, CSS/JavaScript directo, PWA.
 - **Entornos / API / módulos en desarrollo:** `apps/web` (Login, RBAC, FundoScope, UI Shell con Sidebar deslizante, Catálogos, Venta de Descarte, Exportador Excel con selección de columnas, PWA Android/iPhone, Administración de Fundos y Usuarios).
 - **Responsable de aprobaciones:** propietario del proyecto.
 - **Siguiente hito:** Recibir feedback del propietario y anotar observaciones para ajustes en el código.
 
 ## Cambios recientes
+
+- **2026-11-04:** Se consolidó el estado reproducible del repositorio para clonación: código funcional, pruebas, configuración de ejemplo, documentación y empaquetadores quedan versionados sin incluir `.env`, bases locales, dependencias ni artefactos `dist`. La suite completa aprobó 120 pruebas y 771 aserciones; las vistas Blade compilaron correctamente. Un clon nuevo requiere instalar dependencias Composer, crear su `.env`, generar `APP_KEY` y ejecutar migraciones.
+
+- **2026-11-04:** El PWA ahora se instala con el nombre «Descarte» en Android y iOS: `name`/`short_name`, metadatos móviles y guía de instalación actualizados. Se incrementó la caché del service worker para actualizar el manifiesto precargado en dispositivos.
+
+- **2026-11-04:** El indicador de cliente guardado ahora muestra únicamente un check SVG; conserva el nombre accesible «Cliente registrado» para lectores de pantalla y reduce el espacio visual del rótulo.
+
+- **2026-11-04:** Al editar un registro oficial no enviado a Garita, si se borra cliente, conductor, placa, viaje o jabas válidas, aparece «Guardar cambios como borrador». Esa acción cambia el estado a borrador y mantiene los datos editados; al completar los campos, la acción de borrador se oculta. Registros pendientes o validados por Garita siguen bloqueados para edición. Sin migración ni cambios en datos existentes.
+
+- **2026-11-04:** Las tarjetas principales del Dashboard suman kilogramos y valor solo de ventas activas ya enviadas a Garita (pendientes de validación o validadas). Borradores, registros oficiales no enviados y envíos cancelados no incrementan estos indicadores. Sin migración ni alteración de datos.
+
+- **2026-11-04:** Los errores del guardado asíncrono de ventas ahora incluyen el nombre del campo y el mensaje; claves de traducción sin resolver se presentan en español. Se añadieron mensajes concretos para errores de entero en fundo, lote y jabas; viaje conserva su mensaje específico. La regla de vinculación de viajes no cambia.
+
+- **2026-11-04:** Se corrigió el botón «Ver información» de las tarjetas de Garita: el modal intentaba llenar un campo de código de envío que ya no existe desde que se ocultó ese identificador. Ahora el llenado usa los campos presentes y tolera que falte un destino opcional. Sin cambio de datos ni reglas de negocio.
+
+- **2026-11-04:** Se corrigieron los contadores del panel de Garita: pendientes de hoy se cuentan por hora de envío a Garita y validados de hoy por hora de validación, no por fecha de producción. El sondeo de avisos actualiza los indicadores y recarga la vista cuando cambia el estado/contenido de los envíos; conserva el conteo de viajes y la restricción por fundos asignados. Sin migración ni cambios en datos.
+
+- **2026-11-04:** El código legible de envío dejó de mostrarse en historiales, detalles, tarjetas/modales de Garita, mensajes de validación y exportaciones Excel. Los listados muestran el número de viaje junto con la fecha de producción; las relaciones internas continúan usando `envio_id` y la clave fundo + fecha + viaje. El API de Power BI sigue exponiendo `envio_id`/`envio_codigo` por compatibilidad v1; retirar esos campos requiere confirmar el impacto sobre consumidores conectados. Sin cambios de esquema ni datos.
+
+- **2026-11-04:** Se simplificó el bloque Datos de Cliente y Transporte: se quitó la explicación secundaria bajo Cliente y se reservó una altura pareja para las etiquetas en escritorio/tableta, alineando los controles. En móvil se elimina esa altura reservada para conservar una vista compacta. Sin cambios en validaciones, persistencia o datos.
+
+- **2026-11-04:** Se reestructuró el bloque Datos de Cliente y Transporte del formulario compartido de alta/edición. Viaje, cliente y RUC quedan relacionados en la primera fila de escritorio; jabas, peso, placa, conductor y brevete en filas compactas; observaciones ocupan todo el ancho. En tabletas se usa una cuadrícula de dos columnas y en móvil una secuencia vertical con separación reducida. No cambian campos, validaciones ni guardado.
+
+- **2026-11-04:** Se eliminó por solicitud del propietario la exportación PDF de Historial de Ventas e Historial de Validaciones de Garita. Se retiraron botones, rutas, métodos de controlador, generador PDF, configuración de anchos y pruebas específicas. Excel permanece como único formato exportable, conservando filtros, columnas, orden, tipos numéricos y alineación. Sin migraciones ni cambios en datos.
+
+- **2026-11-04:** Se ajustó la alineación de las tablas exportadas a pedido del propietario: encabezados y datos descriptivos quedan centrados; número de viaje, jabas, kilogramos, precios y totales se alinean a la izquierda. La regla es explícita por columna y se aplica igual en PDF y Excel. La muestra PDF fue renderizada y revisada sin recortes ni solapamientos. Sin cambios en consultas, filtros, permisos, esquema o datos.
+
+- **2026-11-04:** Los historiales de Ventas y Validaciones de Garita permiten descargar el conjunto filtrado en Excel y PDF. Ambos formatos comparten una definición validada de columnas para conservar orden y valores; Excel incorpora encabezado congelado, autofiltro, anchos explícitos y configuración horizontal, mientras PDF repite cabeceras, pagina automáticamente y usa A3 horizontal cuando el historial de ventas necesita sus 23 columnas. Los botones se sustituyeron por grupos compactos de iconos accesibles y responsive. Sin migraciones ni cambios en datos.
+
+- **2026-11-03:** La columna Acción del Historial de Ventas se simplificó. Cada fila conserva visible el detalle y solo la acción principal según su estado: completar/editar un registro incompleto, enviar a Garita o reactivar. Editar, cancelar envío, anular, descartar y eliminar se agrupan bajo un menú de tres puntos cuando corresponden. El menú incluye etiquetas, control por teclado, cierre con Escape y posicionamiento adaptable para escritorio y móvil. Sin cambios de permisos, rutas, esquema ni datos. `VentaDescarteTest`: 25 pruebas y 145 aserciones aprobadas; Blade compilado.
+
+- **2026-11-03:** Se actualizó el README principal a la versión documental 1.1.28. Ahora describe los seis roles, el ciclo borrador/oficial, la identidad y coherencia de viajes, el flujo Registrador–Garita, los avisos PWA, la instalación con Laravel 13 y Vite, el estado real de pruebas y las precauciones de despliegue. También se sustituyeron enlaces `file:///` por rutas relativas navegables desde el repositorio. Sin cambios de código, esquema ni datos.
 
 - **2026-11-03:** El Historial de Ventas del Registrador se compactó en móvil: Desde/Hasta permanecen visibles y Fundo, Motivo, Estado y Tipo de registro se agrupan bajo “Más filtros”. El bloque inicia cerrado, conserva valores y se abre automáticamente cuando existe un filtro avanzado activo. Escritorio y los demás roles mantienen la presentación completa.
 
@@ -52,6 +84,10 @@
 ## Log de avances
 | Fecha | Hecho verificado | Pruebas | Bloqueos | Siguiente acción |
 |---|---|---|---|---|
+| 2026-11-04 | Formulario compartido de alta/edición: campos de transporte reorganizados en grid compacto; adaptación en escritorio, tableta y móvil. | `view:cache` exitoso; `git diff --check` sin errores. No se ejecutaron pruebas funcionales porque no cambiaron contratos ni lógica. | Revisión visual final en dispositivos móviles pendiente. | Recibir feedback de la vista móvil. |
+| 2026-11-04 | PDF retirado completamente de ambos historiales; Excel queda como única descarga y conserva el contrato tabular. | Suite completa: 120 pruebas y 771 aserciones; Blade compilado; rutas verificadas y sintaxis PHP correcta. | Ninguno conocido. | Confirmar visualmente que cada historial muestre únicamente el icono Excel. |
+| 2026-11-04 | Alineación explícita en Excel/PDF: datos descriptivos centrados y columnas numéricas alineadas a la izquierda. | Suite completa: 123 pruebas y 795 aserciones; Blade compilado; PDF de muestra renderizado a PNG y revisado visualmente. | Ninguno conocido. | Confirmar el resultado descargando ambos formatos desde el sistema. |
+| 2026-11-04 | Exportaciones Excel/PDF funcionales en Historial de Ventas e Historial de Validaciones de Garita, con filtros activos, contrato común de columnas, paginación PDF e iconos responsive. | Suite completa: 122 pruebas y 784 aserciones aprobadas; Blade compilado; sintaxis y rutas verificadas. | Inspección visual final del PDF en lector externo pendiente; Chrome headless mostró únicamente el visor integrado. | Probar una descarga real en Microsoft Excel/lector PDF de escritorio y en Android. |
 | 2026-11-03 | Filtros móviles del Registrador reorganizados: fechas visibles y filtros restantes bajo un control accesible “Más filtros”, con apertura automática al existir criterios avanzados. | VentaDescarteTest: 24 pruebas, 135 aserciones; Blade compilado. | Inspección visual final pendiente en Android. | Validar apertura, cierre y espacio vertical en la PWA. |
 | 2026-11-03 | Confirmación de salida simplificada a observación opcional y acciones; datos repetidos retirados sin cambiar los IDs enviados al backend. | GaritaWorkflowTest: 11 pruebas, 141 aserciones; Blade compilado. | Inspección visual final pendiente en Android. | Validar apertura, teclado y foco del campo en la PWA. |
 | 2026-11-03 | Feedback móvil Garita aplicado: etiquetas restauradas en KPIs, enlace al historial retirado y acciones compactadas a iconos accesibles. | GaritaWorkflowTest: 11 pruebas, 140 aserciones; Blade compilado. | Inspección visual final pendiente en Android. | Validar proporción y separación de iconos en la PWA instalada. |
