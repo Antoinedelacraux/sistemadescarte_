@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,8 +25,14 @@ class AppServiceProvider extends ServiceProvider
         Paginator::defaultView('vendor.pagination.default');
 
         if ($this->app->environment('local')) {
-            if (\Illuminate\Support\Facades\Schema::hasTable('fundos') && !\Illuminate\Support\Facades\Schema::hasColumn('fundos', 'nombre_completo')) {
-                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            $connection = (string) config('database.default');
+            $database = config("database.connections.{$connection}.database");
+            $sqliteSinCrear = $connection === 'sqlite'
+                && $database !== ':memory:'
+                && (! is_string($database) || ! is_file($database));
+
+            if (! $sqliteSinCrear && Schema::hasTable('fundos') && ! Schema::hasColumn('fundos', 'nombre_completo')) {
+                Artisan::call('migrate', ['--force' => true]);
             }
         }
     }
