@@ -274,6 +274,28 @@
         gap: 0.5rem;
         align-items: center;
     }
+    .export-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.25rem;
+        border: 1px solid var(--brd-base);
+        border-radius: var(--radius-lg);
+        background: var(--clr-surface-0);
+    }
+    .export-icon-btn {
+        display: inline-flex;
+        width: 2.625rem;
+        height: 2.625rem;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid transparent;
+        border-radius: var(--radius-md);
+        transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+    }
+    .export-icon-btn:hover { transform: translateY(-1px); }
+    .export-icon-btn--excel { color:#166534; background:#f0fdf4; border-color:#bbf7d0; }
+    .export-icon-btn--excel:hover { background:#dcfce7; border-color:#86efac; }
 
     @media (max-width: 768px) {
         .filter-grid {
@@ -349,13 +371,13 @@
             gap: 0.75rem;
         }
         .index-actions-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
             width: 100%;
             gap: 0.5rem;
         }
+        .export-actions { flex:0 0 auto; }
         .index-actions-group .btn {
-            width: 100%;
+            flex:1 1 auto;
             justify-content: center;
             font-size: clamp(0.72rem, 2.6vw, 0.8125rem);
             padding: 0.5rem 0.25rem;
@@ -452,6 +474,86 @@
         display: inline-flex;
         align-items: center;
         gap: 0.35rem;
+        position: relative;
+    }
+
+    .row-actions-overflow {
+        display: inline-flex;
+    }
+
+    .btn-action-more {
+        background: var(--clr-surface-0);
+        color: #475569;
+        border-color: #cbd5e1;
+    }
+
+    .btn-action-more:hover,
+    .btn-action-more[aria-expanded="true"] {
+        background: #f1f5f9;
+        color: #0f172a;
+        border-color: #94a3b8;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+    }
+
+    .row-actions-menu {
+        position: fixed;
+        z-index: 1200;
+        min-width: 205px;
+        padding: 0.35rem;
+        background: var(--clr-surface-0);
+        border: 1px solid var(--brd-base);
+        border-radius: var(--radius-md);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+        text-align: left;
+    }
+
+    .row-actions-menu[hidden] {
+        display: none !important;
+    }
+
+    .row-actions-menu form {
+        display: block;
+        margin: 0;
+    }
+
+    .row-action-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        width: 100%;
+        min-height: 40px;
+        padding: 0.55rem 0.65rem;
+        border: 0;
+        border-radius: calc(var(--radius-md) - 2px);
+        background: transparent;
+        color: var(--txt-primary);
+        font: inherit;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        line-height: 1.2;
+        text-align: left;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .row-action-menu-item:hover,
+    .row-action-menu-item:focus-visible {
+        background: #f1f5f9;
+        outline: none;
+    }
+
+    .row-action-menu-item svg {
+        width: 16px;
+        height: 16px;
+        flex: 0 0 16px;
+    }
+
+    .row-action-menu-item.is-warning {
+        color: #9a3412;
+    }
+
+    .row-action-menu-item.is-danger {
+        color: #b91c1c;
     }
 
     .btn-action-icon {
@@ -505,18 +607,6 @@
         box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
     }
 
-    .btn-action-anular {
-        background: #fff7ed;
-        color: #c2410c;
-        border-color: #fed7aa;
-    }
-    .btn-action-anular:hover {
-        background: #ffedd5;
-        color: #9a3412;
-        border-color: #fdba74;
-        box-shadow: 0 1px 3px rgba(194, 65, 12, 0.15);
-    }
-
     .btn-action-reactivar {
         background: #eff6ff;
         color: #1d4ed8;
@@ -527,18 +617,6 @@
         color: #1e40af;
         border-color: #93c5fd;
         box-shadow: 0 1px 3px rgba(29, 78, 216, 0.15);
-    }
-
-    .btn-action-delete {
-        background: #fef2f2;
-        color: #dc2626;
-        border-color: #fecaca;
-    }
-    .btn-action-delete:hover {
-        background: #fee2e2;
-        color: #b91c1c;
-        border-color: #f87171;
-        box-shadow: 0 1px 3px rgba(220, 38, 38, 0.15);
     }
 
     .badge-garita {
@@ -580,17 +658,6 @@
         border-color: #fcd34d;
         box-shadow: 0 1px 3px rgba(180, 83, 9, 0.2);
     }
-    .btn-action-garita-cancel {
-        background: #f1f5f9;
-        color: #475569;
-        border-color: #cbd5e1;
-    }
-    .btn-action-garita-cancel:hover {
-        background: #e2e8f0;
-        color: #1e293b;
-        border-color: #94a3b8;
-    }
-
     .badge-anulado {
         background: #fee2e2;
         color: #991b1b;
@@ -897,10 +964,11 @@
         </div>
 
         <div class="index-actions-group">
-            <a href="{{ route('ventas.exportar', request()->query()) }}" class="btn btn-secondary" id="btn-exportar-ventas" title="Descargar directamente registros filtrados a Excel (.xlsx)">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Exportar Excel
-            </a>
+            <div class="export-actions" role="group" aria-label="Exportar historial filtrado">
+                <a href="{{ route('ventas.exportar', request()->query()) }}" class="export-icon-btn export-icon-btn--excel" id="btn-exportar-ventas" title="Exportar historial filtrado a Excel" aria-label="Exportar historial filtrado a Excel">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13l4 5m0-5-4 5m7-5v5"/></svg>
+                </a>
+            </div>
             @if(Auth::user()->canAccessModule('registro'))
             <a href="{{ route('ventas.create') }}" class="btn btn-primary" id="btn-nueva-venta">
                 Registrar Venta
@@ -977,7 +1045,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Fundo</th>
-                        <th scope="col">Envío</th>
+                        <th scope="col">Viaje</th>
                         <th scope="col">Fecha Prod.</th>
                         <th scope="col">Cliente</th>
                         <th scope="col">Lote</th>
@@ -1012,14 +1080,7 @@
                                     </div>
                                 @endif
                             </td>
-                            <td>
-                                @if($venta->envio)
-                                    <strong style="font-family: monospace; font-size: 0.75rem; color: #166534;">{{ $venta->envio->codigo }}</strong>
-                                    <div style="font-size: 0.6875rem; color: var(--txt-muted);">Viaje {{ $venta->envio->numero_viaje }}</div>
-                                @else
-                                    <span style="color: var(--txt-muted);">Histórico</span>
-                                @endif
-                            </td>
+                            <td>{{ $venta->viaje ? 'Viaje '.$venta->viaje : '—' }}</td>
                             <td>
                                 {{ $venta->fecha_produccion->format('d/m/Y') }}
                             </td>
@@ -1082,7 +1143,6 @@
                                             data-conductor="{{ $venta->conductor ?: '—' }}"
                                             data-brevete="{{ $venta->brevete ?: '—' }}"
                                             data-viaje="{{ $venta->viaje ?: '—' }}"
-                                            data-envio="{{ $venta->envio?->codigo ?: 'Histórico' }}"
                                             data-estado-registro="{{ $venta->isBorradorRegistro() ? 'Borrador' : 'Registro oficial' }}"
                                             data-observacion="{{ $venta->observacion ?: '' }}"
                                             data-creado-por="{{ $venta->creator?->name ?? 'Usuario' }}"
@@ -1098,78 +1158,124 @@
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                     </button>
 
-                                    {{-- Enviar a Garita --}}
-                                    @if($venta->puedeEnviarAGarita(Auth::user()))
+                                    @php
+                                        $puedeEnviarGarita = $venta->puedeEnviarAGarita(Auth::user())
+                                            && empty($venta->camposFaltantesGarita());
+                                        $puedeCancelarGarita = $venta->puedeCancelarEnvioGarita(Auth::user());
+                                        $puedeEditar = $venta->puedeSerEditadoPor(Auth::user());
+                                        $puedeAnular = $venta->puedeSerAnuladoPor(Auth::user());
+                                        $puedeReactivar = $venta->isAnulado()
+                                            && (Auth::user()->isAdmin() || (Auth::user()->canAccessModule('registro') && !$venta->isCerradoParaEdicion()));
+                                        $editarEsPrincipal = !$puedeEnviarGarita && !$puedeCancelarGarita && !$venta->isAnulado() && $puedeEditar;
+                                        $hayAccionesSecundarias = $puedeCancelarGarita
+                                            || ($puedeEditar && !$editarEsPrincipal)
+                                            || $puedeAnular
+                                            || $puedeReactivar;
+                                        $menuId = 'acciones-venta-'.$venta->id;
+                                    @endphp
+
+                                    {{-- Acción principal según el estado del registro --}}
+                                    @if($puedeEnviarGarita)
                                         <form method="POST" action="{{ route('ventas.enviar-garita', $venta) }}" style="display:inline;" onsubmit="return confirm('¿Ya verificaste el cliente, conductor, placa, número de viaje, jabas, kilogramos y lotes del envío? Confirma para enviarlo a Garita.');">
                                             @csrf
                                             <button type="submit" class="btn-action-icon btn-action-garita-send" title="Enviar camión/viaje a Garita" aria-label="Enviar a Garita">
                                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
                                             </button>
                                         </form>
-                                    @elseif($venta->puedeCancelarEnvioGarita(Auth::user()))
-                                        {{-- Cancelar Envío a Garita (para editar si hubo error) --}}
-                                        <form method="POST" action="{{ route('ventas.cancelar-garita', $venta) }}" style="display:inline;" onsubmit="return confirm('¿Deseas CANCELAR el envío a Garita para poder editar este registro?');">
-                                            @csrf
-                                            <button type="submit" class="btn-action-icon btn-action-garita-cancel" title="Cancelar envío a Garita (volver a borrador para editar)" aria-label="Cancelar envío a Garita">
-                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-                                            </button>
-                                        </form>
-                                    @endif
-
-                                    @if($venta->puedeSerEditadoPor(Auth::user()))
-                                        {{-- Editar (Solo activo y dentro de 24h para registradores) --}}
-                                        <a href="{{ route('ventas.edit', $venta) }}" 
-                                           class="btn-action-icon btn-action-edit btn-row-edit" 
-                                           title="{{ $venta->isBorradorRegistro() ? 'Editar borrador' : 'Editar registro oficial' }}"
+                                    @elseif($editarEsPrincipal)
+                                        <a href="{{ route('ventas.edit', $venta) }}"
+                                           class="btn-action-icon btn-action-edit btn-row-edit"
+                                           title="{{ $venta->isBorradorRegistro() ? 'Completar borrador' : 'Editar registro oficial' }}"
                                            @if(!Auth::user()->isAdmin() && !$venta->isBorradorRegistro() && !$venta->tieneBorradorSinVencimiento() && $venta->created_at)
                                            data-expires-at="{{ ($venta->created_at->timestamp + 86400) * 1000 }}"
                                            data-venta-id="{{ $venta->id }}"
                                            @endif
-                                           aria-label="Editar venta del {{ $venta->fecha_produccion->format('d/m/Y') }}">
+                                           aria-label="{{ $venta->isBorradorRegistro() ? 'Completar borrador' : 'Editar venta' }} del {{ $venta->fecha_produccion->format('d/m/Y') }}">
                                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                         </a>
-                                    @endif
-
-                                    @if($venta->puedeSerAnuladoPor(Auth::user()))
-                                        {{-- Anular (Paso 1 del ciclo de eliminación, permitido solo dentro de 24h para registradores) --}}
-                                        <form method="POST" 
-                                              action="{{ route('ventas.anular', $venta) }}" 
-                                              class="form-action-anular form-row-anular" 
-                                              style="display:inline;"
-                                              @if(!Auth::user()->isAdmin() && !$venta->isBorradorRegistro() && $venta->created_at)
-                                              data-expires-at="{{ ($venta->created_at->timestamp + 86400) * 1000 }}"
-                                              data-venta-id="{{ $venta->id }}"
-                                              @endif
-                                              onsubmit="return confirm('¿Deseas ANULAR este registro de venta? Pasará a estado anulado y se descontará de los totales.');">
-                                            @csrf
-                                            <button type="submit" class="btn-action-icon btn-action-anular" title="{{ $venta->isBorradorRegistro() ? 'Descartar borrador' : 'Anular registro (Paso 1 antes de eliminar)' }}" aria-label="{{ $venta->isBorradorRegistro() ? 'Descartar borrador' : 'Anular venta' }}">
-                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-                                            </button>
-                                        </form>
-                                    @elseif($venta->isAnulado() && (Auth::user()->isAdmin() || (Auth::user()->canAccessModule('registro') && !$venta->isCerradoParaEdicion())))
-                                        {{-- Si ya está anulado: Permitir Reactivar --}}
+                                    @elseif($puedeReactivar)
                                         <form method="POST" action="{{ route('ventas.reactivar', $venta) }}" style="display:inline;" onsubmit="return confirm('¿Deseas REACTIVAR este registro de venta?');">
                                             @csrf
                                             <button type="submit" class="btn-action-icon btn-action-reactivar" title="Reactivar registro" aria-label="Reactivar venta">
                                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
                                             </button>
                                         </form>
+                                    @endif
 
-                                        {{-- Eliminar definitivamente (Paso 2: Solo si ya está anulado) --}}
-                                        <form method="POST" action="{{ route('ventas.destroy', $venta) }}" style="display:inline;" onsubmit="return confirm('¡ADVERTENCIA! Este registro ya está anulado.\n¿Deseas ELIMINARLO DEFINITIVAMENTE de la base de datos?\nEsta acción es irreversible.');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn-action-icon btn-action-delete" title="Eliminar definitivamente de la base de datos" aria-label="Eliminar venta permanentemente">
-                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                                    {{-- Acciones secundarias: se muestran solo al solicitar el menú --}}
+                                    @if($hayAccionesSecundarias)
+                                        <div class="row-actions-overflow">
+                                            <button type="button"
+                                                    class="btn-action-icon btn-action-more"
+                                                    title="Más acciones"
+                                                    aria-label="Más acciones para el registro del {{ $venta->fecha_produccion->format('d/m/Y') }}"
+                                                    aria-haspopup="menu"
+                                                    aria-expanded="false"
+                                                    aria-controls="{{ $menuId }}"
+                                                    data-actions-menu-button>
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
                                             </button>
-                                        </form>
+
+                                            <div id="{{ $menuId }}" class="row-actions-menu" role="menu" aria-label="Acciones secundarias" hidden>
+                                                @if($puedeCancelarGarita)
+                                                    <form method="POST" action="{{ route('ventas.cancelar-garita', $venta) }}" onsubmit="return confirm('¿Deseas CANCELAR el envío a Garita para poder editar este registro?');">
+                                                        @csrf
+                                                        <button type="submit" class="row-action-menu-item" role="menuitem">
+                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                                                            <span>Cancelar envío a Garita</span>
+                                                        </button>
+                                                    </form>
+                                                @endif
+
+                                                @if($puedeEditar && !$editarEsPrincipal)
+                                                    <a href="{{ route('ventas.edit', $venta) }}"
+                                                       class="row-action-menu-item btn-row-edit"
+                                                       role="menuitem"
+                                                       @if(!Auth::user()->isAdmin() && !$venta->isBorradorRegistro() && !$venta->tieneBorradorSinVencimiento() && $venta->created_at)
+                                                       data-expires-at="{{ ($venta->created_at->timestamp + 86400) * 1000 }}"
+                                                       data-venta-id="{{ $venta->id }}"
+                                                       @endif>
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                                        <span>{{ $venta->isBorradorRegistro() ? 'Editar borrador' : 'Editar registro' }}</span>
+                                                    </a>
+                                                @endif
+
+                                                @if($puedeAnular)
+                                                    <form method="POST"
+                                                          action="{{ route('ventas.anular', $venta) }}"
+                                                          class="form-action-anular form-row-anular"
+                                                          @if(!Auth::user()->isAdmin() && !$venta->isBorradorRegistro() && $venta->created_at)
+                                                          data-expires-at="{{ ($venta->created_at->timestamp + 86400) * 1000 }}"
+                                                          data-venta-id="{{ $venta->id }}"
+                                                          @endif
+                                                          onsubmit="return confirm('¿Deseas ANULAR este registro de venta? Pasará a estado anulado y se descontará de los totales.');">
+                                                        @csrf
+                                                        <button type="submit" class="row-action-menu-item is-warning" role="menuitem">
+                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                                                            <span>{{ $venta->isBorradorRegistro() ? 'Descartar borrador' : 'Anular registro' }}</span>
+                                                        </button>
+                                                    </form>
+                                                @endif
+
+                                                @if($puedeReactivar)
+                                                    <form method="POST" action="{{ route('ventas.destroy', $venta) }}" onsubmit="return confirm('¡ADVERTENCIA! Este registro ya está anulado.\n¿Deseas ELIMINARLO DEFINITIVAMENTE de la base de datos?\nEsta acción es irreversible.');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="row-action-menu-item is-danger" role="menuitem">
+                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                                                            <span>Eliminar definitivamente</span>
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
+                                        </div>
                                     @endif
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="12" style="padding: 3rem 1rem; text-align: center;">
+                            <td colspan="13" style="padding: 3rem 1rem; text-align: center;">
                                 <div class="empty-state">
                                     <div class="empty-icon"><x-ui-icon name="clipboard" size="32" /></div>
                                     <div class="empty-title">No hay ventas registradas</div>
@@ -1207,9 +1313,89 @@
     @include('ventas._modal_detalle')
 </div>
 
+<script>
+(function() {
+    var openButton = null;
+
+    function closeActionsMenu(returnFocus) {
+        if (!openButton) return;
+
+        var menuId = openButton.getAttribute('aria-controls');
+        var menu = menuId ? document.getElementById(menuId) : null;
+        openButton.setAttribute('aria-expanded', 'false');
+        if (menu) menu.hidden = true;
+
+        if (returnFocus) openButton.focus();
+        openButton = null;
+    }
+
+    function positionActionsMenu(button, menu) {
+        var buttonRect = button.getBoundingClientRect();
+        var menuRect = menu.getBoundingClientRect();
+        var margin = 8;
+        var left = Math.min(
+            window.innerWidth - menuRect.width - margin,
+            Math.max(margin, buttonRect.right - menuRect.width)
+        );
+        var spaceBelow = window.innerHeight - buttonRect.bottom;
+        var top = spaceBelow >= menuRect.height + margin
+            ? buttonRect.bottom + 6
+            : Math.max(margin, buttonRect.top - menuRect.height - 6);
+
+        menu.style.left = left + 'px';
+        menu.style.top = top + 'px';
+    }
+
+    document.addEventListener('click', function(event) {
+        var button = event.target.closest('[data-actions-menu-button]');
+
+        if (button) {
+            event.preventDefault();
+            var wasOpen = button === openButton;
+            closeActionsMenu(false);
+            if (wasOpen) return;
+
+            var menu = document.getElementById(button.getAttribute('aria-controls'));
+            if (!menu) return;
+
+            openButton = button;
+            button.setAttribute('aria-expanded', 'true');
+            menu.hidden = false;
+            positionActionsMenu(button, menu);
+
+            var firstItem = menu.querySelector('[role="menuitem"]');
+            if (firstItem) firstItem.focus();
+            return;
+        }
+
+        if (!event.target.closest('.row-actions-menu')) {
+            closeActionsMenu(false);
+        }
+    });
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && openButton) {
+            event.preventDefault();
+            closeActionsMenu(true);
+        }
+    });
+
+    window.addEventListener('resize', function() { closeActionsMenu(false); });
+    window.addEventListener('scroll', function() { closeActionsMenu(false); }, true);
+})();
+</script>
+
 @if(!Auth::user()->isAdmin())
 <script>
 (function() {
+    function ocultarMenuVacio(group) {
+        var menu = group.querySelector('.row-actions-menu');
+        if (!menu || menu.querySelector('.row-action-menu-item')) return;
+
+        var overflow = menu.closest('.row-actions-overflow');
+        if (overflow) overflow.remove();
+    }
+
     function verificarVencimientosEnTabla() {
         var now = Date.now();
         var expirables = document.querySelectorAll('[data-expires-at]');
@@ -1227,6 +1413,8 @@
                     // 2. Remover formulario y botón de Anular
                     var anularForm = group.querySelector('.form-row-anular, .form-action-anular');
                     if (anularForm) anularForm.remove();
+
+                    ocultarMenuVacio(group);
 
                     // 3. Actualizar botón "Ver" para que su dataset refleje cerrado=1 y no ofrezca editar
                     var viewBtn = group.querySelector('.btn-row-view');

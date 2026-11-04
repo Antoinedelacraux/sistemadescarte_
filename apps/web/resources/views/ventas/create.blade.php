@@ -443,7 +443,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 var errorData = await res.json();
                 var msg = 'Errores de validación: ';
                 if (errorData.errors) {
-                    msg += Object.values(errorData.errors).flat().join(', ');
+                    var etiquetasCampos = {
+                        fundo_id: 'Fundo', lote_id: 'Lote', fecha_produccion: 'Fecha de producción',
+                        motivo: 'Motivo', tipo_descarte: 'Tipo de descarte', cuartel_manual: 'Cuartel',
+                        precio: 'Precio por kilogramo', kilogramos: 'Kilogramos', jabas: 'Cantidad de jabas',
+                        peso_jaba: 'Peso promedio por jaba', cliente: 'Cliente', ruc: 'RUC', placa: 'Placa',
+                        conductor: 'Conductor', brevete: 'Brevete', viaje: 'Número de viaje', observacion: 'Observaciones'
+                    };
+                    var mensajesEntero = {
+                        fundo_id: 'El fundo seleccionado no es válido.',
+                        lote_id: 'El lote seleccionado no es válido.',
+                        jabas: 'La cantidad de jabas debe ser un número entero.',
+                        viaje: 'El número de viaje debe ser un número entero positivo.'
+                    };
+                    var erroresLegibles = Object.entries(errorData.errors).flatMap(function(entrada) {
+                        var campo = entrada[0];
+                        var mensajes = Array.isArray(entrada[1]) ? entrada[1] : [entrada[1]];
+                        return mensajes.map(function(mensaje) {
+                            if (mensaje === 'validation.integer') {
+                                mensaje = mensajesEntero[campo] || 'El valor debe ser un número entero.';
+                            } else if (typeof mensaje === 'string' && mensaje.indexOf('validation.') === 0) {
+                                mensaje = 'El valor no es válido.';
+                            }
+                            return (etiquetasCampos[campo] || campo) + ': ' + mensaje;
+                        });
+                    });
+                    msg += erroresLegibles.join(' ');
                 } else if (errorData.message) {
                     msg += errorData.message;
                 }

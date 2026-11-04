@@ -30,6 +30,8 @@ class ExcelExporter
         }
 
         $columnTypes = $options['columnTypes'] ?? [];
+        $columnAlignments = $options['columnAlignments'] ?? [];
+        $requestedWidths = $options['columnWidths'] ?? [];
         $totalRow = $options['totalRow'] ?? null;
 
         // 1. [Content_Types].xml
@@ -88,7 +90,9 @@ class ExcelExporter
                 }
             }
             // Margen generoso entre 13 y 48 caracteres
-            $colWidths[$c] = max(13, min(48, $maxLen + 4));
+            $colWidths[$c] = isset($requestedWidths[$c])
+                ? max(8, min(60, (float) $requestedWidths[$c]))
+                : max(13, min(48, $maxLen + 4));
         }
 
         $sheetXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' . "\n" .
@@ -122,19 +126,23 @@ class ExcelExporter
                 $colLetter = self::colToLetter($cIndex);
                 $cellRef = $colLetter . $rIndex;
                 $colType = $columnTypes[$cIndex] ?? null;
+                $alignment = $columnAlignments[$cIndex] ?? null;
 
                 if (is_null($val) || $val === '') {
                     $sheetXml .= '<c r="' . $cellRef . '" s="0"/>';
                 } elseif ($colType === 'string') {
                     // Texto explícito forzado (RUC, Brevete, Placa, Teléfono - sin separación de miles ni notación exponencial)
-                    $sheetXml .= '<c r="' . $cellRef . '" s="0" t="inlineStr"><is><t>' . htmlspecialchars((string) $val, ENT_XML1, 'UTF-8') . '</t></is></c>';
+                    $style = $alignment === 'center' ? 4 : 0;
+                    $sheetXml .= '<c r="' . $cellRef . '" s="' . $style . '" t="inlineStr"><is><t>' . htmlspecialchars((string) $val, ENT_XML1, 'UTF-8') . '</t></is></c>';
                 } elseif ($colType === 'date' || $colType === 'center') {
                     // Texto centrado (fechas, códigos, estados)
                     $sheetXml .= '<c r="' . $cellRef . '" s="4" t="inlineStr"><is><t>' . htmlspecialchars((string) $val, ENT_XML1, 'UTF-8') . '</t></is></c>';
                 } elseif ($colType === 'decimal') {
-                    $sheetXml .= '<c r="' . $cellRef . '" s="2"><v>' . (float) $val . '</v></c>';
+                    $style = $alignment === 'left' ? 12 : 2;
+                    $sheetXml .= '<c r="' . $cellRef . '" s="' . $style . '"><v>' . (float) $val . '</v></c>';
                 } elseif ($colType === 'integer') {
-                    $sheetXml .= '<c r="' . $cellRef . '" s="3"><v>' . (int) $val . '</v></c>';
+                    $style = $alignment === 'left' ? 13 : 3;
+                    $sheetXml .= '<c r="' . $cellRef . '" s="' . $style . '"><v>' . (int) $val . '</v></c>';
                 } elseif (is_float($val)) {
                     $sheetXml .= '<c r="' . $cellRef . '" s="2"><v>' . $val . '</v></c>';
                 } elseif (is_int($val)) {
@@ -177,7 +185,13 @@ class ExcelExporter
             $sheetXml .= '</row>';
         }
 
-        $sheetXml .= '</sheetData></worksheet>';
+        $lastDataRow = max(1, $rIndex - 1);
+        $lastColumn = self::colToLetter(max(0, $colCount - 1));
+        $sheetXml .= '</sheetData>' .
+            '<autoFilter ref="A1:' . $lastColumn . $lastDataRow . '"/>' .
+            '<pageMargins left="0.25" right="0.25" top="0.5" bottom="0.5" header="0.2" footer="0.2"/>' .
+            '<pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/>' .
+            '</worksheet>';
 
         // 7. Empaquetar todo en un ZIP
         $files = [
@@ -343,7 +357,7 @@ class ExcelExporter
             '<cellStyleXfs count="1">' .
             '<xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>' .
             '</cellStyleXfs>' .
-            '<cellXfs count="12">' .
+            '<cellXfs count="14">' .
             '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0"/>' . // 0: Normal texto izquierda
             '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>' . // 1: Header verde
             '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>' . // 2: Decimal (123.45)
@@ -356,6 +370,8 @@ class ExcelExporter
             '<xf numFmtId="0" fontId="4" fillId="6" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>' . // 9: Subheader azul
             '<xf numFmtId="164" fontId="5" fillId="7" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>' . // 10: Total Columna verde menta
             '<xf numFmtId="0" fontId="2" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>' . // 11: Cliente nombre bold
+            '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>' . // 12: Decimal alineado a la izquierda
+            '<xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>' . // 13: Entero alineado a la izquierda
             '</cellXfs>' .
             '</styleSheet>';
     }

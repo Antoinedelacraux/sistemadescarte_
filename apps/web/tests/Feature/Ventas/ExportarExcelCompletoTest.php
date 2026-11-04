@@ -146,6 +146,49 @@ class ExportarExcelCompletoTest extends TestCase
         $this->assertStringNotContainsString('TOTAL GENERAL', $sheetXml);
     }
 
+    public function test_ventas_historial_excel_conserva_orden_y_cantidad_exacta_de_columnas(): void
+    {
+        $response = $this->actingAs($this->adminUser)->get(route('ventas.exportar'));
+        $response->assertOk();
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'xlsx_columns_');
+        file_put_contents($tmpFile, $response->getContent());
+        $zip = new \ZipArchive();
+        $this->assertTrue($zip->open($tmpFile) === true);
+        $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $zip->close();
+        @unlink($tmpFile);
+
+        preg_match('/<row r="1"[^>]*>(.*?)<\/row>/s', $sheetXml, $headerRow);
+        $this->assertSame(22, substr_count($headerRow[1] ?? '', '<c '));
+        $this->assertStringContainsString('<autoFilter ref="A1:V3"/>', $sheetXml);
+        $this->assertStringNotContainsString('CÓDIGO DEL ENVÍO', $sheetXml);
+        $this->assertTrue(strpos($sheetXml, 'FUNDO') < strpos($sheetXml, 'FECHA PRODUCCIÓN'));
+        $this->assertTrue(strpos($sheetXml, 'FECHA Y HORA REGISTRO') < strpos($sheetXml, 'FECHA Y HORA VALIDACIÓN GARITA'));
+        $this->assertMatchesRegularExpression('/<c r="A2" s="4" t="inlineStr">/', $sheetXml);
+        $this->assertMatchesRegularExpression('/<c r="I2" s="12"><v>[0-9.]+<\/v><\/c>/', $sheetXml);
+        $this->assertMatchesRegularExpression('/<c r="L[23]" s="13"><v>10<\/v><\/c>/', $sheetXml);
+    }
+
+    public function test_exportaciones_del_historial_exigen_permiso_del_modulo(): void
+    {
+        $sinPermiso = User::create([
+            'name' => 'Sin historial',
+            'email' => 'sin-historial@fundo.test',
+            'password' => Hash::make('password123'),
+            'role_id' => Role::firstOrCreate(['name' => Role::GARITA], ['display_name' => 'Garita'])->id,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($sinPermiso)->get(route('ventas.exportar'))->assertForbidden();
+    }
+
+    public function test_las_rutas_de_exportacion_pdf_fueron_eliminadas(): void
+    {
+        $this->assertFalse(\Illuminate\Support\Facades\Route::has('ventas.exportar-pdf'));
+        $this->assertFalse(\Illuminate\Support\Facades\Route::has('garita.historial.exportar-pdf'));
+    }
+
     public function test_ventas_excel_incluye_fecha_y_hora_de_validacion_garita(): void
     {
         $fechaValidacion = now()->setDate(2026, 10, 31)->setTime(10, 6);

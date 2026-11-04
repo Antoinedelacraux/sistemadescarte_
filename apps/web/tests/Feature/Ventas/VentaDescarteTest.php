@@ -306,7 +306,7 @@ class VentaDescarteTest extends TestCase
         $conflictoCliente
             ->assertUnprocessable()
             ->assertJsonValidationErrors('cliente')
-            ->assertJsonPath('errors.cliente.0', 'No se puede guardar: el Viaje N° 1 (ENV-20261008-FSOFIA-001) ya tiene otro cliente. Un mismo viaje conserva los mismos datos de cliente y transporte en todos sus lotes.');
+            ->assertJsonPath('errors.cliente.0', 'No se puede guardar: el Viaje N° 1 ya tiene otro cliente. Un mismo viaje conserva los mismos datos de cliente y transporte en todos sus lotes.');
         $this->actingAs($this->individualUser)->postJson(route('ventas.store'), array_merge($base, ['placa' => 'XYZ-999']))
             ->assertUnprocessable()
             ->assertJsonValidationErrors('placa');
@@ -643,13 +643,17 @@ class VentaDescarteTest extends TestCase
             'fundo_id' => $this->fundoSofia->id,
             'lote_id' => $this->loteSofia->id,
             'cuartel_id' => $this->cuartelSofia->id,
-            'fecha_produccion' => '2026-10-08',
+            'fecha_produccion' => now()->toDateString(),
             'motivo' => 'Campo',
             'tipo_descarte' => 'Descarte Campo',
             'precio' => 1.50,
             'kilogramos' => 100.00,
             'valor_venta' => 150.00,
             'cliente' => 'Comercializadora Frutas',
+            'jabas' => 10,
+            'placa' => 'ABC-123',
+            'conductor' => 'Carlos Mendoza',
+            'viaje' => 1,
             'created_by' => $this->individualUser->id,
         ]);
 
@@ -660,6 +664,37 @@ class VentaDescarteTest extends TestCase
         $response->assertSee('abrirModalDetalle');
         $response->assertSee('modal-detalle-venta');
         $response->assertSee('Comercializadora Frutas');
+        $response->assertSee('class="btn-action-icon btn-action-garita-send"', false);
+        $response->assertSee('data-actions-menu-button', false);
+        $response->assertSee('class="row-actions-menu"', false);
+        $response->assertSee('Editar registro');
+        $response->assertSee('Anular registro');
+    }
+
+    public function test_ventas_index_prioriza_completar_borrador_y_oculta_envio_a_garita(): void
+    {
+        VentaDescarte::create([
+            'id' => (string) Str::uuid(),
+            'fundo_id' => $this->fundoSofia->id,
+            'lote_id' => $this->loteSofia->id,
+            'fecha_produccion' => now()->toDateString(),
+            'motivo' => 'Campo',
+            'tipo_descarte' => 'Racimos',
+            'precio' => 1.50,
+            'kilogramos' => 100.00,
+            'valor_venta' => 150.00,
+            'estado_registro' => 'borrador',
+            'borrador_sin_vencimiento' => true,
+            'created_by' => $this->individualUser->id,
+        ]);
+
+        $response = $this->actingAs($this->individualUser)->get(route('ventas.index'));
+
+        $response->assertOk();
+        $response->assertSee('Completar borrador');
+        $response->assertSee('btn-action-edit btn-row-edit', false);
+        $response->assertSee('Descartar borrador');
+        $response->assertDontSee('class="btn-action-icon btn-action-garita-send"', false);
     }
 
     public function test_user_can_view_single_venta_show_page(): void

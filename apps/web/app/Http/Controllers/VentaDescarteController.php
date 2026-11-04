@@ -9,6 +9,8 @@ use App\Models\Fundo;
 use App\Models\Lote;
 use App\Models\VentaDescarte;
 use App\Services\ExcelExporter;
+use App\Services\HistoryReportBuilder;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -21,154 +23,18 @@ use Illuminate\View\View;
 
 class VentaDescarteController extends Controller
 {
-    /**
-     * Exporta el historial de ventas a Excel (.xlsx) nativo aplicando todos los filtros activos.
-     */
+    /** Exporta a Excel el mismo conjunto filtrado que se muestra en el historial. */
     public function exportar(Request $request): Response
     {
         @ini_set('memory_limit', '512M');
         @set_time_limit(180);
 
-        $user = Auth::user();
-
-        $query = VentaDescarte::with(['fundo', 'lote', 'cuartel', 'envio', 'creator', 'updater', 'anulador'])
-            ->latest('fecha_produccion');
-
-        // Filtro por Estado (activo, anulado, o todos)
-        if ($request->filled('estado')) {
-            if ($request->input('estado') === 'activo') {
-                $query->activos();
-            } elseif ($request->input('estado') === 'anulado') {
-                $query->anulados();
-            }
-        }
-
-        // Filtro por Estado Garita
-        if ($request->filled('estado_garita')) {
-            $query->where('estado_garita', $request->input('estado_garita'));
-        }
-        if ($request->filled('estado_registro')) {
-            $query->where('estado_registro', $request->input('estado_registro'));
-        }
-
-        // Filtro por Fundo
-        if ($request->filled('fundo_id')) {
-            $query->where('fundo_id', $request->input('fundo_id'));
-        }
-
-        // Filtro por Motivo
-        if ($request->filled('motivo')) {
-            $query->where('motivo', $request->input('motivo'));
-        }
-
-        // Filtro por Tipo de Descarte
-        if ($request->filled('tipo_descarte')) {
-            $query->where('tipo_descarte', $request->input('tipo_descarte'));
-        }
-
-        // Filtro por Rango de Fechas
-        if ($request->filled('fecha_desde')) {
-            $query->whereDate('fecha_produccion', '>=', $request->input('fecha_desde'));
-        }
-        if ($request->filled('fecha_hasta')) {
-            $query->whereDate('fecha_produccion', '<=', $request->input('fecha_hasta'));
-        }
-
-        // Filtro por Búsqueda (cliente o ruc)
-        if ($request->filled('buscar')) {
-            $term = '%' . $request->input('buscar') . '%';
-            $query->where(function ($q) use ($term) {
-                $q->where('cliente', 'like', $term)
-                  ->orWhere('ruc', 'like', $term);
-            });
-        }
-
-        $headers = [
-            'FUNDO',
-            'CÓDIGO DEL ENVÍO',
-            'FECHA PRODUCCIÓN',
-            'CLIENTE / RAZÓN SOCIAL',
-            'RUC',
-            'LOTE',
-            'CUARTEL',
-            'ORIGEN / MOTIVO',
-            'TIPO DE DESCARTE',
-            'KILOGRAMOS (KG)',
-            'PRECIO / KG (S/)',
-            'TOTAL VENTA (S/)',
-            'CANTIDAD JABAS',
-            'PESO / JABA (KG)',
-            'PLACA VEHÍCULO',
-            'CONDUCTOR',
-            'BREVETE',
-            'N° VIAJE',
-            'ESTADO',
-            'OBSERVACIONES',
-            'REGISTRADO POR',
-            'FECHA Y HORA REGISTRO',
-            'FECHA Y HORA VALIDACIÓN GARITA',
-        ];
-
-        $columnTypes = [
-            0 => 'string',   // FUNDO: AGRITAC, PROCOM, EL NEGRO (sin paréntesis)
-            1 => 'string',   // CÓDIGO DEL ENVÍO
-            2 => 'date',     // FECHA
-            3 => 'string',   // CLIENTE
-            4 => 'string',   // RUC
-            5 => 'string',   // LOTE
-            6 => 'string',   // CUARTEL
-            7 => 'string',   // MOTIVO
-            8 => 'string',   // TIPO DESCARTE
-            9 => 'decimal',  // KILOS
-            10 => 'decimal', // PRECIO
-            11 => 'decimal', // TOTAL
-            12 => 'integer', // JABAS
-            13 => 'decimal', // PESO JABA
-            14 => 'string',  // PLACA
-            15 => 'string',  // CONDUCTOR
-            16 => 'string',  // BREVETE
-            17 => 'string',  // VIAJE
-            18 => 'string',  // ESTADO
-            19 => 'string',  // OBSERVACIONES
-            20 => 'string',  // REGISTRADO POR
-            21 => 'date',    // FECHA REGISTRO
-            22 => 'date',    // FECHA Y HORA VALIDACION GARITA
-        ];
-
-        $dataRows = [];
-        // Streaming en lotes pequeños (lazy chunks) para mantener la memoria RAM bajo control (< 25MB)
-        $query->lazy(500)->each(function ($v) use (&$dataRows) {
-            $fundoNombre = $v->fundo?->nombre_corto ?? $v->fundo?->name ?? 'N/A';
-            $dataRows[] = [
-                $fundoNombre,
-                $v->envio?->codigo ?? '',
-                $v->fecha_produccion ? $v->fecha_produccion->format('d/m/Y') : '',
-                $v->cliente ?: 'Venta General',
-                (string) ($v->ruc ?: ''),
-                $v->lote?->nombre ?? '',
-                $v->cuartel_manual ?? ($v->cuartel?->nombre ?? ''),
-                $v->motivo,
-                $v->tipo_descarte,
-                (float) $v->kilogramos,
-                (float) $v->precio,
-                (float) $v->valor_venta,
-                $v->jabas !== null ? (int) $v->jabas : '',
-                $v->peso_jaba !== null ? (float) $v->peso_jaba : '',
-                (string) ($v->placa ?? ''),
-                (string) ($v->conductor ?? ''),
-                (string) ($v->brevete ?? ''),
-                (string) ($v->viaje ?? ''),
-                $v->isAnulado() ? 'ANULADO' : 'ACTIVO',
-                (string) ($v->observacion ?? ''),
-                $v->creator?->name ?? 'Sistema',
-                $v->created_at ? $v->created_at->format('d/m/Y H:i') : '',
-                $v->salida_garita_at ? $v->salida_garita_at->format('d/m/Y H:i') : '',
-            ];
-        });
-
+        $report = HistoryReportBuilder::ventas($this->consultaHistorialExportable($request)->lazy(500));
         $filename = 'ventas_historial_' . date('Y-m-d_His') . '.xlsx';
-        $xlsxBinary = ExcelExporter::generate($headers, $dataRows, 'Historial Ventas', [
-            'columnTypes' => $columnTypes,
+        $xlsxBinary = ExcelExporter::generate($report['headers'], $report['rows'], 'Historial Ventas', [
+            'columnTypes' => $report['columnTypes'],
+            'columnAlignments' => $report['columnAlignments'],
+            'columnWidths' => $report['columnWidths'],
         ]);
 
         return response($xlsxBinary, 200, [
@@ -179,6 +45,37 @@ class VentaDescarteController extends Controller
             'Content-Length' => strlen($xlsxBinary),
         ]);
     }
+
+    private function consultaHistorialExportable(Request $request): Builder
+    {
+        $query = VentaDescarte::with(['fundo', 'lote', 'cuartel', 'envio', 'creator'])
+            ->latest('fecha_produccion')
+            ->latest('created_at');
+
+        if ($request->input('estado') === 'activo') {
+            $query->activos();
+        } elseif ($request->input('estado') === 'anulado') {
+            $query->anulados();
+        }
+        foreach (['estado_garita', 'estado_registro', 'fundo_id', 'motivo', 'tipo_descarte'] as $campo) {
+            if ($request->filled($campo)) {
+                $query->where($campo, $request->input($campo));
+            }
+        }
+        if ($request->filled('fecha_desde')) {
+            $query->whereDate('fecha_produccion', '>=', $request->input('fecha_desde'));
+        }
+        if ($request->filled('fecha_hasta')) {
+            $query->whereDate('fecha_produccion', '<=', $request->input('fecha_hasta'));
+        }
+        if ($request->filled('buscar')) {
+            $term = '%'.$request->input('buscar').'%';
+            $query->where(fn (Builder $builder) => $builder->where('cliente', 'like', $term)->orWhere('ruc', 'like', $term));
+        }
+
+        return $query;
+    }
+
     /**
      * Listado con filtros y paginación.
      */
@@ -403,9 +300,7 @@ class VentaDescarteController extends Controller
 
         DB::transaction(function () use (&$validated, $venta, $modoGuardado) {
             $validated['envio_id'] = $this->sincronizarEnvio($validated, $venta->envio_id, $venta);
-            $validated['estado_registro'] = $venta->isRegistroOficial() || $modoGuardado === 'registro'
-                ? 'oficial'
-                : 'borrador';
+            $validated['estado_registro'] = $modoGuardado === 'registro' ? 'oficial' : 'borrador';
             if (Schema::hasColumn('ventas_descarte', 'borrador_sin_vencimiento')) {
                 $validated['borrador_sin_vencimiento'] = $validated['estado_registro'] === 'borrador';
             }
@@ -522,12 +417,12 @@ class VentaDescarteController extends Controller
                     }
                     continue;
                 }
-                throw ValidationException::withMessages([$campo => "No se puede guardar: los lotes existentes del Viaje N° {$envio->numero_viaje} ({$envio->codigo}) ya tienen datos distintos de {$campo}. Conserva el dato de este registro o solicita corregir el envío completo."]);
+                throw ValidationException::withMessages([$campo => "No se puede guardar: los lotes existentes del Viaje N° {$envio->numero_viaje} ya tienen datos distintos de {$campo}. Conserva el dato de este registro o solicita corregir el envío completo."]);
             }
 
             $referencia = $valoresHermanos->first();
             if ($referencia !== null && mb_strtolower($referencia, 'UTF-8') !== $claveNuevo) {
-                throw ValidationException::withMessages([$campo => "No se puede guardar: el Viaje N° {$envio->numero_viaje} ({$envio->codigo}) ya tiene otro {$campo}. Un mismo viaje conserva los mismos datos de cliente y transporte en todos sus lotes."]);
+                throw ValidationException::withMessages([$campo => "No se puede guardar: el Viaje N° {$envio->numero_viaje} ya tiene otro {$campo}. Un mismo viaje conserva los mismos datos de cliente y transporte en todos sus lotes."]);
             }
 
             // Los lotes activos son la fuente de verdad. Si no hay hermanos, o
@@ -633,13 +528,16 @@ class VentaDescarteController extends Controller
     {
         return [
             'fundo_id.in' => 'No tienes permisos para registrar en el fundo seleccionado.',
+            'fundo_id.integer' => 'El fundo seleccionado no es válido.',
             'lote_id.required' => 'El lote es obligatorio.',
             'lote_id.exists' => 'El lote seleccionado no pertenece al fundo indicado.',
+            'lote_id.integer' => 'El lote seleccionado no es válido.',
             'motivo.required' => 'El motivo de descarte es obligatorio.',
             'tipo_descarte.required' => 'El tipo de descarte es obligatorio.',
             'cuartel_manual.required' => 'El cuartel es obligatorio cuando el motivo es Cosecha Nacional.',
             'precio.required' => 'El precio por kilogramo es obligatorio.',
             'kilogramos.required' => 'Los kilogramos totales son obligatorios.',
+            'jabas.integer' => 'La cantidad de jabas debe ser un número entero.',
             'cliente.required' => 'El cliente es obligatorio para guardar el registro completo.',
             'jabas.required' => 'La cantidad de jabas es obligatoria para guardar el registro completo.',
             'placa.required' => 'La placa es obligatoria para guardar el registro completo.',

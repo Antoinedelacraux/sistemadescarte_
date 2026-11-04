@@ -174,21 +174,21 @@
         Datos de Cliente y Transporte
     </summary>
 
-    <p class="form-hint" style="margin-top: 0.75rem;">
+    <p class="form-hint transport-hint">
         Guarda como borrador si aún falta información. Guardar registro exige los datos requeridos para Garita, pero no lo envía todavía.
     </p>
 
-    <div class="form-group" style="margin-top: 1rem; max-width: 24rem;">
-        <label for="viaje" class="form-label">Número de Viaje <small class="text-muted">(Requerido para Garita)</small></label>
-        <input type="number" name="viaje" id="viaje" class="form-control" placeholder="Ej. 1" min="1" step="1" inputmode="numeric" value="{{ old('viaje', $venta?->viaje) }}">
-    </div>
+    <div class="transport-fields-grid">
+        <div class="form-group transport-field transport-field-trip">
+            <label for="viaje" class="form-label">Número de Viaje <small class="text-muted">(Requerido para Garita)</small></label>
+            <input type="number" name="viaje" id="viaje" class="form-control" placeholder="Ej. 1" min="1" step="1" inputmode="numeric" value="{{ old('viaje', $venta?->viaje) }}">
+        </div>
 
-    <div class="form-grid-2" style="margin-top: 1rem;">
-        <div class="form-group" style="position: relative;">
+        <div class="form-group transport-field transport-field-client" style="position: relative;">
             <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem;">
                 <label for="cliente" class="form-label" style="margin-bottom: 0;">Cliente / Razón Social <small class="text-muted">(Requerido para Garita)</small></label>
-                <span id="cliente_guardado_badge" style="font-size: 0.72rem; color: #16a34a; display: none; font-weight: 600; background: #dcfce7; padding: 2px 8px; border-radius: 9999px;">
-                    ✓ Registrado
+                <span id="cliente_guardado_badge" title="Cliente registrado" aria-label="Cliente registrado" role="status" style="width: 1.5rem; height: 1.5rem; color: #16a34a; display: none; align-items: center; justify-content: center; background: #dcfce7; border-radius: 9999px; flex: 0 0 1.5rem;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 </span>
             </div>
             <div class="cliente-input-container" style="position: relative; display: flex; align-items: center;">
@@ -203,59 +203,115 @@
                     {{-- Elementos renderizados dinámicamente --}}
                 </div>
             </div>
-            <small class="form-hint" style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem; display: block;">
-                Los clientes se van guardando solos. Puede elegir uno existente o escribir uno nuevo.
-            </small>
         </div>
-        <div class="form-group">
+        <div class="form-group transport-field transport-field-ruc">
             <label for="ruc" class="form-label">RUC del Cliente <small class="text-muted">(Opcional)</small></label>
             <input type="text" name="ruc" id="ruc" class="form-control" placeholder="Ej. 20123456789" inputmode="numeric" pattern="[0-9]{11}" maxlength="11" value="{{ old('ruc', $venta?->ruc) }}">
         </div>
-    </div>
 
-    <div class="form-grid-2">
-        <div class="form-group">
+        <div class="form-group transport-field transport-field-jabas">
             <label for="jabas" class="form-label">Cantidad de Jabas <small class="text-muted">(Requerido para Garita)</small></label>
             <input type="number" name="jabas" id="jabas" class="form-control" placeholder="Ej. 50" min="0" value="{{ old('jabas', $venta?->jabas) }}" oninput="avisarPesoJabas()">
         </div>
-        <div class="form-group">
+        <div class="form-group transport-field transport-field-weight">
             <label for="peso_jaba" class="form-label">Peso Promedio por Jaba (kg) <small class="text-muted">(Opcional)</small></label>
             <input type="number" step="0.01" name="peso_jaba" id="peso_jaba" class="form-control" placeholder="Ej. 18.50" min="0" value="{{ old('peso_jaba', $venta?->peso_jaba) }}" oninput="avisarPesoJabas()">
         </div>
-    </div>
 
-    <div class="form-grid-2">
-        <div class="form-group">
+        <div class="form-group transport-field transport-field-plate">
             <label for="placa" class="form-label">Placa del Vehículo <small class="text-muted">(Requerido para Garita)</small></label>
             <input type="text" name="placa" id="placa" class="form-control" placeholder="Ej. ABC-123" value="{{ old('placa', $venta?->placa) }}" oninput="this.value = this.value.toUpperCase()">
         </div>
-        <div class="form-group">
+        <div class="form-group transport-field transport-field-driver">
             <label for="conductor" class="form-label">Nombre del Conductor <small class="text-muted">(Requerido para Garita)</small></label>
             <input type="text" name="conductor" id="conductor" class="form-control" placeholder="Ej. Juan Pérez" value="{{ old('conductor', $venta?->conductor) }}">
         </div>
-    </div>
 
-    <div class="form-grid-2">
-        <div class="form-group">
+        <div class="form-group transport-field transport-field-license">
             <label for="brevete" class="form-label">Número de Brevete <small class="text-muted">(Opcional)</small></label>
             <input type="text" name="brevete" id="brevete" class="form-control" placeholder="Ej. Q12345678" value="{{ old('brevete', $venta?->brevete) }}">
         </div>
-    </div>
 
-    <div class="form-group">
-        <label for="observacion" class="form-label">Observaciones <small class="text-muted">(Opcional)</small></label>
-        <textarea name="observacion" id="observacion" rows="2" maxlength="1000" class="form-control" placeholder="Anotaciones adicionales del pesaje o lote..." oninput="actualizarContadorObservacion()">{{ old('observacion', $venta?->observacion) }}</textarea>
-        <small id="contador-observacion" class="form-hint"></small>
+        <div class="form-group transport-field transport-field-observations">
+            <label for="observacion" class="form-label">Observaciones <small class="text-muted">(Opcional)</small></label>
+            <textarea name="observacion" id="observacion" rows="2" maxlength="1000" class="form-control" placeholder="Anotaciones adicionales del pesaje o lote..." oninput="actualizarContadorObservacion()">{{ old('observacion', $venta?->observacion) }}</textarea>
+            <small id="contador-observacion" class="form-hint"></small>
+        </div>
     </div>
 </details>
 
+<style>
+    .sale-form-actions > #btn-guardar-borrador[hidden] { display: none !important; }
+    #btn-guardar-borrador[hidden] + #btn-guardar-registro { grid-column: 1 / -1; }
+    .transport-hint { margin: 0 0 .875rem; }
+    .transport-fields-grid {
+        display: grid;
+        grid-template-columns: minmax(0, .8fr) minmax(0, 1.25fr) minmax(0, 1fr);
+        grid-template-areas:
+            "trip client ruc"
+            "jabas weight plate"
+            "driver driver license"
+            "observations observations observations";
+        gap: .875rem 1rem;
+        align-items: start;
+    }
+    .transport-fields-grid .form-group { min-width: 0; margin: 0; }
+    .transport-fields-grid > .transport-field > .form-label,
+    .transport-field-client > div:first-child {
+        min-height: 2.6em;
+        margin-bottom: .35rem;
+    }
+    .transport-field-trip { grid-area: trip; }
+    .transport-field-client { grid-area: client; }
+    .transport-field-ruc { grid-area: ruc; }
+    .transport-field-jabas { grid-area: jabas; }
+    .transport-field-weight { grid-area: weight; }
+    .transport-field-plate { grid-area: plate; }
+    .transport-field-driver { grid-area: driver; }
+    .transport-field-license { grid-area: license; }
+    .transport-field-observations { grid-area: observations; }
+    @media (max-width: 900px) {
+        .transport-fields-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-areas:
+                "trip trip"
+                "client client"
+                "ruc jabas"
+                "weight plate"
+                "driver license"
+                "observations observations";
+            gap: .8rem .875rem;
+        }
+        .transport-field-trip { max-width: 18rem; }
+    }
+    @media (max-width: 560px) {
+        .transport-fields-grid {
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-areas:
+                "trip"
+                "client"
+                "ruc"
+                "jabas"
+                "weight"
+                "plate"
+                "driver"
+                "license"
+                "observations";
+            gap: .75rem;
+        }
+        .transport-fields-grid > .transport-field > .form-label,
+        .transport-field-client > div:first-child {
+            min-height: 0;
+        }
+    }
+</style>
+
 {{-- BOTÓN SUBMIT --}}
 <div class="sale-form-actions" role="group" aria-label="Opciones de guardado">
-    @if(!$isEdit || $venta?->isBorradorRegistro())
-        <button type="submit" class="btn btn-secondary" name="modo_guardado" value="borrador" id="btn-guardar-borrador">
-            {{ $isEdit ? 'Guardar cambios como borrador' : 'Guardar borrador' }}
-        </button>
-    @endif
+    <button type="submit" class="btn btn-secondary" name="modo_guardado" value="borrador" id="btn-guardar-borrador"
+        @if($isEdit && $venta?->isRegistroOficial()) hidden data-condicional="garita" @endif>
+        {{ $isEdit ? 'Guardar cambios como borrador' : 'Guardar borrador' }}
+    </button>
     <button type="submit" class="btn-submit-sale" name="modo_guardado" value="registro" id="btn-guardar-registro">
         {{ $isEdit && $venta?->isRegistroOficial() ? 'Guardar cambios' : ($isEdit ? 'Convertir en registro oficial' : 'Guardar registro oficial') }}
     </button>
@@ -296,6 +352,24 @@ function actualizarContadorObservacion() {
 document.addEventListener('DOMContentLoaded', function () {
     actualizarContadorObservacion();
     var formulario = document.getElementById('form-venta');
+    var botonBorrador = document.getElementById('btn-guardar-borrador');
+    if (formulario && botonBorrador && botonBorrador.dataset.condicional === 'garita') {
+        function actualizarBotonBorrador() {
+            var jabas = Number(document.getElementById('jabas')?.value || 0);
+            var datosFaltantes = [
+                !document.getElementById('cliente')?.value.trim(),
+                !document.getElementById('placa')?.value.trim(),
+                !document.getElementById('conductor')?.value.trim(),
+                !document.getElementById('viaje')?.value.trim(),
+                jabas <= 0
+            ].some(Boolean);
+            botonBorrador.hidden = !datosFaltantes;
+        }
+
+        formulario.addEventListener('input', actualizarBotonBorrador);
+        formulario.addEventListener('change', actualizarBotonBorrador);
+        actualizarBotonBorrador();
+    }
     if (formulario) {
         formulario.addEventListener('submit', function (event) {
             var diferencia = diferenciaPesoJabas();
@@ -501,7 +575,7 @@ function inicializarSelectorClientes() {
             return c.nombre.toLowerCase() === actual;
         });
         if (match) {
-            badge.style.display = 'inline';
+            badge.style.display = 'inline-flex';
         } else {
             badge.style.display = 'none';
         }

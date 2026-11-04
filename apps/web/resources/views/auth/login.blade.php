@@ -44,7 +44,7 @@
     $heroStat1Value = '3';
     $heroStat1Label = 'Fundos oficiales';
 
-    $heroStat2Value = '5';
+    $heroStat2Value = '6';
     $heroStat2Label = 'Roles de acceso';
 
     $heroStat3Value = 'PWA';
@@ -668,6 +668,13 @@
                             <td><span class="rpill rpill-ventas">Ventas</span></td>
                             <td>ventas@fundo.test</td>
                             <td>Todos</td>
+                        </tr>
+                        <tr onclick="fillLogin('garita@fundo.test')" tabindex="0" role="row"
+                            onkeydown="if(event.key==='Enter')fillLogin('garita@fundo.test')"
+                            aria-label="Autenticarse como Garita">
+                            <td><span class="rpill rpill-garita" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a;">Garita</span></td>
+                            <td>garita@fundo.test</td>
+                            <td>Salidas</td>
                         </tr>
                     </tbody>
                 </table>

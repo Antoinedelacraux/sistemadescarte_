@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\VentaDescarte;
 use App\Models\Envio;
 use App\Models\Fundo;
+use App\Services\ExcelExporter;
+use App\Services\HistoryReportBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -20,10 +23,10 @@ class GaritaController extends Controller
         $datos = $this->consultarEnvios($request, $estadoPanel);
 
         $kpiPendientesHoy = $this->contarViajes(VentaDescarte::activos()
-            ->whereDate('fecha_produccion', now()->toDateString())
+            ->whereDate('enviado_garita_at', now()->toDateString())
             ->where('estado_garita', 'pendiente'));
         $kpiValidadosHoy = $this->contarViajes(VentaDescarte::activos()
-            ->whereDate('fecha_produccion', now()->toDateString())
+            ->whereDate('salida_garita_at', now()->toDateString())
             ->where('estado_garita', 'validado'));
         return view('garita.index', $datos + [
             'estadoPanel' => $estadoPanel,
@@ -35,6 +38,26 @@ class GaritaController extends Controller
     public function historial(Request $request): View
     {
         return view('garita.historial', $this->consultarEnvios($request, 'validado'));
+    }
+
+    public function exportarHistorialExcel(Request $request): Response
+    {
+        $datos = $this->consultarEnvios($request, 'validado');
+        $report = HistoryReportBuilder::garita($datos['viajesAgrupados'], $datos['fundos']->count() > 1);
+        $binary = ExcelExporter::generate($report['headers'], $report['rows'], 'Validaciones Garita', [
+            'columnTypes' => $report['columnTypes'],
+            'columnAlignments' => $report['columnAlignments'],
+            'columnWidths' => $report['columnWidths'],
+        ]);
+        $filename = 'validaciones_garita_'.date('Y-m-d_His').'.xlsx';
+
+        return response($binary, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control' => 'max-age=0, must-revalidate',
+            'Pragma' => 'public',
+            'Content-Length' => strlen($binary),
+        ]);
     }
 
     private function consultarEnvios(Request $request, string $estado): array
@@ -86,7 +109,6 @@ class GaritaController extends Controller
             return [
                 'clave' => $key,
                 'envio_id' => $first->envio_id,
-                'envio_codigo' => $first->envio?->codigo,
                 'fecha_produccion' => $first->fecha_produccion,
                 'fundo_nombre' => $first->fundo?->name ?? '—',
                 'fecha_hora_registro' => $items->min('created_at'),
@@ -121,7 +143,7 @@ class GaritaController extends Controller
 
     private function contarViajes($query): int
     {
-        return $query->get(['fecha_produccion', 'fundo_id', 'viaje', 'placa'])
+        return $query->get(['envio_id', 'fecha_produccion', 'fundo_id', 'viaje'])
             ->map(fn (VentaDescarte $venta) => $this->claveViaje($venta))
             ->unique()
             ->count();
@@ -230,9 +252,36 @@ class GaritaController extends Controller
         }
 
         $pendientes = $this->agruparViajes($query->with(['fundo', 'envio'])->get())->values();
+        $fechaHoy = now()->toDateString();
+        $kpiPendientesHoy = $this->contarViajes((clone $query)->whereDate('enviado_garita_at', $fechaHoy));
+
+        $validadosHoyQuery = VentaDescarte::activos()
+            ->where('estado_garita', 'validado')
+            ->whereDate('salida_garita_at', $fechaHoy);
+        if (!$user->hasAccessToAllFundos()) {
+            $validadosHoyQuery->whereIn('fundo_id', $user->fundos()->pluck('fundos.id'));
+        }
+        $kpiValidadosHoy = $this->contarViajes($validadosHoyQuery);
+
+        $actividadQuery = VentaDescarte::activos()->whereIn('estado_garita', ['pendiente', 'validado']);
+        if (!$user->hasAccessToAllFundos()) {
+            $actividadQuery->whereIn('fundo_id', $user->fundos()->pluck('fundos.id'));
+        }
+        $ultimaActualizacion = (clone $actividadQuery)->max('updated_at');
+        $revision = hash('sha256', implode('|', [
+            $pendientes->map(fn (array $envio) => $envio['clave'].'@'.($envio['enviado_garita_at']?->toIso8601String() ?? ''))->implode(','),
+            $kpiPendientesHoy,
+            $kpiValidadosHoy,
+            (string) $ultimaActualizacion,
+        ]));
 
         return response()->json([
             'count' => $pendientes->count(),
+            'kpis' => [
+                'pendientes_hoy' => $kpiPendientesHoy,
+                'validados_hoy' => $kpiValidadosHoy,
+            ],
+            'revision' => $revision,
             'timestamp' => now()->toISOString(),
             'pendientes' => $pendientes->map(function (array $envio): array {
                 $enviadoAt = $envio['enviado_garita_at'];

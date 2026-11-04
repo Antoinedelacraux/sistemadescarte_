@@ -385,6 +385,28 @@ class GaritaWorkflowTest extends TestCase
         $history->assertSee('90');
         $history->assertSee('Número de viaje');
         $history->assertSee('<td class="nowrap">1</td>', false);
+        $history->assertSee('aria-label="Exportar historial filtrado a Excel"', false);
+        $history->assertDontSee('exportar-pdf', false);
+
+        $garitaExcel = $this->actingAs($this->garitaUser)->get(route('garita.historial.exportar-excel'));
+        $garitaExcel->assertOk();
+        $this->assertSame('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', $garitaExcel->headers->get('Content-Type'));
+        $tmpXlsx = tempnam(sys_get_temp_dir(), 'garita_xlsx_');
+        file_put_contents($tmpXlsx, $garitaExcel->getContent());
+        $zip = new \ZipArchive();
+        $this->assertTrue($zip->open($tmpXlsx) === true);
+        $garitaSheet = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $zip->close();
+        @unlink($tmpXlsx);
+        preg_match('/<row r="1"[^>]*>(.*?)<\/row>/s', $garitaSheet, $garitaHeader);
+        $this->assertSame(10, substr_count($garitaHeader[1] ?? '', '<c '));
+        $this->assertStringNotContainsString('CÓDIGO DEL ENVÍO', $garitaSheet);
+        $this->assertStringContainsString('FECHA Y HORA DE VALIDACIÓN', $garitaSheet);
+        $this->assertStringContainsString('<v>1800</v>', $garitaSheet);
+        $this->assertMatchesRegularExpression('/<c r="A2" s="4" t="inlineStr">/', $garitaSheet);
+        $this->assertMatchesRegularExpression('/<c r="C2" s="0" t="inlineStr"><is><t>1<\/t>/', $garitaSheet);
+        $this->assertMatchesRegularExpression('/<c r="G2" s="13"><v>90<\/v><\/c>/', $garitaSheet);
+        $this->assertMatchesRegularExpression('/<c r="H2" s="12"><v>1800<\/v><\/c>/', $garitaSheet);
 
         $salesHistory = $this->actingAs($this->adminUser)->get(route('ventas.index'));
         $salesHistory->assertOk();

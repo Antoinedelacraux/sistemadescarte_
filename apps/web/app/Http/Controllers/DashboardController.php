@@ -61,12 +61,17 @@ class DashboardController extends Controller
         }
 
         $ventas = $ventasQuery->get();
+        $totalAnaliticoKg = (float) $ventas->sum('kilogramos');
 
-        $totalGeneralKg = (float) $ventas->sum('kilogramos');
-        $totalGeneralVenta = (float) $ventas->sum('valor_venta');
+        $ventasEnviadasAGarita = $ventas->filter(fn (VentaDescarte $venta) =>
+            $venta->enviado_garita_at !== null
+            && in_array($venta->estado_garita, ['pendiente', 'validado'], true)
+        );
+        $totalGeneralKg = (float) $ventasEnviadasAGarita->sum('kilogramos');
+        $totalGeneralVenta = (float) $ventasEnviadasAGarita->sum('valor_venta');
 
         // 1. Segregación operativa por motivo y tipo de descarte delegada al servicio
-        $segregacionMotivos = $this->analyticsService->calcularSegregacionMotivos($ventas, $totalGeneralKg);
+        $segregacionMotivos = $this->analyticsService->calcularSegregacionMotivos($ventas, $totalAnaliticoKg);
 
         // 2. Matrices cruzadas de clientes (Kilogramos y Montos) delegadas al servicio
         $matrizData = $this->analyticsService->calcularMatrizClientes($ventas);

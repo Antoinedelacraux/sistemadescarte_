@@ -346,12 +346,6 @@
                 <span class="detail-value">{{ $venta->conductor ?? '—' }}</span>
             </div>
             <div class="detail-item">
-                <span class="detail-label">Envío relacionado</span>
-                <span class="detail-value" style="font-family: monospace; color: var(--clr-primary-800);">
-                    {{ $venta->envio?->codigo ?? 'Registro histórico sin código' }}
-                </span>
-            </div>
-            <div class="detail-item">
                 <span class="detail-label">Brevete</span>
                 <span class="detail-value">{{ $venta->brevete ?? '—' }}</span>
             </div>

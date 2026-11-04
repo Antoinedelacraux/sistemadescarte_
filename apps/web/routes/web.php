@@ -67,6 +67,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('modulo:garita')->group(function () {
         Route::get('/garita', [\App\Http\Controllers\GaritaController::class, 'index'])->name('garita.index');
         Route::get('/garita/historial', [\App\Http\Controllers\GaritaController::class, 'historial'])->name('garita.historial');
+        Route::get('/garita/historial/exportar/excel', [\App\Http\Controllers\GaritaController::class, 'exportarHistorialExcel'])->name('garita.historial.exportar-excel');
         Route::post('/garita/confirmar-salida', [\App\Http\Controllers\GaritaController::class, 'confirmarSalida'])->name('garita.confirmar-salida');
     });
 

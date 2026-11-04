@@ -743,6 +743,7 @@
             : 'unknown';
         var GARITA_PENDING_SEEN_KEY = 'fundo_garita_pending_seen_v1_' + garitaNotificationUserId;
         var GARITA_PENDING_READY_KEY = 'fundo_garita_pending_ready_v1_' + garitaNotificationUserId;
+        var GARITA_VIEW_REVISION_KEY = 'fundo_garita_view_revision_v1_' + garitaNotificationUserId;
         var announceCurrentGaritaPendientes = false;
 
         function showGaritaToast(message, type, title) {
@@ -831,6 +832,30 @@
             }
         }
 
+        function updateGaritaPanelCounts(data) {
+            if (!data.kpis) return;
+
+            document.querySelectorAll('[data-garita-count]').forEach(function(element) {
+                var key = element.dataset.garitaCount;
+                var count = data.kpis[key];
+                if (typeof count !== 'number') return;
+
+                element.textContent = element.closest('.garita-tabs') ? '(' + count + ')' : count;
+                if (key === 'pendientes_hoy') element.setAttribute('aria-label', count + ' pendientes hoy');
+                if (key === 'validados_hoy') element.setAttribute('aria-label', count + ' validados hoy');
+            });
+        }
+
+        function refreshGaritaViewWhenChanged(data) {
+            if (!data.revision || !window.location.pathname.startsWith('/garita')) return;
+
+            var previousRevision = sessionStorage.getItem(GARITA_VIEW_REVISION_KEY);
+            sessionStorage.setItem(GARITA_VIEW_REVISION_KEY, data.revision);
+            if (previousRevision && previousRevision !== data.revision) {
+                window.setTimeout(function() { window.location.reload(); }, 350);
+            }
+        }
+
         function checkGaritaPendientes() {
             if (!navigator.onLine) return;
             fetch('/api/garita/pendientes-count', {
@@ -839,6 +864,7 @@
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (data && typeof data.count === 'number') {
+                    updateGaritaPanelCounts(data);
                     if (data.count > 0) {
                         garitaBadge.textContent = data.count > 99 ? '99+' : data.count;
                         garitaBadge.style.display = 'flex';
@@ -846,6 +872,7 @@
                         garitaBadge.style.display = 'none';
                     }
                     processGaritaPendientes(data);
+                    refreshGaritaViewWhenChanged(data);
                 }
             })
             .catch(function(err) {
