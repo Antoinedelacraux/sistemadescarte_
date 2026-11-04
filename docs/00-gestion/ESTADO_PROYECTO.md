@@ -9,6 +9,8 @@
 
 ## Cambios recientes
 
+- **2026-11-04:** Los filtros del Historial de Validaciones de Garita se reorganizaron mediante una cuadrícula responsive que se adapta a uno o varios fundos. Fecha, viaje, fundo, conductor, cliente y acciones mantienen alturas y alineación uniformes; en tableta y móvil se redistribuyen sin espacios vacíos ni controles comprimidos. Sin cambios en parámetros, consultas o datos.
+
 - **2026-11-04:** Se corrigió el arranque de un clon limpio: `AppServiceProvider` ya no consulta el esquema cuando la base SQLite todavía no existe durante `composer install`. Después de crear la base, conserva la comprobación local de migración existente. Sin cambios de esquema ni datos.
 
 - **2026-11-04:** Se consolidó el estado reproducible del repositorio para clonación: código funcional, pruebas, configuración de ejemplo, documentación y empaquetadores quedan versionados sin incluir `.env`, bases locales, dependencias ni artefactos `dist`. La suite completa aprobó 120 pruebas y 771 aserciones; las vistas Blade compilaron correctamente. Un clon nuevo requiere instalar dependencias Composer, crear su `.env`, generar `APP_KEY` y ejecutar migraciones.
