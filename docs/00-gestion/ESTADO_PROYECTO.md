@@ -9,6 +9,8 @@
 
 ## Cambios recientes
 
+- **2026-11-04:** Se simplificó la experiencia de filtros del Historial de Validaciones: los campos ocupan una cuadrícula independiente y las acciones quedan en una franja inferior dentro de la tarjeta. Se eliminan el desborde lateral y el espacio vacío irregular; escritorio, tableta y móvil conservan una distribución predecible. Sin cambios en filtros, consultas o datos.
+
 - **2026-11-04:** Los filtros del Historial de Validaciones de Garita se reorganizaron mediante una cuadrícula responsive que se adapta a uno o varios fundos. Fecha, viaje, fundo, conductor, cliente y acciones mantienen alturas y alineación uniformes; en tableta y móvil se redistribuyen sin espacios vacíos ni controles comprimidos. Sin cambios en parámetros, consultas o datos.
 
 - **2026-11-04:** Se corrigió el arranque de un clon limpio: `AppServiceProvider` ya no consulta el esquema cuando la base SQLite todavía no existe durante `composer install`. Después de crear la base, conserva la comprobación local de migración existente. Sin cambios de esquema ni datos.

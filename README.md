@@ -4,7 +4,7 @@ Aplicación web empresarial y PWA para registrar, controlar, analizar y exportar
 
 ## Estado actual
 
-- **Versión documentada:** 1.1.45
+- **Versión documentada:** 1.1.46
 - **Estado:** módulos funcionales completos, en etapa de feedback y validación móvil.
 - **Aplicación:** `apps/web/`
 - **Backend:** PHP 8.3+ y Laravel 13.
