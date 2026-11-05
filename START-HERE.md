@@ -1,6 +1,6 @@
 # INICIO — Sistema Web del Fundo en Antigravity
 
-**Versión actual:** 1.1.46 (lista para feedback y validación de despliegue).
+**Versión actual:** 1.1.47 (lista para feedback y validación de despliegue).
 
 ---
 

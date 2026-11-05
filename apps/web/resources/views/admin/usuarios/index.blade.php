@@ -50,12 +50,39 @@
         font-weight: 600;
     }
 
+    .users-filter-panel {
+        padding: 1rem;
+        border-bottom: 1px solid var(--brd-base);
+        background: var(--clr-surface-50);
+    }
+
+    .users-filter-grid {
+        display: grid;
+        grid-template-columns: minmax(220px, 1.5fr) repeat(2, minmax(180px, 1fr)) auto;
+        align-items: end;
+        gap: 0.85rem;
+    }
+
+    .users-filter-grid .form-group { margin: 0; }
+    .users-filter-actions { display: flex; gap: 0.5rem; }
+    .users-filter-actions .btn { min-height: 42px; white-space: nowrap; }
+
+    @media (max-width: 900px) {
+        .users-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .users-filter-actions { grid-column: 1 / -1; }
+    }
+
     @media (max-width: 640px) {
         .user-submit-btn {
             width: 100%;
             height: 48px;
             justify-content: center;
         }
+
+        .users-filter-panel { padding: 0.85rem; }
+        .users-filter-grid { grid-template-columns: 1fr; gap: 0.7rem; }
+        .users-filter-actions { grid-column: auto; }
+        .users-filter-actions .btn { flex: 1; justify-content: center; }
     }
 
     /* Acciones en fila de tabla - Iconos Minimalistas */
@@ -316,6 +343,36 @@
 
     {{-- Tabla de usuarios --}}
     <div class="card" style="padding: 0; overflow: hidden;">
+        <form action="{{ route('admin.usuarios') }}" method="GET" class="users-filter-panel" role="search" aria-label="Filtrar usuarios">
+            <div class="users-filter-grid">
+                <div class="form-group">
+                    <label for="filter_nombre" class="form-label text-xs">Nombre</label>
+                    <input type="search" name="nombre" id="filter_nombre" class="form-control" value="{{ request('nombre') }}" placeholder="Buscar por nombre" maxlength="150">
+                </div>
+                <div class="form-group">
+                    <label for="filter_fundo" class="form-label text-xs">Fundo</label>
+                    <select name="fundo_id" id="filter_fundo" class="form-control">
+                        <option value="">Todos los fundos</option>
+                        @foreach($fundosFiltro as $fundo)
+                            <option value="{{ $fundo->id }}" {{ request('fundo_id') == $fundo->id ? 'selected' : '' }}>{{ $fundo->name }}{{ $fundo->is_active ? '' : ' (Inactivo)' }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter_rol" class="form-label text-xs">Rol</label>
+                    <select name="role_id" id="filter_rol" class="form-control">
+                        <option value="">Todos los roles</option>
+                        @foreach($roles as $role)
+                            <option value="{{ $role->id }}" {{ request('role_id') == $role->id ? 'selected' : '' }}>{{ $role->display_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="users-filter-actions">
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                    <a href="{{ route('admin.usuarios') }}" class="btn btn-secondary">Limpiar</a>
+                </div>
+            </div>
+        </form>
         <div class="table-wrapper" style="border: none; border-radius: 0;">
             <table class="data-table" style="min-width: 640px;">
                 <thead>
@@ -329,7 +386,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($usuarios as $user)
+                    @forelse($usuarios as $user)
                     <tr style="{{ !$user->is_active ? 'opacity: 0.65; background: #fafafa;' : '' }}">
                         <td><strong>{{ $user->name }}</strong></td>
                         <td class="text-muted">{{ $user->email }}</td>
@@ -408,7 +465,13 @@
                             </div>
                         </td>
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                        <td colspan="6" style="padding: 1.5rem; text-align: center; color: var(--txt-muted);">
+                            No se encontraron usuarios con esos filtros.
+                        </td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>

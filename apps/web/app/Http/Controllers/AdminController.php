@@ -201,14 +201,30 @@ class AdminController extends Controller implements HasMiddleware
     /**
      * Listado de usuarios del sistema.
      */
-    public function usuarios(): View
+    public function usuarios(Request $request): View
     {
-        $usuarios = User::with(['role', 'fundos'])->orderBy('name')->paginate(15)->withQueryString();
+        $filters = $request->validate([
+            'nombre' => ['nullable', 'string', 'max:150'],
+            'fundo_id' => ['nullable', 'integer', 'exists:fundos,id'],
+            'role_id' => ['nullable', 'integer', 'exists:roles,id'],
+        ]);
+
+        $usuariosQuery = User::with(['role', 'fundos'])
+            ->when($filters['nombre'] ?? null, function ($query, $nombre) {
+                $query->where('name', 'like', '%' . trim($nombre) . '%');
+            })
+            ->when($filters['fundo_id'] ?? null, function ($query, $fundoId) {
+                $query->whereHas('fundos', fn ($fundos) => $fundos->whereKey($fundoId));
+            })
+            ->when($filters['role_id'] ?? null, fn ($query, $roleId) => $query->where('role_id', $roleId));
+
+        $usuarios = $usuariosQuery->orderBy('name')->paginate(15)->withQueryString();
         $roles = Role::all();
         $fundos = Fundo::where('is_active', true)->get();
+        $fundosFiltro = Fundo::orderBy('name')->get();
         $modulos = User::MODULOS;
 
-        return view('admin.usuarios.index', compact('usuarios', 'roles', 'fundos', 'modulos'));
+        return view('admin.usuarios.index', compact('usuarios', 'roles', 'fundos', 'fundosFiltro', 'modulos'));
     }
 
     /**
